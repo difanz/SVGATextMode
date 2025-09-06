@@ -1,0 +1,41 @@
+
+Patch from Kurt Roeckx for amd64.
+ref BTS #255540
+
+diff -urN svgatextmode-1.9/Makefile
+svgatextmode-1.9+amd64/Makefile
+--- svgatextmode-1.9/Makefile   2004-06-21 20:04:29.326060620
++0200
++++ svgatextmode-1.9+amd64/Makefile     2004-06-21
+19:55:09.741407877 +0200
+@@ -23,11 +23,13 @@
+ CFLAGS_i486  = $(CFLAGS_i386) -m486 -fomit-frame-pointer
+ CFLAGS_i586  = $(CFLAGS_i486) -fno-strength-reduce -malign-loops=2 -malign-jumps=2 -malign-functions=2
+ CFLAGS_i686  = $(CFLAGS_i586)
++CFLAGS_amd64  = $(CFLAGS_i386)
+ LDFLAGS_alpha =
+ LDFLAGS_i386  =
+ LDFLAGS_i486  = $(LDFLAGS_i386)
+ LDFLAGS_i586  = $(LDFLAGS_i386)
+ LDFLAGS_i686  = $(LDFLAGS_i386)
++LDFLAGS_amd64  = $(LDFLAGS_i386)
+
+ YACC     = bison -y
+ LEX      = flex -l
+diff -urN svgatextmode-1.9/XFREE/common/compiler.h
+svgatextmode-1.9+amd64/XFREE/common/compiler.h
+--- svgatextmode-1.9/XFREE/common/compiler.h    1995-10-29
+17:31:14.000000000 +0100
++++ svgatextmode-1.9+amd64/XFREE/common/compiler.h
+2004-06-21 19:40:25.645665333 +0200
+@@ -258,6 +258,8 @@
+ #define outw(p,v)      _outw((v),(p))
+ #define outl(p,v)      _outl((v),(p))
+
++#elif defined(__linux__)
++#include <sys/io.h>
+ #endif
+
+ #else /* __GNUC__ */
+
+

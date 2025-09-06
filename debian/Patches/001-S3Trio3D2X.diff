@@ -1,0 +1,108 @@
+To: ron@debian.org
+From: "Stanislav V. Voronyi" <stas@esc.kharkov.com>
+Date: Sat, 26 Jun 1999 17:30:38 +0300
+Subject: diff for SVGATextMode to support S3 Trio 3D2X
+
+	Hi!
+I've bought S3 Trio3D2X card and found that SVGAText mode does not
+work properly with it. I've made a patch for SVGATextmode to make
+it workable & sent it to author of SVGATextMode. But he answered me
+that he has not plan to future support of this project and suggest
+me send this patch to debian. The patch is very short so I attach it
+to end of this letter.
+
+	Sincerely Yours, Stanislav Voronyi.
+-------------------------------------------------------------------------
+diff -u --recursive SVGATextMode-1.8-src/TextConfig SVGATextMode-1.8-src.s3d/TextConfig
+--- SVGATextMode-1.8-src/TextConfig	Wed Nov 12 22:21:29 1997
++++ SVGATextMode-1.8-src.s3d/TextConfig	Fri Jun  4 12:25:01 1999
+@@ -60,21 +60,21 @@
+ # This is for a "generic" VGA card. It should work on ANY VGA card, but can
+ # only use the first 4 clocks
+ 
+-Chipset "VGA"
+-Clocks  25.175 28.322
++#Chipset "VGA"
++#Clocks  25.175 28.322
+ 
+-echo "The SVGATextMode config file is configured as `standard VGA' by default."
+-echo "This is highly sub-optimal on modern VGA cards."
+-echo "Edit the TextConfig file for your VGA card to enable the many extra features."
+-echo "(and then you can also get rid of this message...)."
+-echo ""
++#echo "The SVGATextMode config file is configured as `standard VGA' by default."
++#echo "This is highly sub-optimal on modern VGA cards."
++#echo "Edit the TextConfig file for your VGA card to enable the many extra features."
++#echo "(and then you can also get rid of this message...)."
++#echo ""
+ 
+ 
+ #############################################################
+ #
+ # Now come the SVGA chipsets
+ 
+-#ChipSet	"S3"
++ChipSet	"S3"
+ 
+ #Clocks   25.175  28.322  40.00   0.00   50.00  77.00  36.00  44.90
+ #Clocks   130.00  120.00  80.00  31.50  110.00  65.00  75.00  94.50
+@@ -87,7 +87,7 @@
+ #ClockChip "sc11412"
+ #ClockChip "s3gendac"
+ #ClockChip "s3_sdac"
+-#ClockChip "S3Trio"
++ClockChip "S3Trio"
+ #ClockChip "S3Virge"
+ #ClockChip "ti3025"
+ #ClockChip "ics2595"
+@@ -108,7 +108,7 @@
+ #Option "SLOW_DRAM"
+ #Option "MED_DRAM"
+ #Option "FAST_DRAM"
+-#Option "XFAST_DRAM"
++Option "XFAST_DRAM"
+ 
+ # This option enables S3 high-speed text modes for pixel clocks > 36 MHz.
+ # USE WITH CAUTION! This needs a different font format in VGA memory. Read
+@@ -118,7 +118,7 @@
+ # before strange effects appear. Older S3 cards (911, 924, 928, ...) need
+ # this option for modes with >36 MHz pixel clocks
+ 
+-#Option "S3_HSText"
++Option "S3_HSText"
+ 
+ # IBM RGB RAMDAC's absolutely _need_ this. You will have to copy this value
+ # from the output of the XFree86 server startup messages. MAKE SURE THIS
+@@ -128,6 +128,7 @@
+ # non-standard text mode.
+ 
+ #RefClk 14.31818   # common values are: 14.31818, 16.0 , 24.0 and 50.0 MHz
++RefClk 28   # For S3 Trio3D2X
+ 
+ #ChipSet	"ET4000"
+ #Option "hibit_high"         # This option MUST be in your XF86Config file, too!!!
+diff -u --recursive SVGATextMode-1.8-src/XFREE/common_hw/S3gendac.c SVGATextMode-1.8-src.s3d/XFREE/common_hw/S3gendac.c
+--- SVGATextMode-1.8-src/XFREE/common_hw/S3gendac.c	Mon Dec  9 22:11:32 1996
++++ SVGATextMode-1.8-src.s3d/XFREE/common_hw/S3gendac.c	Fri Jun  4 12:26:37 1999
+@@ -8,6 +8,7 @@
+ /* $XConsortium: S3gendac.c /main/9 1995/12/28 17:16:09 kaleb $ */
+  
+ #include "Xfuncproto.h"
++#include "cfg_structs.h"
+ #include "S3gendac.h" 
+ #include "compiler.h"
+ #define NO_OSLIB_PROTOTYPES
+diff -u --recursive SVGATextMode-1.8-src/XFREE/common_hw/S3gendac.h SVGATextMode-1.8-src.s3d/XFREE/common_hw/S3gendac.h
+--- SVGATextMode-1.8-src/XFREE/common_hw/S3gendac.h	Mon Dec  9 22:49:18 1996
++++ SVGATextMode-1.8-src.s3d/XFREE/common_hw/S3gendac.h	Tue Jun  1 14:45:27 1999
+@@ -8,7 +8,7 @@
+ 
+ #define GENDAC_INDEX	     0x3C8
+ #define GENDAC_DATA	     0x3C9
+-#define BASE_FREQ         14.31818   /* MHz */
++#define BASE_FREQ         ((clock_data.refclk==REFCLK_NOT_DEFINED)?14.31818:clock_data.refclk/1000.0)   /* MHz */
+ 
+ int S3gendacSetClock( 
+ #if NeedFunctionPrototypes
+
+

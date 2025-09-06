@@ -1,0 +1,263 @@
+                Installing the SVGATextMode utility
+                -----------------------------------
+                
+First thing to do: read the README file. At least you'll know what this
+program does.
+
+Reading some of the files in the "doc" directory (especially the man files)
+might come in useful, too. It contains several files, describing several
+aspects of SVGATextMode, like how to use the TextConfig file, how monitor
+timings interact with each other (and with the monitor!), etc.
+
+You might also consider changing the Makefile, as it holds the path to the
+TextConfig file (it is a fixed path, no environment variables yet). Some
+people don't like makefiles putting new executables in their system
+directories without asking. That is exactly what "make install" will do.
+You've been warned!
+
+
+Simply typing "make install" should install the files needed for textmode
+switching. If this is the first time you install the program, typing "make
+newinstall" will also copy the text config file (once installed already, you
+don't want to overwrite your old TextConfig, so use "make install" then.
+
+This will however NOT install external clock-selection programs or the
+font-changing program "setfont", or any fonts. The ones included here (in
+the "setfont" directory) are just for the unhappy few who don't have the
+"keytbls" package included in the Slackware distribution, or in the
+"kbd-0.87.tar.gz" package (or any newer version) which can be found on many
+FTP sites.
+
+
+Before going on, try the program by following the instructions in the
+TextConfig file. It guides you through several modes, starting from standard
+modes that should work on ALL cards supported, and gradually using more
+special features. That way you'll get a feeling of what can be done with
+SVGATextMode.
+
+Once you've done that, you might feel compelled to do some experimenting.
+Read the TextConfig manual file. It explains the syntax of the config file
+in detail.
+
+Using "vgaset" (also included in this package) can help you fine-tune text
+modes. But read doc/vgaset.note first! It contains vital information on some
+versions of vgaset.
+
+If anything goes weird, clockprobe and grabmode can tell you what exactly
+the hardware is programmed like.
+
+
+Font loading
+------------
+
+Once you selected a textmode, You might have to change the font in the VGA
+card. If you started off from a standard 80x25 VGA resolution, then the VGA
+card was loaded with an 8x16 font. But if your new resolution uses an 8x8
+font, the characters will be cut off in the middle, and things will be hard
+to read.
+
+It might then be a wise idea to load another font into the VGA card. A
+standard linux utility called "setfont" Is just what you need. If you do not
+have it on your system, I have included a SMALL amount of fonts, and the
+"setfont" program, just in case. The "Cyr_a8x##" (where ## is a font height)
+files are some font files for setfont. The program and the fonts are
+available in the "keytbls" package in the Slackware distribution, and of
+course "on your favourite FTP site"...
+
+You can make SVGATextMode call the font loading program automatically using
+the "LoadFont" option. See the TextConfig docs to see how to do that. Once
+configured correctly, you can get an entirely new text mode with just one
+command ('SVGATextMode' of course ;-). Everything else should be automatic.
+
+
+Letting the kernel and the applications know what you've done
+-------------------------------------------------------------
+
+When you change your textmode resolution on the fly, your (virtual) consoles
+have to be made aware of the changes, or they'll continue to think you're
+still in the OLD mode (whatever that was). All applications sensitive to
+screen width and height, e.g. any full-screen application, will be affected
+by this.
+
+You could do this by hand (typing "stty rows 37 cols 100" at every
+terminal), but it is more convenient to let SVGATextMode do that. 
+
+Adding a "Terminals" line to the TextConfig file, e.g.
+
+     Terminals tty6 tty5 tty4 tty3 tty2 tty1
+     
+will tell SVGATextMode it should send resize commands to each of the
+terminals mentionned in that line. In this case, virtual terminals 1 to 6
+(selected with ALT-F1 to ALT-F6) will be resized. Any application running in
+that terminal will be sent a "SIGWINCH" signal, just as it would get under
+X-Windows when you resize the Xterm window with the mouse.
+
+If that application is aware of that signal (i.e. knows what to do when it
+gets one), it will redraw its screen and adopt the new size, without any
+interaction from the user.
+
+Some common examples are more, less, emacs, joe, gpm etc.
+
+If you are running any program that depends on your terminal settings, but
+doesn't understand the resizing signal (e.g. selection) there is no other
+way than to restart it. Until the author adds support for the SIGWINCH
+signal. Or maybe it's already supported by now... 
+
+Another thing to consider is the /etc/termcap file, or the terminfo
+database. Some applications depend on one of these to perform text-screen
+operations. If you define your own fancy text mode, you might have to add an
+entry in the termcap file for it. An extra entry is fairly easy to create:
+just copy an existing termcap entry, and change all the appropriate numbers
+in it to the ones you just created. For terminfo, you're on your own. I
+don't know zit about that.
+
+* This feature has become obsolete starting with kernel version 1.3.3. The
+* kernel now does all this automatically.
+
+
+Making your Linux system boot in a new and better text mode automatically
+-------------------------------------------------------------------------
+
+A simple method would be to put the following in your /etc/rc.d/rc.font
+file:
+
+   #!/bin/bash
+   #
+   # This (minimalistic) script changes the VGA textmode.
+   # This example is for a 100x37 character mode.
+   echo "Changing to 100x37 character console"
+   SVGATextMode -r 100x37
+
+And if you configured SVGATextMode to do automatic font loading, you won't
+even have to call a font loading program yourself. See the TextConfig
+documentation if you want to find out how to do that.
+
+
+Re-compiling the code
+---------------------
+
+To compile SVGATextMode, simply typing "make" should do the job. "make
+install" will install SVGATextMode and TextConfig in their designated
+places. "make clean" or "make mrproper" will do a little or a lot of
+cleaning up.
+
+For people wanting to do some more hacking around, I also included some
+tools that I used (or didn't use) while developing SVGATextMode. "make hack"
+will compile these as well. BUT BE CAREFULL: these programs are even MORE
+dangerous than SVGATextMode! Consider them as being "No user servicable
+parts"! Only to be used if you know what you're doing, if you like
+surprises, or if you're plainly suicidal.
+
+
+IMPORTANT NOTE: This program will be severely limited with kernels older
+than version 1.1.54, because they lack the "VT_RESIZE" kernel call.
+Compiling will also NOT work "out-of-the-box" (for the same reason). That is
+a problem, but you need the kernel call to change text resolutions once the
+kernel has booted.
+
+
+Using and/or Recompiling SVGATextMode for kernels older than 1.1.54
+------------------------------------------------------------
+
+It is possible to use (and recompile) SVGATextMode with an older kernel, but
+it can then ONLY be used to IMPROVE a text mode, and NOT to CHANGE it. If
+you booted in 132x43 for example, you might still use SVGATextMode to
+improve it (higher refresh, more detailed font, ...). But it would HAVE to
+remain at 132x43, but now with a 16-pixel font instead of just 8, and at 100
+Hz instead of 60 Hz (just an example).
+
+If you try using the included SVGATextMode binary on "older" kernels, and
+try to resize the screen, it will issue an error, stating that resizing is
+not possible on pre-1.1.54 kernels.
+
+In order to recompile SVGATextMode with older kernels installed (= pre
+1.1.54), you must add the `NO_RESIZE' flag to the `CONF_FLAGS' in the
+Makefile.
+
+From then on, SVGATextMode will simply not allow screen resizing in ANY
+case.
+
+It is however NOT necessary to recompile SVGATextMode when you have an older
+kernel: it will auto-detect that, and simply not allow you to resize your
+screen.
+
+If you use the precompiled version of SVGATextMode, WITH the VT_RESIZE support
+in it, SVGATextMode will check for the currently used kernel version, and
+allow or disallow screen resizing appropriately.
+
+
+Compiling SVGATextMode for DOS
+------------------------------
+
+You're mad.
+
+No, seriously, it can be done. Here's how.
+
+required stuff:
+     * gzip.exe
+     * tar.exe
+     * a DPMI provider (A DMPI environment can  be found  in  MS-Windows
+       (DOS boxes), OS/2, Windows-NT, qdpmi, 386max, etc. A free DMPI
+       program is included in the distribution (The DJGPP DPMI program
+       CWSDPMI)
+     * DJGPP 2.0 or newer.
+
+ - copy the .tar.gz distribution to your DOS drive. You will have to rename
+   it, e.g. to "stm.tgz"
+   
+ - `gzip -d stm.tgz' will uncompress the tar file. You obviously need the
+   DOS gzip for that.
+   
+ - `tar xvf stm.tar' will then untar the stuff, and rename all long
+   filenames to something DOS can handle. You will need a DOS tar for that.
+   
+ - change the Makefile and add `-DDOS' to the `CONF_FLAGS' variable.
+ 
+ - now typing `make DOS' should do the trick. 
+ 
+ If all goes well, you'll get an stm.exe, grabmode.exe from the compilation.
+ clockprobe.exe is just a copy of grabmode.exe.
+ 
+ The default textconfig file should be placed in \etc\textconf.
+ 
+ You need the DPMI environment to run the programs as well (you already
+ needed it for the DJGPP compiler).
+
+
+Hacking a bit yourself
+----------------------
+
+If you feel like hacking some VGA registers yourself, a small utility is
+included that was used to test many VGA features. It is undocumented, and
+should be considered "not suitable for normal use". It helped me test VGA
+stuff without needing to recompile all the time.
+
+It is far from complete, but useful for THIS application.
+
+You can make it by typing "make hack". You'll get "setVGAreg" and
+"getVGAreg" (a link to setVGAreg). Enjoy.
+
+-----------------------------------------------------------------------------
+
+Changing the code
+-----------------
+
+Since the author (=me) is NOT an experienced C-programmer at all, it is very
+possible that the code can be optimised, enhanced, robustified, etc. in may
+ways. Any useful remarks on that will be very welcome and most probably
+instructive... And if the code looks like SOLDERED together rather than
+PROGRAMMED, you'll know what my REAL roots are...
+
+Adding support for other chipsets SHOULD be fairly easy. The most important
+things are chipset-specific pixel-clock selection routines, and
+chipset-specific register unlocking routines.
+
+If anyone feels temped to do so, or if you don't feel tempted, but have the
+piece of code at hand, or (even better) you have data sheets on that
+chipset, please let me know.
+
+If you change the code to improve the program (there is no use in changing
+the code to make it WORSE, except if you work for Bill ;-), please send
+patches, so I can include the changes in future versions.
+
+

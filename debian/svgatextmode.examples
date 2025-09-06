@@ -1,0 +1,5 @@
+contrib/consoletools
+contrib/probe_clocks
+contrib/scripts
+contrib/svgalib
+contrib/vgaset

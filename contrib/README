@@ -1,0 +1,152 @@
+
+This directory contains several utilities not directly linked to
+SVGATextMode, but in one way or another useful to SVGATextMode users.
+
+[The binary-only distribution has only a small subset of these tools --
+ Most of them are not for the casual user anyway]
+
+
+Ultra2Linux:
+
+	A utility to convert UltraVision fonts to Linux fonts.  Ultravision
+        is a commercial (!) DOS program with similar functionality as
+        SVGATextMode. Those of you who bought a copy of Ultravision should
+        be able to use this tool to convert some fonts from Ultravision to
+        the linux format used by "setfont" (also in this directory).
+        UltraVision fonts are attractive because they also exist in a
+        20-pixel high version, which is unavailable in the standard Linux
+        fonts.
+        Author: Kenneth Albanowski
+
+
+setfont:
+
+	A small tool to set the text mode font. It was taken from the
+        "keytbls" package included in the Slackware distribution. It can
+        also be found in the "kbd-0.87.tar.gz" package (or any newer
+        version) available on many FTP sites that carry Linux software.
+        Authors: Eugene Crosser & Andries Brouwer
+        
+        Also note the "8x8plus" font. It is a normal PC font (instead of
+        Cyrillic). It will load as an 8x32 font but will work for 8x8 to
+        8x14. The letters will all fit in an 8x8 cell, but the line drawing
+        chars are a full 8x32. (contributed by Albert Cahalan
+        <albert@ccs.neu.edu>).
+        
+        It would be a nice thing if ALL fonts used "extended" (full 32-pixel
+        high) line drawing chars, so they can be used for bigger font sizes
+        as well, without compromising boxes and lines.
+ 
+
+
+vgaset:
+
+	Another hacking tool. It can be used to fine-tune text modes (or
+        X-Windows graphics modes). It allows you to move the screen
+        position, set sync widths, and many more. See the documentation in
+	the vgaset directory for more information.
+	Author: Greg Lehey (grog@lemis.de)
+
+
+svgalib:
+
+        Some sample applications of how the tools from SVGATextMode can be
+        used in svgalib, and for other applications also. 
+        
+        'et4000.grab_svgalib_mode' is a script to grab an svgalib-compatible
+        mode from your vga card. It outputs a block of text you can put into
+        the libvga.config file.
+        
+        'libvga.et4000-320x200x16M' contains a libvga.config entry for an
+        320x200 mode with 16M colors, which is normally unavailable for
+        those cards (they have 640x400 at 16M colors, but that makes those
+        MPEG files as big as stamps.)
+        
+        There is also an s3.grab_svgalib_mode script, which does the same
+        for S3 as the previous one for ET4000. I didn't need this for
+        svgalib, but both scripts can be very usefull to determine what
+        register in the chipset is responsible for a problem. Comparing
+        register dumps for a "good" and a "bad" case. We used the ET4000
+        script to pin down a problem in X (mouse cursor garbage on PCI
+        cards)
+
+
+
+loadfont:
+
+       An alternative to the "setfont" program from svgalib. Written by
+       Albert Cahalan <albert@ccs.neu.edu>.
+       
+       It understands more font files than setfont, and it can extract fonts
+       to raw files. It still spits out weird/extra messages sometimes.
+
+
+probe_clocks:
+
+       A small and rudimentary script that probes for the available clocks,
+       like the XFREE probe does.
+        
+
+scripts: 
+
+       This directory contains some useful scripts for SVGATextMode:
+       
+       - rc.font can be put in /etc/rc.d, and will change the text mode to
+         100x37 chars at boot time.
+
+       - STMmenu is a script that shows a dialog box with all allowed text
+         modes in it - supposing your TextConfig file is configured
+         correctly.
+       
+       - STM_reset is an example script of a reset program, which can be
+         executed automatically after SVGATextMode has finished. Anything
+         you want to get done when changing text modes can be put in here
+         (like restarting some screen-size dependent programs).
+         
+       - resize_patch is a kernel patch to make the SIGWINCH work for e.g. gpm.
+       
+       - cleanup_TextConfig formats the mode lines in the TextConfig file so
+         they all use the same spcing (easy for further grepping/cutting/...)
+
+
+DOS
+
+       The DOS directory contains (what else!) tools which could be useful
+       to configure both SVGATextMode and XFREE86, using the modes known by DOS.
+       
+       - a DOS port of SVGATextMode: stm.exe
+       
+       - a free DMPI environment, CWSDPMI, needed to run both grabmode.exe
+         and stm.exe.
+       
+       - grabmode.exe is, just like the Linux version, a mode grabber that
+         reports a mode line comatible with SVGATextMode and XFREE.
+         
+       - scanmode.exe scans all DOS (and VESA, when available) text and
+         graphics modes, and outputs two files (tconfig and xconfig)
+         containing resp. config lines for SVGATextMode and XFREE86.
+         
+       - grabwin.exe is an MSWindows mode grabber. This is a stripped
+         version of the SVGATextMode-1.1 grabmode, compiled by Harald Koenig
+
+
+changefont
+
+	Two small quick-and-dirty programs to make changes to a font - or
+        create a new one if you're VERY courageous). Far from user-friendly,
+        but they work.
+
+
+setcolor
+
+        A replacement for the setpalette program included in SVGATextMode,
+        which will not work with newer kernels (1.3.x or above) anymore
+        because they reset the VGA palette on every VT-switch. This program
+        changes the palette in the kernel, so THAT one gets restored each
+        time.
+        
+consoletools
+
+	contains some useful tools for handling consoles, grabbing text,
+	etc. See the README there.
+

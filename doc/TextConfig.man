@@ -1,0 +1,1834 @@
+.TH TextConfig 5 "October 1998" "Version 1.9"
+
+.SH NAME
+TextConfig \- Configuration file for SVGATextMode
+
+.de Ss
+.sp
+.ft CW
+.nf
+..
+.de Se
+.fi
+.ft P
+.sp
+..
+
+.SH DESCRIPTION
+SVGATextMode uses a configuration file normally called \`TextConfig' for its
+initial setup. The default place for it is
+
+.IP
+.B /etc/TextConfig
+
+.PP
+It has a similar syntax as the configuration file for the XFree86 X-Windows
+server. It adheres more or less to version 2 of the XFree86 config file
+(called \fBXconfig\fP), but the new Xfree86 syntax, adopted since version 3
+(and now called \fBXF86Config\fP) is quite similar, just a lot more
+structured. 
+
+.SS Config file syntax rules
+Basically, the TextConfig file is scanned on a line-per-line basis, with no
+specific ordering whatsoever forced upon the user. A line can appear
+enywhere in the config file, and will have the same effect.
+
+If the same definition (option, chipset, clockchips, mode lines, ...)
+appears twice in the config file, the LAST instance will be used, and all
+others ignored. The only exceptions to that rule are the definitions that
+can span more than one line. E.g. \`clocks\' lines and \`fontselect\' lines.
+In those cases all lines accumulate, instead of canceling each other out.
+
+In the entire configuration file, character casing is not important, i.e.
+\`ChipSet\', \`chipset\' , or any other upper/lowercase combination are
+considered the same label.
+
+Empty lines are allowed. The last line will always be ignored (make sure the
+last line is an empty one).
+
+Any text following a \fB#\fP (hash) character is comment, and will be
+ignored.
+
+You \fBmust\fP enclose text strings in double quotes ("). E.g. modeline
+names (modeline "my_80x25"), option names (Option "LoadFont"), DefaultMode
+names, ClockChip names, Chipset names, etc.
+
+Configuration lines start with a \fBkeyword\fP, which tells SVGATextMode
+what this line is about. Modelines can have the prefix "modeline", but this
+is not a requirement.
+
+Mode description lines start with an opional \`modeline\', and then a mode
+label, (any text enclosed in quotes), followed by at least 9 numbers
+describing the mode timings. A description of the meaning of these mode
+timings should be in the MODE TIMINGS section. Note that the mode label is
+just what the name says: a label. \fBEven if the label says "100x37", it
+does NOT mean this will actually produce a 100x37 text mode\fP. The mode
+timings determine that.
+
+Lines not complying with any of the above restrictions, or lines that use an
+undefined keyword will produce a parsing error. The most common error is
+forgetting the double quotes around a string, causing an error similar to:
+
+.IP
+ ./stm: ERROR: Unknown token on line 853 of config file
+
+.PP
+Also consider reading the comments in the distribution TextConfig file as
+well. They explain some modes and options as they come along.
+
+.SS Safety tip
+When trying to create a new mode of your own, consider "testing" it first
+non-destuctively: use
+
+.IP
+.B SVGATextMode -n <\fIMyNewMode\fP>
+
+.PP
+(note the '-n' option) before doing the real thing (=without '-n'). This way
+the program will show you what the new mode will look like, WITHOUT really
+changing anything. This allows you to check if the H and V sync values will
+work with your monitor. And it avoids a blank screen because some number was
+wrong, and the mode line got screwed up.
+
+.SH KEYWORDS
+Several keywords are used by SVGATextMode to define what the line will
+describe. This section only describes the syntax of the keywords, and some
+general explanation. The complete syntax, with all possible entries for each
+label is described in separate chapters below.
+
+.SS ChipSet \fI<some_chip>\fP
+This keyword tells SVGATextMode which SVGA chipset needs to be programmed.
+The syntax is straighforward:
+
+.IP
+\fBChipset "S3"\fP
+
+.PP
+will make SVGATextMode treat your card as an S3 card. This can be any of the
+many types of S3 cards around.
+
+S3, as well as many other chipsets, have a range of different subtypes
+around, but they basically are the same, and SVGATextMode only needs a tiny
+bit of its full array of features (imagine what amount of the chip's full
+potential you were using in text mode _before_ SVGATextMode was around, if
+it's still only a tiny part of it _with_ STM ;-)
+
+Roughly speaking, the pixel clock programming is all that is VGA chip
+dependent from SVGATextMode's perspective.
+
+Some chipsets are subdivided into different chipset ID's. This probably
+means the subtypes _are_ different, and so they must be differentiated in
+the config file.
+
+See the \fBChipSet\fP section for a detailed listing of supported chipsets.
+
+.SS ClockChip \fI<some_clockchip>\fP
+Mostly for S3 chipsets, ET6000, Matrox, Cirrus, some ET4000's and some
+Trident cards. This tells SVGATextMode that the pixel clock for this chipset
+does not come from the "default" clock generator with (e.g.) 16 discrete
+clocks, but from a programmable clock chip. All the clock chip drivers from
+the \fBXFree86\fP version 3.1.2 X-server are available, plus the
+ICS5301/5341 GenDAC for some ET4000W32/W32p cards. VGA cards that did _not_
+work with the "standard" XFree3.1.2 server are likely to fail with the
+current SVGATextMode as well.
+
+.TP
+Example:
+ClockChip "ICD2061a"
+
+.PP
+.B Note for XFREE 3.1.X (or newer) users:
+You WILL get into trouble with the newer XFREE servers that have some clock
+chips built-in (The ICD2061a and ICS9161). When using on of those XFREE clock
+chips, X cannot restore the textmode clock correctly.
+
+If this is your problem, using a "ClockProg" for XFREE might be the only
+(temporary) solution, until the XFREE86 server has a way around this
+problem.
+
+.SS ClockProg \fI<path/to/ClockProg>\fP [\fItextclock\fP]
+This tells SVGATextMode that the clock is to be programmed using an external
+clock setting program, not the default or ClockChip method.
+
+This is especially useful for unsupported cards, or supported cards with
+unsupported clock chips, because the clock porgramming is about the only
+thing that needs to know what chip we're talking about.
+
+It's also a useful stub for plugging in replacements for buggy or wrong
+SVGATextMode clock code.
+
+The syntax is rougly the same as the syntax for the XFree clock program, and
+indeed any clock program written for XFree 3 should plug in without a
+glitch. In theory.
+
+Example (note the second argument is not necessary, and is ignored by
+SVGATextMode):
+
+.IP
+ClockProg "/usr/sbin/pixclock_prg" 2
+
+.PP
+The Following paragraph, from the XFree docs, shows how this program must be
+used:
+
+.IP
+"This  optional entry runs the specified command to set the clock on the
+graphics board instead of using the internal code. The command string must
+consist of the full pathname (and no flags). When using this option, a
+\fBClocks\fP entry is required to specify which clock values are to be made
+available to the server (up to 128 clocks may be specified). The optional
+textclock value is used to tell the server that command must be run to
+restore the textmode clock at server exit (or when VT switching). textclock
+must match one of the values in the Clocks entry. This parameter is required
+when the clock used for text mode is a programmable clock."
+
+.PP
+.B Note for SVGATextMode:
+the [\fItextclock\fP] argument is not used in SVGATextMode, since we're
+already talking about text mode. The XFREE server WILL use this, so the
+SVGATextMode mode will be restored properly.
+
+.B Note for XFREE users:
+You MUST define the textclock in your XF86Config file when you are using a
+clock program. XFree86 will not be able to restore the correct textmode
+clock, UNLESS you tell it what clock was used!
+
+When the ClockProg is run by SVGATextMode, two arguments are passed to the
+command. The first is the clock frequency in MHz as a floating point number
+and the second is the index of the clock in the Clocks entry. When setting a
+new text mode using a ClockProg, SVGATextMode will execute the following
+shell command:
+
+.IP
+\fI<path/to/clockprog> <frequency in Mhz> <clock index>\fP
+
+.PP
+The command should return an exit status of 0 when successful, and something
+in the range 1-254 otherwise.
+
+.B NOTE:
+as mentionned in the text above, you need to specify a clocks line, although
+the clock chip can (in most cases) make any clock within a certain range,
+and not just the ones in the clocks line. This requirement is necessary for
+external clock programs that program an "old-style" clock chip with just a
+fixed set of (mostly 16) clocks, like most "cheaper" VGA cards use. In that
+case, the program will probably ignore the frequency parameter passed to it,
+but will use the index number to select the appropriate clock. In the other
+case, the index will be ignored, and the specified frequency will be
+programmed.
+
+The clock program path must be a \fBfully specified path\fP to a clock
+setting program that is SETUID ROOT! If it is not correctly SETUID ROOT, you
+will get an error:
+
+.IP
+ ./SVGATextMode: ERROR: 'system' returned error code 35584
+
+.PP
+No environment variables will be used. If your clock selection program uses
+another interface, use a script that calls that one.
+
+.SS Option \fI<option_string>\fP
+Special options can be entered with this keyword. Some options are general,
+and apply to any VGA card type. Other options are specific to one or a few
+VGA cards. Any option enabled in the config file that is NOT allowed for the
+VGA card in the \fBChipSet\fP line, will cause an error message.
+
+.TP
+Example:
+Option "ClockDiv2"
+
+.PP
+See the separate \fBOPTIONS\fP section for a full list of all options and
+their meaning.
+
+.SS Clocks \fI<clock0> <clock1>\fP [ \fI<clock2> ...\fP ]
+The most important section in the \fBTextConfig\fP file (at least for some
+cards) is (are) the \fBClocks\fP line(s). This entry in the config file
+tells SVGATextMode which clocks your card has, and what their ordering is.
+
+Some VGA cards do NOT need a clocks line, since they can create ANY possible
+clock within certain limits, and not just one from a fixed, given list.
+These are:
+
+.IP
+- Cirrus Logic cards.
+
+- All cards for which a \fBClockChip\fP must be defined.
+
+.PP
+When using a \fBClockProg\fP (an externally called program to select the
+correct pixel clock, see the appropriate section in this manual page), the
+clocks line MUST be specified, even if the clock program is programming a
+fully programmable chip. By requiring a clocks line, the ClockProg option
+can support both programmable clocks, as fixed clock from a list (i.e. the
+Clocks line). See the Clockprog section for a full explanation of the use of
+the "ClockProg" keyword.
+
+All cases not mentionned above will need a "Clocks" line, or a set of clocks
+lines.
+
+Any line in the TextConfig file that starts with "Clocks" will be used, and
+all clock values will be appended into one big list of available clocks. In
+other words, multiple Clocks lines are allowed, and will all be used.
+
+The order of the clocks in the one or more clocks line(s) will also
+determine their order: most VGA clocks generators are connected to the VGA
+chips with a series of wires, constituting a bus. For 16 clocks, there are 4
+wires, which are driven from 4 pins on the VGA chip, which are then driven
+by a register in the VGA chip. If your clocks line would suggest the 4th
+clock is a 45 Mhz clock, SVGATextMode will then put a "4" on that 4-bit bus
+in order to select that clock. If you lied (=the actual 45 MHz is the 5th
+clock, selected by putting a "5" on that bus), then you will not be getting
+the expected clocks. Bad luck.
+
+.TP
+Example Clocks line:
+.nf
+Clocks   25.175  28.3  36  40  0  45  50
+.fi
+
+.PP
+Note that a 0 MHz clock MUST be entered in the Clock line! This just means
+that there is no clock with that number (index). It must be there in order
+to get the correct indexes for the ones following them (a "placeholder"). A
+0 MHz clock will never be used by SVGATextMode.
+
+Determining the values in the clocks line is a problem. There is no "simple"
+tool around that can tell you the pixel clocks available on your card. The
+easiest solution that is available on most systems is the XFree86 X-Windows
+server. Typing \fBX -probeonly\fP should give you (amongst others) a list of
+clocks on your card. See the XFREE manuals for more information:
+XF86Config(5), XF86_SVGA(1), XF86_Accel(1).
+
+.TP
+\fBWARNING 1\fP:
+The XFree86 X-server is known to give erroneous clock measurements on
+unsupported cards or on badly supported ones. The most notorious ones are
+the ET4000 cards. If the \fBhibit\fP option is not set correctly fior this
+card in the Xconfig file, XFree86 WILL give wrong results! You have been
+warned. See also the \`doc\' directory in the SVGATextMode distribution for
+more explanation about this.
+
+.TP
+\fBWARNING 2\fP:
+Just to be on the sure side, another warning: SVGATextMode assumes the clock
+VALUES are correct. All timing parameters that you are given at the end of
+the program are based on those numbers! Saying that clock number 3 is 40 MHz
+will make SVGATextMode behave as if that is the Absolute Truth (TM). It will
+use that clock as if it were 40 MHz.
+
+.TP
+\fBWARNING 3\fP:
+The clocks lines in the distribution TextConfig are just examples, and only
+work for some cards. Don't use them unless you know they're OK.
+
+.SS Terminals <\fIterm_dev0\fP> [ \fI<term_dev1>...\fP ]
+The \`Terminals\' line tells SVGATextMode which terminal devices will be
+affected by a possible screen resize, and need to be resized. It will resize
+all mentionned terminals after switching to another mode. This "resizing"
+consists of sending a `SIGWINCH' to all specified virtual terminals.
+
+The usefulness of this option depends on the Linux kernel version you are
+running (as reported by `uname -r'). SVGATextMode detects the kernel
+version, and acts accordingly, as described below.
+
+There are three distinct cases:
+
+.IP
+Kernels older than 1.1.54: run-time terminal resizing is not supported by the kernel
+at all, and SVGATextMode will only allow you to select modes that have the
+same number of rows and columns as the one you booted with.
+
+.IP
+Kernels in the range 1.1.54 to 1.3.2 (inclusive): If no \`Terminals\' line
+is defined, SVGATextMode will be able to detect which of the first 16
+virtual terminals is active, and resize all those. All VT's with a number
+higher than 16 (/dev/tty16 and up) cannot be detected, and so they would not
+be resized automatically. If a \`Terminals\' line is defined, all terminals
+specified in that line will be resized. So, in this range of kernel
+versions, the \`Terminals\' line is only useful when you have more that 16
+active VT's.
+
+.IP
+Linux kernels versions 1.3.3 and up do all this resizing automatically, so
+this line is not needed in that case, and will be ignored.
+
+.PP
+If you need the \`Terminals\' line, enter the terminal devices without the
+leading "/dev/":
+
+.IP
+Terminals "tty6" "tty5" "tty4" "tty3" "tty2" "tty1"
+
+.PP
+This is equivalent to typing \fBstty rows <\fIy\fP> cols <\fIx\fP>\fR at
+every of those terminals. With the added advantage that any applications
+running in those terminals will be sent a \fBSIGWINCH\fP signal by the
+kernel. Many full-screen terminal applications will redraw their screen into
+the new sizes upon receipt of that signal.
+
+But some programs will NOT know about the new screen size, and will not work
+correctly anymore after a screen resize. They need a more drastic approach: the
+\fBResetProg\fP.
+
+An example of such a programs is \fIgpm\fP. SIGWINCH only gets sent to tasks
+running with a virtual terminal (/dev/ttyX) as a controlling terminal (the
+\fIps\fP command shows in the TTY field what the controlling terminal of a
+task is). Gpm runs with a mouse device (e.g. a serial line) as its
+controlling terminal, and hence it doesn't get sent this SIGWINCH signal.
+
+.SS ResetProg <\fI/path/to/ResetProg\fP>
+The "reset program" is called when SVGATextMode has finished its job
+succesfully, but only when a ResetProg is defined.
+.TP
+The path must be a fully specified path, as in
+ResetProg "/etc/resize_gpm"
+
+.PP
+The reset program could be used to "reset" any application that is affected
+when the screen size changes due to using SVGATextMode. It could for example
+be a script that kills selection and restarts it, or sends an explicit
+SIGWINCH to gpm, or sends some other application an appropriate signal to
+let it know the screen has changed.
+
+The reset program will be called with TWO arguments: the H and V size of the
+new text mode.
+
+.TP
+Example:
+SVGATextMode 100x37
+
+.PP
+will first switch to a 100x37 mode (if the config line with that label
+actually described such a size), and then call:
+
+.IP
+<\fI/path/to/ResetProg\fP> 100 37
+
+.SS FontProg <\fI/path/to/Font_Loader\fP>
+.SS FontPath <\fI/path/to/textmode/fonts\fP>
+.SS FontSelect "<\fIFontFileName\fP>" <\fIsize_X\fP>x<\fIsize_Y\fP> [ \fI...\fP ] 
+These keywords define the font loading program, the path where all the
+textmode fonts are stored, and the font selection table.
+
+SVGATextMode can be told to automatically load a new font when the text mode
+has changed, by putting the option line
+
+.IP
+Option "LoadFont"
+
+.PP
+in the TextConfig file.
+
+In order to load a new font, SVGATextMode needs to know a few things. 
+
+First of all: the font loading program. This is an external program, that
+will be called with the specified font as an argument. It can for example
+specified as:
+
+.IP
+FontProg "/usr/bin/setfont"
+
+.PP
+Where "/usr/bin/setfont" is of course the full pathname of the font program.
+If this line is NOT present, but you enabled font loading with the
+"LoadFont" option, SVGATextMode will use the default path
+"/usr/bin/setfont".
+
+The path may contain an entire command line within the quotes. This allows
+you to say:
+
+.IP
+FontProg "/usr/bin/setfont -u def.uni"
+
+This would be required if you load a raw font file without a unicode map in
+it. Without that extra option, setfont would irradicate the original unicode
+mapping. If this sounds a bit cryptic: it means, amongst other things, that
+you will loose the "high-ascii" characters (aka box-characters) used by many
+text-based menuing systems (e.g. minicom).
+
+Secondly, you can also tell the font program where the fonts are
+located:
+
+.IP
+FontPath "/usr/lib/kbd/consolefonts"
+
+.PP
+If not specified, the font path defaults to no path: this assumes the
+FontProg knows where to find its fonts.
+
+Last but not least: you must let SVGATextMode know which font you want used
+for which character cell size. This is accomplished by entering a font
+table, as shown in the example below:
+
+.IP
+.nf
+FontSelect "Cyr_a8x8"  8x8 9x8
+FontSelect "8x12alt.psf"  8x12 8x13
+ ...
+FontSelect "Cyr_a8x16"  8x16 9x16
+.fi
+
+.PP
+For each possible character cell size you intend to use, a font file must be
+specified. You do not have to add a font file for ALL possible combinations
+of fonts from 1 to 32 pixels high and 8 to 9 pixels wide. But if you select
+a text mode with a font size that has no entry in the font table, and font
+loading is enabled, SVGATextMode WILL put you in the new text mode, but
+won't change the font (since it doesn't know what font to load). It will
+issue a warning that font loading was enabled, but no font specified.
+
+When all things are configured as above, and you resize the screen to a
+100x37, which uses a 9x16 font cell size (this information is in the mode
+config line for the 100x37 mode), then SVGATextMode will issue the following
+command after resizing the screen:
+
+.IP
+/usr/bin/setfont /usr/lib/kbd/consolefonts/Cyr_a8x16
+
+.PP
+One final note on font sizes. VGA fonts are ALWAYS 8 pixels wide. But those
+that are designed to work within an 8-pixel wide character cell, will most
+probably not use the rightmost pixel column. Or in other words: they will
+only use 7 (or even 6) of the available pixels, since they are put
+back-to-back on the display in an 8-pixel wide font mode. The extra space
+must be left open so the characters don't stick together, making them a bit
+fuzzy to read.
+
+For 9-pixel wide character cells, the VGA font, still only 8 pixels wide,
+can now use all 8 pixels of its width to define the font. The VGA card will,
+when displaying it, add one extra (blank) pixel to get to the 9-pixel width.
+
+All this means that some VGA fonts are designed to be used in an 8-pixel
+wide cell, and others are designed for 9-pixel wide cells. BOTH however
+DEFINE only 8 pixels.
+
+To make some special characters connect (like IBM box characters) without
+gaps, the VGA card can be made to copy the 8th bit into the 9th.
+
+.SS Cursor <\fIstart\fP>-<\fIend\fP>
+Depending on personal preference, and on the type of screen you work on, the
+standard undercore cursor might be unsatisfactory. This type of cursor for
+example is too small to be useful on laptop screens.
+
+This keyword allows a fully programmable cursor size. To avoid needing a
+cursor definition on each and every text mode definition line, there is just
+ONE cursor definition in the TextConfig file, which is then used for ALL
+text modes. Defining the cursor style for _every_ text mode line would cause
+unnecessary clutter in those configuration lines.
+
+The parameters define the starting and ending line of the cursor, but this
+is not a 1:1 mapping! The size of the cursor depends on the size of the
+selected font. If you selected a 16-line high font, and then defining the
+cursor to show from line 7 to line 8, will put it smack in the middle of the
+line. defining the same numbers for an 8-line font would put the cursor on
+the bottom of the text line (= and underscore cursor).
+
+That's why the cursor definition as shown above will ALWAYS be relative to a
+32-line font (the largest possible font size). If the REAL font size is
+smaller, it will be scaled to fit that font size. So defining an underscore
+cursor for 32-line fonts will also get you an underscore cursor for any other
+font size.
+
+.TP
+example:
+cursor 28-31
+
+.TP
+results in an underscore cursor for ALL text modes, while
+cursor 0-31
+
+.PP
+will get you a block cursor.
+
+The first example, when used in a 16-line font, is scaled with a factor 16/32,
+and thus will in reality be a cursor from line 14-15.
+
+\fBNOTE\fP: Disabling cursor blinking is only possible on SOME SVGA cards,
+or on all in monochrome mode. This feature is not implemented in
+SVGAtextMode (yet?).
+
+There is a kernel patch out that allows the cursor color and blink to be
+selected differently for each console through a separate program using vt200
+style escape codes. It's (at least) on the sunsite.unc.edu and its mirrors
+in the package /linux/kernel/patches/console/noblink.tar.gz
+
+.SS HorizSync  <\fIfrom\fP>[-<\fIto\fP>] [, \fI...\fP]
+.SS VertRefresh  <\fIfrom\fP>[-<\fIto\fP>] [, \fI...\fP]
+The HorizSync and VertRefresh lines allow you to protect your monitor from
+getting a mode from the VGA card it cannot handle. This is useful for both
+avoiding the problem of accidently getting into a non-syncing mode, and also
+avoids the (very small) possibility of monitor damage due to extremely
+out-of-range sync inputs (a monitor that gets destroyed by out-of-spec input
+frequencies is a poor design, but knowing that when it's broke doesn't help
+a lot)
+
+The <\fIfrom\fP> and <\fIto\fP> are \fBfloating point\fP numbers in kHz (for
+HorizSync) or Hz (for VertRefresh). When a single number (= only <from>) is
+defined, a margin of +/- 0.3 (kHz or Hz) will be allowed:
+
+.IP
+HorizSync 56
+
+.PP
+will allow a horizontal sync range of 55.7 to 56.3 kHz. This is useful for
+fixed-frequency monitors (mostly workstation displays), or some old standard
+VGA screens.
+
+.TP
+A more complex line could look like this:
+HorizSync 30.5-32,48.2,56
+
+.PP
+allows horizontal frequencies from 30.5 to 32 kHz, 48.2 and 56 kHz. Some
+dual- or triple-scan monitors can use this method.
+
+A standard multisync screen could for example use the following line:
+
+.IP
+HorizSync 30-64
+
+.PP
+Not defining the HorizSync/VertRefresh variables implies the default values:
+
+.IP
+.nf
+HorizSync 30-32          # 30 to 32 kHz
+VertRefresh 50-80        # 50 to 80 Hz
+.fi
+
+.PP
+Changing these values BEYOND what your monitor can handle, COULD result in
+damage to the monitor! See your monitor's user's manual for details.
+
+.SS DacSpeed <\fIFrequency\fP>
+This line overrides the built-in maximum pixel clock speed for text mode for
+the specified chipset. Since most VGA card manufacturers don't bother
+mentionning this value in their data sheets, the defaults were "guessed"
+from reports from users. The values are by no means "absolute", and they are
+no guarantee that staying below them will NOT cause trouble (although it's
+pretty sure), and also they are no guarantee that anything ABOVE that
+frequency will NOT work...
+
+Depending on the quality of your card, and especially of the speed of the
+RAM chips used on it, the built-in limit can be either too high or too low.
+The built-in ones are mostly on the safe side.
+
+WARNING: The value you assign to DacSpeed is NOT the same that is commonly
+defined by the graphics card vendor! It is almost always MUCH lower. 
+
+The default \fBDacSpeed\fP values are:
+
+.TP
+.B VGA, TVGA9000, VIDEO7, PAVGA1 and NEOMAGIC
+45 MHz
+
+.TP
+.B TVGA8900, WDC90C0X, WDC90C1X, WDC90C2X, WDC90C3X
+50 MHz
+
+.TP
+.B Cirrus, ATI and ATIMACH32
+55 MHz
+
+.TP
+.B ET6000, MATROX, OTI67, OTI77 and ATIMACH64
+60 MHz
+
+.TP
+.B S3, ALI, OTI87
+70 MHz
+
+.TP
+.B ET4000
+90 MHz
+
+The following chipsets have been assigned a default maximum text mode clock
+that was "guessed", rather than tested. This is because the author does not
+have access to such a card, and nobody has reported on how well it performs,
+and how high the clock speed can be before problems appear. If you have such
+a card, you are encouraged to report your findings to the author, so he can
+adjust the default limits to a more realistic value.
+
+.TP
+.B RealTek, NCR77C22E, GVGA, MX
+50 MHz
+
+.TP
+.B ARK, SiS, AL2101, NCR77C32, ET3000
+60 MHz
+
+
+.TP
+\fBNOTE\fP:
+
+The maximum text mode clock is increased by a factor of 9/8 when a 9-pixel
+wide font is used. A 60 MHz maximum clock is thus increased to 67.5 MHz for
+those modes. This is due to the way the VGA textmode hardware functions: the
+real limit for textmode is not the pixel clock, but the actual number of
+characters that must be fetched from the VGA memory per second. Since
+9-pixel fonts take 9/8 times as much time to draw as 8 pixel fonts, they
+will allow an 9/8 times as high pixel clock as well. In other words, with a
+maximum pixel clock defined at 60 MHz, you will still be allowed to select
+modes with 9-pixel fonts and 67 MHz pixel clocks.
+
+.TP
+\fBIMPORTANT NOTE\fP:
+
+Many apparent display problems when using SVGAtextMode with a relatively
+high pixel clock are caused by the VGA card not being able to cope with the
+high clock. TextMode clocks generally cannot be as high as graphics mode
+clocks. Read the file `doc/FAQ' in the SVGAtextMode distribution for a
+more in-depth discussion about this.
+
+The limits given above (and used as a default) are empyrical. This means
+they resulted from experiments, and are thus not taken from the VGA chip
+maker's specifications. This is the correct place to introduce the
+expression "your mileage may vary": your card may be better, or worse. VGA
+card makers generally don't mention maximum text mode clocks (as opposed to
+max. graphics clocks, which are ALWAYS specified) in their data sheets.
+
+If you see unstable characters, wrong characters (e.g. a "z" where you
+expect an "e"), character crawling, Mighty Morphing Power Characters (TM),
+colomns of characters from the left of the screen repeated towards the
+right, drop-outs (fixed positions on the screen where characters won't
+display) characters shifted down by one pixel line relative to the others,
+or something closer to noise than to text, you are most probably over the
+limit for your card.
+
+.SS RefClk <\fIFrequency\fP>
+Only S3 cards using the IBM RGB RAMDACs (as a clockchip) need this option.
+It tells the clockchip code what the reference frequency for the PLL
+frequency generator is.
+
+It is vitally important that this value is set correctly, or SVGAtextMode
+will not be able to program the pixel clock correctly.
+
+SVGATextMode does not provide a direct way to find out what to insert here.
+The only way to find it out is to run the XFree86 3.1.2 server (or any newer
+version), and copy the value that the server reports when it starts up.
+
+The X-server startup messages should contain the line
+
+.IP
+(**) S3: Using IBM RGB52x programmable clock
+
+.PP
+And just below it (or with one more line in between stating the memory
+clock):
+
+.IP
+(**) S3: with refclock %1.3f MHz (probed %1.3f & %1.3f)
+
+.PP
+Where `%1.3f' represents a floating point number.
+
+This value should then be inserted into the TextConfig file. 
+
+If you do not have the X-server installed, you should probably not have
+bought such an expensive VGA card in the first place. Send me that card, and
+I will send you mine back: it's a lot cheaper, it is just as good in text
+mode, and it doesn't need any fiddling with RefClocks and the likes. You'll
+have a better-supported VGA card, and I'll have something new to play with.
+
+But in the unlikely case you want to keep this card, but not run X on it,
+you could just insert any value (e.g. 20.0), and use grabmode/clockprobe to
+find out by what ratio the clock is programmed wrong, and then scale the
+RefClk accordingly.
+
+E.g. if you just enter 20 MHz as the reference clock, and all text mode
+clocks turn out to be wrong by a factor 0.716, then the REAL RefClk value
+will probably be 20.0 * 0.716 = 14.32 MHz.
+
+This method will of course give you a non-syncing display for many text
+modes, but that is inevitable. Be prepared for it.
+
+.TP
+\fBWARNING\fP:
+
+When using SVGATextMode with an IBM RGB RAMDAC together with the XFree86
+X-server, you \fBmust\fP define the RefClk in your X configuration file
+(XF86Config) also. The XFree86 server can probe for this clock, but only
+does so reliably when being started from a standard (80x25) text mode. After
+having run SVGATextMode, you'll probably be in a non-standard mode (that's
+what it's made for after all), and then the X-server cannot probe the RefClk
+correctly anymore. Don't let it guess; specify the RefClk.
+
+.SS MClk <\fIFrequency\fP>
+Some ClockChips allow changing the memory clock as well as the Pixel clock.
+On those cards, the higher the memory clock, the faster that card will
+become. Both in TextMode, svgalib or XFree86.
+
+Specifying the MClk will instruct SVGATextMode to change the memory clock to
+the new value (in MHz).
+
+This is only possible on cards with a GenDAC (S3 GenDAC/SDAC, and the
+ICS5301/5341 used on some W32 boards).
+
+For text modes, this will in most cases allow you to use even higher pixel
+clocks than before, and in graphics modes, you might find an increase in
+speed of up to 30%. But...
+
+.TP
+\fBEXTREMELY IMPORTANT WARNING\fP:
+
+If you try fiddling with the memory clock without reading this, you're sure
+gonna get suckered.
+
+This option was created for those who just _need_ to tune their machine
+until it just doesn't melt, or beyond (like me). I am not saying this could
+damage your VGA card, but I am also not saying it won't.
+
+Primo, make sure you know how the memory clock was set BEFORE attempting to
+change it. On most systems, this is in the order of 50 (GenDAC) to 60 (SDAC)
+MHz. The XFree86 X-server reports the MClk setting when it starts up.
+Increasing the MClk by 10, maybe 15 MHz might still work. Setting it to 100
+MHz will NOT.
+
+Secundo, don't try to set it too high. If you do, your system will crash in a
+major way. Let me repeat this: your system will crash as it has never
+crashed before. It has done so many times while I tried it (though I never
+got any damage). BE PREPARED. Sync your disks. Get an insurance.
+
+Also, don't set it too low. It'll give the same results...
+
+You have been warned. If you abhore unstable systems, DON'T TOUCH THE MCLK!
+
+.SS DefaultMode <\fIMode_label\fP>
+Using this optional keyword, one can define which mode should be used when
+SVGAtextMode is started without any mode label on the command line.
+
+The only argument is a mode label which should be defined in one of the mode
+definition lines in the rest of the config file. In fact, SVGAtextMode will
+act as if the label in the \fBDefaultMode\fP line was typed on the command
+line as the required mode.
+
+This option could be especially useful when experimenting with SVGAtextMode,
+and something goes wrong, causing the screen to become unreadable. To
+restore a good mode, you'd then have to do some blind typing. The
+DefaultMode would then allow you to restore a good text mode without having
+to type too much.
+
+.TP
+Example: if the line
+DefaultMode "80x25x9"
+
+.TP
+is in the TextConfig file somewhere, then just typing
+SVGATextMode
+
+.TP
+at the shell prompt is exactly the same as typing
+SVGATextMode 80x25x9
+
+.SS BorderColor <\fIColor_Index\fP>
+This option will set the screen border color to a different color than the
+default (color 0, black). You can select one of the 256 possible colors from
+the current palette.
+
+If you set the border color to something different than black, a border will
+be visible around the active screen area, about one character wide left and
+right, and half a character wide on top and at the bottom of the screen.
+
+The border may be slightly (or entirely) distorted (warped, compressed,
+missing, ...) if your video mode is not centered correctly, or if the video
+mode does not provide sufficient blanking on both sides, above and below the
+screen.
+
+.SS UnderLine <\fIUnderline_position\fP>
+Underlining is disabled by default, unless you define an underline position
+with this option. The <Underline_position> must be a number in the range
+0..31, and it defines the relative position of the underlining.
+
+The position given is always relative instead of absolute (as with the
+cursor position parameters). Position 31 is always at the bottom-most line,
+0 is at the top-most line, 15 is in the middle, etc. 
+
+The normal everyday-use UnderLine value is 31 (which means: put the line as
+low as possible).
+
+Using this, you could change the underline to a strike-through ("UnderLine
+15") or any other weird and totally useless underline position (what about a
+line above the text when it is underlined?).
+
+The single real benefit of this option is if you want to use too small a
+font for the current VGA parameters: suppose you have a text mode defined in
+its mode line to have an 18-pixel high font, but you load a 16-high font in
+it because you happen to like wide line spacing. In that case the "normal"
+underline position will be at the bottom of the 18-character cell (as if you
+defined "Underline 31", which is the most common one). In this particular
+case, setting UnderLine to 28 would be much more nice to look at. This way
+the underlining character is just below the character itself, and not at the
+bottom of the character cell (which would look as if the line was actually
+ABOVE the next line of text).
+
+As said above, not defining the underline position disables underlining. Any
+characters that would be underlined, are not.
+
+This doesn't work for 32-pixel high character modes, since "no underline"
+mode sets the underlining position to line 32, which is never used in all
+other cases, but will still show underlining in 8x32 and 9x32 fonts.
+
+Also note that many VGA cards have a bug (?) that causes the underlining to
+be non-continuous on 9-pixel wide fonts. So you have a fair chance that
+8-pixel wide modes have good (continuous) underlining, but 9-pixel modes
+not.
+
+.SS Echo <\fISome_string\fP>
+The string (enclosed in double quotes) is printed on the standard output.
+This could be used for debugging purposes, or to add some warning to the
+TextConfig file that is printed each time you run SVGATextMode.
+
+It is used for example in the default TextConfig file to warn the new user
+that he has installed SVGATextMode in its "standard VGA" mode, which doesn't
+use the full possible potential, and that he/she should edit the TextConfig
+file to enable support for his/her chipset.
+
+.SH Supported CHIPSETs
+Until now, the following VGA chipsets are supported:
+.TP
+.B VGA
+Generic VGA chips. This can also be used for unsupported VGA chips, but with
+very limited possibilities. Most portable VGA computers (Compaq LTE, ...)
+should work with this also: VGA LCD's can't use higher dot-clocks anyway.
+
+.TP
+.B ET4000
+Probably any ET4000-based card: et4000, et4000ax, et4000w32, et4000w32i and
+et4000w32p. Note that most ET4000 cards need the \fBOption "hibit_high"\fP
+or \fBOption "hibit_low"\fP.
+
+.TP
+.B ET3000
+
+.TP
+.B ET6000
+This can be used without "clockchip" line, in which case 8 pixel clocks must
+be specified, or (and this is the preferred method) using a "clockchip
+ET6000" line. 
+
+.TP
+.B MATROX
+Only the Millennium and the Mystique are supported (the older cards aren't).
+Clockchip "ti3026" (for the Millenium) and "mystique" (for the Mystique) are
+the clockchips for the respective cards.
+
+.TP
+.B S3
+any S3-based card, including those from Diamond, Number 9 and SPEA/Video7.
+S3-801, 805, 864, 964, 928, 924, 911, 732 and 764 (S3-Trio), and S3 Virge
+... _should_ all work.
+
+.TP
+.B CIRRUS
+Cirrus Logic chipsets (clgd542x, clgd543x, clgd546x, clgd62x5 -- with "x"
+representing any number).
+
+.TP
+.B TVGA9000
+Older Trident cards using the TVGA9000 chipset (those with max 512k RAM)
+
+.TP
+.B TVGA8900
+All other non-accelerated Trident cards (tvga8800cs, tvga8900b, tvga8900c,
+tvga8900cl). May also work with tvga92xx.
+
+.TP
+.B TGUI
+All accelerated Trident cards from TGUI9320LCD and up.
+
+.TP
+.B PVGA1
+Western Digital Paradise chips.
+
+.TP
+.B WDC90C0X
+Western digital. WDC 90C00.
+
+.TP
+.B WDC90C1X
+Western digital. WDC 90C10
+
+.TP
+.B WDC90C2X
+Western digital. WDC 90C20
+
+.TP
+.B WDC90C3X
+Western digital accelerated SVGA chip. Most common is the WDC 90C33, also
+90C31.
+
+.TP
+.B ATI
+All ATI cards BEFORE the MACH32
+
+.TP
+.B ATIMACH32
+
+.TP
+.B ATIMACH64
+Only MACH64 with internal clockchips are supported.
+
+.TP
+.B VIDEO7
+Headland Technologies based Video 7 boards only. Older V7 boards use C&T or
+Cirrus chips. Newer V7/SPEA cards use S3.
+
+.TP
+.B ALI, AL2101
+Avance Logic chipsets. It's not sure whether this will work on ALL
+Avance Logic cards.
+
+.TP
+.B OTI67, OTI77, OTI87
+Oak Technology chipsets.
+
+.TP
+.B SIS
+Sis chipsets.
+
+.TP
+.B RealTek
+RealTek chipsets.
+
+.TP
+.B ARK
+ARK1000 and ARK2000 chipsets.
+
+.TP
+.B NCR77C22E, NCR77C32
+NCR chipsets. The NCR77C21 and NCR77C22 (without "E" suffix) will not
+benefit from this. They should work just as well with the generic VGA
+driver.
+
+.TP
+.B GVGA
+Genoa 6000 series cards. The 5000 and 7000 series are based on resp. ET3000
+and ET4000 chips. Use the ET4000 driver for those.
+
+.TP
+.B MX
+MX graphics chips. MX86000 and MX86010 chips should work.
+
+.TP
+.B NEOMAGIC
+Those NeoMagic laptop controllers
+
+.TP
+.B RIVA128
+Should work on all RIVA128 derivatives (including ZX and TNT)
+
+.SH OPTIONS
+This section contains a list of all allowed special option flags, as entered
+on an
+
+.IP
+Option "option_string"
+
+.PP
+line. They change the default behaviour for each card or function programmed
+into SVGATextMode. Currently the following options are allowed (for the
+specified chip sets):
+
+If you are configuring SVGATextMode for the first time, it is best to leave
+all special options at their default (i.e. no special "option" lines). If
+something doesn't work OK, THEN is the time to start trying option flags.
+
+If you know your card needs the same option in XWindows, you could insert it
+from the first time on. Most options behave the same way as they do in the
+XConfig (XF86Config) file.
+
+.SS hibit_high, hibit_low  (ET4000 only)
+This flag inverts the meaning of the 4th clock selection bit of an ET4000
+card. See the XFree86 documentation or the SVGATextMode distribution doc
+directory for more information. It has the same meaning and function as the
+flag with the same name in the XF86Config file for XFree86. A simple
+guideline (which doesn't always apply) is that ET4000W32 cards _all_ need
+the \fBhibit_high\fP flag.
+
+.TP
+\fBIMPORTANT NOTE\fP:
+The importance of this "hibit" stuff cannot be stressed enough. It might be
+that your \fBXFree86\fP X-server worked fine before you started using
+SVGATextMode without this option in the XF86Config file (or Xconfig). But
+unless you really specify it, using SVGATextMode in combination with one of
+the upper 8 pixel clocks from the "Clocks" line(s) will SURELY throw the
+X-server into a non-syncing display when you start it up! Specify this
+option in BOTH the XF86Config AND the TextConfig file, and you won't have
+any trouble. You have been warned.
+
+.SS swap_hibit  (WDC90C1X, WDC90C2X, WDC90C3X)
+Some WDC cards need this flag. It inverts the meaning of the third clock
+selection bit (bit #2). It has the same meaning as in the XFREE config file
+(XF86Config). If your clock ordering doesn't seem OK, try this option.
+
+.SS ET4000_AltClockSel  (ET4000)
+This selects an alternative clock selection method for some very rare ET4000
+based cards that don't work with the normal clock selection method. These
+cards can only use their 8 lowest clocks under X-Windows (the X-server does
+NOT support the alternate clock selection method used here).
+
+Such a card can be recognized by the fact that no clocks over 80 MHz are
+available in XFree86 (the X-server uses a clock selection method that is
+only partly compatible with the one used on this type of card). 
+
+This option should allow them to use all 16 clocks (i.e. those reported by
+the DOS utility "dmode.exe" which is delivered with most ET4000 boards. NOTE
+that XFree86 does NOT report the correct clocks!).
+
+If you think you have such a board, you should really read the
+doc/README.ET4000.AltClockSel file in the SVGATextMode distribution directory
+for an in-depth explanation of this problem.
+
+UPDATE: Use XFree86 version 3.1.2C or later, and this problem will be gone.
+You will get 32 clocks from its new clock probe, and the standard
+SVGATextMode ET4000 clock selection mechanism will be able to cope with
+those.
+
+.SS Legend  (ET4000, S3)
+ET4000 or S3-based Sigma Legend boards need this option for correct clock
+selection.
+
+.SS XFAST_DRAM, FAST_DRAM, MED_DRAM, SLOW_DRAM  (CIRRUS, TGUI and S3)
+Most VGA cards can take higher pixel clocks (especially in text mode) when
+you increase the default DRAM speed. This may cause display memory
+corruption if set too fast.
+
+.TP
+\fBWARNING\fP:
+Some Cirrus cards crash your machine when DRAM speed is set too high. It
+will at least do all sorts of very funny stuff, like beeping forever. If you
+plan to tweak the DRAM speed, consider using the "syncDisks" option
+described below until you are sure the increased DRAM speed is no danger to
+your machine.
+
+.PP
+Use this option to tune the speed to your card. The higher you can set the
+DRAM speed, the better. "XFAST_DRAM" is the fastest, and the most dangerous.
+This particular option works on most CLGD-5428 cards, and it causes a hang
+on most 5422 cards... Use caution. Faster pixel clocks usually need faster
+DRAM speed grades.
+
+.PP
+On S3 cards, this option doesn't actually set the DRAM speed, but an
+internal parameter which controls the DRAM FIFO balancing (sic). The result
+is the same: the faster you set this option, the higher you will be able to
+set the pixel clock without getting problems.
+
+.SS SPEA_Mercury  (S3)
+Only S3-based SPEA Mercury P64 cards could need this. They seem to use the
+clockchip differently than the other S3 clockchip-based cards: they
+reprogram clock number 6 instead of the default, number 2.
+
+.SS LoadFont  (all cards)
+When enabled, this will tell SVGATextMode to load a new font from the
+specified FontPath (or the default one) using the specified font loader (or
+the default one). See the font loading section.
+
+.SS ClockDiv2  (all cards)
+This option will enable a standard VGA feature that can divide the pixel
+clock by 2. Almost all VGA cards support this (except Cirrus Logic, for
+which it has been disabled).
+
+It gives you access to a wider range of clocks, especially in the low
+ranges, since now all given clocks are also available divided by 2. It also
+gives you more clocks in the "mid-range".
+
+Enable it ONLY when you are sure SVGATextMode works for your card. Since
+some cards might not work with this option set, it is disabled by default in
+the default TextConfig file! Some modes (like the 50x15 ones) will only be
+allowed when this option is enabled, because most card's lowest clock is 25
+MHz, and some of the 50x15 modes need a lower clock.
+
+A final warning: The division by two option is unknown to most other
+programs, and could cause (additional) cooperation problems with those
+programs. If you loose video when using SVGATextMode together with other
+VGA-related programs, try disabling this option, and see if the problem
+persists.
+
+.SS SyncDisks  (all cards)
+When this option is enabled, SVGATextMode will sync all disks (= flush all
+cache buffers) before doing anything to the VGA hardware.
+
+In all normal cases, this option is useless, but some cards seem to have
+problems with the way SVGATextMode talks to them, and cause a complete
+system hang (hard reset needed).
+
+This is especially probable (but still very rare) when overriding the
+default maximum DacSpeed, and severely overdriving the VGA card's text mode
+capabilities. As mentionned above, Cirrus Logic cards are dangerous
+customers when you start tweaking the DRAM speed.
+
+So, just to be on the safe side, use this option when tweaking DRAM speed or
+RAMDAC speed, until you are confident that the system is stable enough.
+
+In this case, the SyncDisks option can at least avoid data loss when the
+system hangs, although it cannot avoid the filesystem check that will result
+from the reset.
+
+The sync option is enabled by default in the configuration file. It will
+cause an extra 2 second delay when running SVGATextMode, because it waits
+for that long, allowing the sync to finish.
+
+.SS S3_HSText  (S3)
+S3 cards have a "high-speed text font fetch mode". This is a mode that uses
+a different system to access the VGA font memory (fast page mode), so the
+access to the fonts is faster. This allows for higher pixel clocks than
+could be attained in normal text mode.
+
+There is one restriction to this: the font must be stored in memory in a
+different format than would normally be used (i.e. the normal font loading
+programs won't be able to do this). The S3 designers provided a special
+register for that purpose. This register, when set, will automatically
+change the memory access so that the font can be loaded in a normal fashion.
+This allows normal font loaders to do the job.
+
+Due to that special register, font loading will only work when it is
+executed \fBfrom within\fP SVGATextMode. This way, SVGATextMode can set this
+special register \fBbefore\fP running the font loader, and reset it again
+afterwards.
+
+Some older S3 cards will benefit greatly from this option. Especially S3
+911, 924 and 928 cards couldn't even cope with 40 MHz in normal text mode.
+They use high-speed text mode if they are switched to 132x25 or 132x43
+from the BIOS (e.g. through LILO).
+
+If this option is not enabled, SVGATextMode will \fBalways\fP use normal
+text mode, because it is the most compatible mode, and is less prone to
+problems (e.g. doing a "setfont" in high speed mode causes a corrupted
+screen, unless you first let the VGA chip know about it).
+
+If it is enabled, high-speed font mode will be used for all modes with
+pixel clocks above 36 MHz.
+
+.TP
+\fBNOTE:\fP
+Using the High Speed Font mode will cause \fBtext screen corruption\fP on
+the screen where the output from SVGATextMode would appear: Random
+characters will appear all over the screen. This is caused by the S3 card
+being in a different memory access mode while the font loader is running.
+Any messages from the font loader will not be written on one line under the
+SVGATextMode messages, but its characters will be written all over the
+screen. After the font loader has finished, the normal memory access mode is
+restored, and all characters are written to their normal places again. This
+has been partially solved by storing the output of the font loader in memory
+until the normal memory access mode is restored, but the output of the `-d'
+option (debug) will still corrupt the screen.
+
+.TP
+\fBWARNING:\fP
+Since high-speed text mode uses a different internal font format,
+SVGATextMode will not allow you to switch between the two modes when font
+loading is not enabled. In practice, it's wise to always enable font loading
+when you also enable the high speed font mode. This way you will allow an
+easy escape (=re-run SVGATextMode) when ill-behaved programs (or users...)
+load a font without first telling the S3 chip about it, as SVGATextMode
+does.
+
+.SS clockchip_X  (S3 + ICD2061a or ICS9161)
+The ICD2061a and ICS9161 clockchips don't cooperate very well with the
+XFree86 X-server. When the X-server switches back to text mode (either due
+to a VT-switch or completely stopping the server), it restores the wrong
+textmode clock.
+
+This is because both X and SVGATextMode use (i.e. reprogram) the same clock
+index for their clock, and since the clock programming values cannot be read
+back from the chip, the X-server is unable to restore the correct clock when
+it stops. This causes wrong refresh frequencies, or worse even, a
+non-syncing display.
+
+The option "clockchip_X" will change SVGATextMode's behaviour so that it
+uses clock index #1 for the text mode clock instead of index #2. This will
+allow the X-server to switch back to the correct textmode pixel clock.
+
+There is a catch however... Clock #1 is a standard VGA clock, and is
+supposed to be 28 MHz, and nothing else. Any program that relies on that,
+will subsequently fail to set the correct video mode (svgalib, the XFree86
+clock probe and the DOS BIOS are just a few examples). Especially when you
+reboot to DOS, clock #1 does not get reset by the VGA card's BIOS because it
+assumes it's still at 28 MHz.
+
+The solution here is to do an "SVGATextMode 80x25x9" just before rebooting
+the machine. This will reset clock #1 to 28 MHz. The ideal place for this is
+/etc/rc.d/rc.0, which is a script file that gets called just before
+rebooting.
+
+.SS sync_on_green (S3 + Ti302X ClockChip/RAMDAC)
+Enable the sync-on-green feature on these cards.
+
+Normal VGA signals carry the H- and V-syncs on a separate wire, requiring 5
+signal wires (R, G, B, H, V) in total from VGA card to the monitor. Some
+(mostly high-end) cards however allow connecting to a monitor with just 3
+wires instead. In that case, both sync signals are embedded onto the green
+channel. This requires a monitor that knows how to deal with this (in most
+cases, those monitors can \fBonly\fP deal with such signals. If you have
+such a setup, this option is for you.
+
+Note: Although all Ti302X RAMDAC's support sync-on-green, not all VGA cards
+will work with it because of the way they were designed (dixit XF86_Accel).
+
+.SS 16color (all cards)
+The default Linux text console behaviour is to provide 8 possible colors
+plus hardware blinking. This means you can produce blinking text on the console.
+
+The "16color" option changes that behaviour: all "blinking" attributes get
+translated into "highlighting": instead of blinking text, you get
+high-intensity text, which effectively translates into 16 possible colors.
+
+When this option is not specified, the standard 8-color + blinking mode is
+selected.
+
+.SS iso_font9 (all cards)
+
+Even when using 9-bit wide fonts, the actual font data is always 8 bits,
+defining only the first (leftmost) 8 pixels of the character. The 9th pixel
+is "made up" by the VGA chip depending on a few rules. Normally the 8th
+column is copied to the 9th column for character codes in the range 0xC0 to
+0xDF. This looks very good on most VGA fonts, where characters in this range
+are line-graphic characters (aka box-characters). However, this makes some
+ISO-compatible fonts look very ugly: ISO does not have line graphics
+characters but normal fonts in the region 0xC0 - 0xDF. This option disables
+the automatic pixel replication feature so that the 9th column will always
+be blank for all characters.
+
+.SS topleft (NeoMagic)
+
+Move the textmode window to the top left of the screen. This is of course
+only useful if it is smaller than the total display size.
+
+.SH CLOCKCHIPS
+This is a list of all allowed clock chips, per chipset. They are the same as
+in Xfree86-3.1.2. In addition, the ICS5301/5341 GenDAC used on some
+ET4000W32(p) cards is also included.
+
+.TP
+\fBS3\fP
+
+.IP
+.nf
+\fBicd2061a
+ics9161a
+dcs2834 \fP(Untested!)\fB
+sc11412 \fP(Untested!)\fB
+s3gendac
+s3_sdac
+ti3025 \fP(Untested)\fB
+ics2595
+ics5300
+ics5342
+ch8391 \fP(Untested!)\fB
+S3Trio
+S3Virge
+stg1703 \fP(Untested!)\fB
+ti3026 \fP(Untested!)\fB
+ibm_rgb5xx \fP(Needs `RefClk' line in config file)\fB
+.fi
+
+.TP
+\fBCirrus Logic\fP
+
+.IP
+\fBCirrus \fP(If not specified, "Cirrus" is assumed)
+
+.IP
+\fBLaguna \fP(for the CL-GD546x chips. This is required for those chips,
+otherwise the standard "Cirrus" is assumed, which will not work on these
+cards)
+
+.TP
+\fBET4000\fP
+
+.nf
+\fBics5341 \fP(For ET4000 cards with GenDAC. Also works for ICS5301)
+\fBicd2061a\fP
+.fi
+
+.TP
+\fBARK\fP
+
+.nf
+\fBics5342\fP
+.fi
+
+.TP
+\fBET6000\fP
+
+.nf
+\fBet6000 \fP(obviously -- it has a built-in clock generator)
+.fi
+
+.TP
+\fBTGUI\fP
+
+.nf
+\fBtgui9320 \fP(Trident TGUI9320LCD)
+\fBtgui9440 \fP(Trident accelerators with a number higher than or equal to TGUI9440)
+\fBcyber938x \fP(Trident CYBER938x)
+.fi
+
+.TP
+\fBMACH64\fP
+
+\fBmach64 \fP(internal programmable clockchips)
+
+.TP
+\fBMatrox\fP
+
+.nf
+\fBti3026\fP
+\fBmystique\fP
+.fi
+
+
+.SH MODE CONFIGURATION LINES
+This section describes the guts of the TextConfig file: the mode description
+lines. It's long, and probably not long enough...
+
+First of all: if you are not familiar with configuring the X-server, you'd
+better start off there, as it is MUCH more stable, MUCH less buggy, and MUCH
+better documented. You will also learn how to use several tools (vgaset,
+SuperProbe, ConfigXF86, ...) which can aid you to design your own custom
+X-Windows mode. The same tools can then be used here.
+
+For people less familiar with monitor timing stuff, and unwilling or unable
+to consult the XFree86 documentation, read the  \fBmonitor-timings.howto\fP
+in the doc directory of the SVGATextMode distribution. It's a small (and
+incomplete) introduction on how monitors work, and what you need to send it
+to get some sort of a picture on it.
+
+You will probably need the X-server (e.g. to do 'X -probeonly') to determine
+your available pixel clocks, and maybe even to determine what chipset you
+have. The distribution contains a script that can help you determine the
+pixel clocks in case there is no way to get by them.
+
+The text mode lines are the real thing: they set up the video card for the
+mode you request. A TextConfig file can contain LOTS of configuration lines.
+It would be best that you leave the "default" config lines in the example
+TextConfig file as they are.
+
+Add your own configuration lines at the end. If you patch a line, first copy
+it to the end of the file, and change it there. You don't have to rename it,
+as SVGATextMode will take the LAST line with the same label it finds. So if
+your custom line, with the same name as an "original" one is at the end, the
+customized line will be used.
+
+That way you will always have the original lines as a reference, in case you
+screw your own line up. You can then always copy it again.
+
+Now let's analyse a new text mode:
+
+.IP
+.nf
+\fB"100x37"  50  800 872 976 1040  600 632 638 670  -Hsync +Vsync  font 8x16\fP
+.fi
+
+.PP
+For compatibility with XFree86 mode lines, the mode line can optionally be
+prepended with "modeline":
+
+.IP
+.nf
+\fBmodeline "100x37"  50  800 872 976 1040  600 632 638 670  -Hsync +Vsync  font 8x16\fP
+.fi
+
+.PP
+The entire mode line should be on a single line. Use SVGATextMode to get a
+screen with at least a 100 chars on a line, and reformat the manual page.
+This way it won't look like a folder! Is this a chicken-and-egg problem?
+
+Below is a piece-by-piece examination of the different parts in the mode
+line:
+.SS 100x37
+This is the identification string for this text mode. If you the type
+
+.IP
+SVGATextMode "100x37"
+
+.PP
+the program will try to program the mode descibed on this line.
+
+.TP
+\fBIMPORTANT NOTE\fP:
+This label means absolutely nothing to SVGATextMode! It's not because the
+label says "132x43" that you will get a 132x43 mode. You will get the
+resolution and size described in the parameters following the label. If
+those parameters result in a 100x37 mode, that's what you will get. Just
+changing the label from 100x37 to 132x43 will NOT do anything useful (except
+\fBrenaming\fP the mode): it will still result in a 100x37 mode.
+
+.PP
+Also, remember that when you change the font size, this also affects the
+number of text lines: if you were to change the font size in the 100x37 mode
+line described here from 8x16 to 8x32, you will get a 100x18 mode and NOT a
+100x37 mode with a larger font.
+
+.SS 50.00
+The pixel clock frequency. It determines the clock frequency (in MegaHertz)
+at which the pixels will be pushed towards the monitor. It is entered as a
+floating point number.
+
+Unless you have a freely programmable clock chip (using the \fBClockChip\fP
+line, or with a \fBCirrus Logic\fP card) on your VGA card, SVGATextMode will
+try to find the closest available pixel clock in the Clocks line, allowing a
+slight deviation of a few MegaHertz: asking for a clock of 50 MHz, and
+having only a 49 MHz clock will make SVGATextMode use the 49 MHz clock. This
+shouldn't be a problem, because monitors always allow for a fairly large
+deviation of their input frequencies.
+
+.SS 800 872 976 1040
+Horizontal timing parameters: resp. active video size (number of active or
+visible pixels per video line), start and stop position of the Horizontal
+sync signal, and the full width of a video line, including active size and
+blanked (unused) size.
+
+See the XFree documentation for a thorough understanding of these, or try
+the monitor timing tuturial in the distribution. See also below in the
+section on 9-pixel fonts for some explanation on the effect of selecting an
+9-pixel font on these timings!
+
+Your textmode will have one eighth the number of characters per line as in
+the active video size (the first number of the horizontal timing parameters)
+REGARDLESS of the font size specified. So in this case :
+
+.IP
+800/8 = 100
+
+.PP
+characters per line.
+
+Calculating the horizontal frequency (which your monitor must be able to
+cope with, if you want to use this particular mode) is easy: just divide
+the pixel clock by the total amount of pixels on a single line:
+
+.IP
+.nf
+50000000 / 1040  =  48076 Hz, or 48 kHz
+.fi
+
+.PP
+This calculation is ONLY true for 8-pixel wide modes! If this were to be a
+9-pixel wide mode, and the clock remained at 50 MHz, then we'd get:
+
+.IP
+.nf
+50000000 / 1040 * (8/9) = 42734 Hz, or 42.7 kHz
+.fi
+
+.PP
+If you want a general purpose formula: here's one:
+
+.IP
+.nf
+Hor_freq = pixel_clock / total_hor_pix * (8 / font_width)
+.fi
+
+.SS 600 632 638 670
+Vertical Timings. Equivalent to the horizontal ones. The number of textlines
+(rows) in your textmode will depend on the font size selected:
+
+.IP
+.nf
+number_of_textlines = number_of_active_lines / font_height
+.fi
+
+.PP
+Here we have 600 active lines, and a font of 16 pixels high (see below), so
+there will be 600/16 = 37 textlines.
+
+Deriving the vertical refresh is even easier than horizontal: just do
+
+.IP
+.nf
+Vert_freq = Hor_freq / total_vert_lines
+.fi
+
+.PP
+In this case, we'd get 48076 / 670 = 71.75 Hz.
+
+.SS Mode line attributes
+The following sections describe the possible attributes a mode line can
+have. They define the sync polariries, the font size to use, and DoubleScan
+operation.
+
+.SS -Hsync +Vsync
+Hsync and Vsync polarity (positive (\fB+Hsync\fP) or negative (\fB-Hsync\fP)).
+Most modern monitors don't care about sync polarities, BUT most USE them.
+
+Simple fixed-frequency or dual frequency monitors (so non-multisync, e.g.
+only 32 and 48 kHz, instead of the entire range from 32 to 48), and some
+non-digital-control ones use the polarities to change their vertical screen
+size.
+
+Cheap monitors have the habit of not having a constant vertical image size,
+independent of the vertical refresh frequency. So your monitor might use the
+entire screen at a normal 60 Hz frequency, but the image is larger (higher)
+at lower frequencies, and smaller (more flattened) at higher ones.
+
+These VGA monitors use the sync polarities to distinguish between several
+vertical refresh frequencies, and to adapt their vertical size. A MAG
+PMV1448 for example is a fixed 32/48 kHz dual-scan monitor. At 800x600@70Hz,
+the screen is either only half the vertical size, or the entire screen,
+depending on sync polarity. So some experimenting with polarities might give
+you a full screen, even with >70 Hz refresh rates. (The same applies to the
+XF86Config as well!)
+
+More expensive monitors, mostly with "digital control", use the sync
+polarities COMBINED with the incoming horizontal and vertical frequencies to
+determine whether they will take their screen parameters (amongst which the
+vertical screen size) from a database of standard resolutions, or from the
+(scarce!) user-settable modes. If you succeed in using one of those default
+modes, that saves you one more free user-settable mode. Taxan 875 monitors
+for example have only 4 programmable modes, and when you've just tweaked
+X-windows into some weird modes, you might run out of user-settable modes.
+It might be a good idea to try to create standard SVGA timings for your
+textmodes (including the correct sync polarities), so your monitor
+recognises them, without needing an extra entry in its screen parameter
+database.
+
+The sync polarities are an \fBoption\fP. They are not required: if none are
+given, SVGATextMode will assign sync polarities according to the VGA
+standards, depending on the number of active video lines:
+
+.IP
+.nf
+  0..399 lines: +Hsync -Vsync
+400..479 lines: -Hsync +Vsync
+480..767 lines: -Hsync -Vsync
+768 and up:     +Hsync +Vsync
+.fi
+
+.SS font 8x16
+Font size: "font HxV" selects the horizontal size (character width = H) and
+vertical size (character heigth = V) of the textmode font. The possible
+ranges are:
+
+.IP
+.nf
+H = 8 or 9
+V = 1 to 32
+.fi
+
+.PP
+These are the hardware limits. Not all of them are as useful. Don't be
+surprised if you cannot read text of only 1 pixel high!
+
+The VGA chip must know these values in order to render the font correctly.
+The font size together with the H- and V-timings from (2) and (3) determine
+the number of characters per line, and the number of lines per screen.
+
+If the font size is not defined, 8x16 will be assumed.
+
+.SS DoubleScan
+When this attribute is added to the mode line, DoubleScanning will be
+enabled. This means each video line will be drawn TWICE instead of just
+once. This is used on VGA cards to emulate CGA modes like 320x200.
+
+If you would (and could) let a VGA monitor display just 200 real lines for a
+320x200 mode, it would look awful: a VGA monitor was designed to display at
+least 350 lines, and at only 200 lines you would see a lot of empty space
+between the lines. Most good monitors (especially 17 inch and up) even show
+this phenomenon at the standard VGA 640x480 mode.
+
+The DoubleScan mode is used to overcome this problem: for a 200-line mode,
+the VGA card actually outputs 400 lines, displaying each actual line in the
+VGA memory twice.
+
+There is one "side effect" with this little trick: the vertical refresh
+frequency drops to half the value you would think from the timings you enter
+in the modeline. Let's look at such an example:
+
+.IP
+.nf
+"S50x15"  32.5  400 432 496 512  240 241 242 256  font 9x16  DoubleScan
+.fi
+
+.PP
+Calculating the refresh frequencies would give:
+
+.IP
+.nf
+horizontal refresh = 32500000 / 512 * (8/9) = 56423 Hz
+vertical refresh = 56423 / 256 = 220.4 Hz
+.fi
+
+.PP
+Only, Doublescanning is enabled, so the VGA will actually output 256*2 = 512
+lines to the monitor instead of 256. So the actual vertical refresh is not
+220, but 110 Hz.
+
+This might be pretty useless, but the Doublescan option together with the
+maximum font height of 32 lines results in an _actual_ maximum font height
+of 64 lines...
+
+.SH Using 9-pixel wide font sizes
+The VGA hardware is a strange thing. And using 9-pixel fonts is amongst the
+stranger ones.
+
+The timing parameters are the same for both 8 and 9-pixel wide fonts, except
+for the clock. Horizontal timings in VGA cards are _always_ specified in
+8-bit wide CHARACTERS, not in PIXELS, although the TextConfig file format
+uses pixels.
+
+Hence the restriction that horizontal timings should be a multiple of 8 (if
+they're not, they will be rounded down).
+
+When setting the character width of an existing 8-pixel wide mode to 9,
+horizontal timings are still in 8-bit characters. So both modes will result
+in the SAME amount of characters per line, but the VGA chip will count 8
+pixels per character in the first case, and 9 in the second case.
+
+Take for example a standard 80x25 mode:
+
+.IP
+.nf
+"80x25x8" 25.175  640 680 776 800  400 412 414 449  font 8x16
+.fi
+
+.PP
+and its 9-pixel wide derivative:
+
+.IP
+.nf
+"80x25x9" 28.3    640 680 776 800  400 412 414 449  font 9x16
+.fi
+
+.PP
+Both modes produce the same screen size (80x25), using the same display
+refresh frequencies (31.5 kHz, 70 Hz).
+
+But in the first case, the total _actual_ pixel-count at the end of the
+video-line is (800/8)*8, and (800/8)*9 in the second case !!! To achieve the
+same horizontal frequency of 31.5 kHz, the second mode needs a higher clock:
+
+.IP
+.nf
+(9/8)*25.175 MHz = 28.3 MHz
+.fi
+
+.PP
+and that happens to be the second standard VGA clock, which is available on
+ALL VGA cards. Now you know why they added it in the first place ;-)
+
+This example should warn you about changing modes from 8-wide to 9-wide or
+vice-versa: if you don't change the clock with the same 8/9 ratio, the
+display refresh rates will change, and they might fall outside the allowable
+range for the monitor (i.e. it will not synchronize to the new frequency, or
+SVGATextMode will suddenly not allow the mode anymore).
+
+.SS HShift <shift_amount>
+This is an optional parameter that requests an additional shift of the
+display to the left. The <shift_amount> can be any value between 0 and 3. It
+shifts the screen to the left with an equal amount of character cells (i.e.
+"HShift 0" doesn't do anything).
+
+This parameter is useful for modelines where you can't get the display to
+move to the left side enough by changing the sync position. Take for example
+this modeline:
+
+.IP
+.nf
+"40x15x9"  14.15  320 376 400 400  240 241 242 25 font 9x16  DoubleScan
+.fi
+
+.PP
+If this mode is still too much to the right of the monitor instead of nicely
+centered, there is not much you can do to fix this: the sync is already
+moved the the extreme end, and making it shorter (by moving the second
+number (376) closer to the third (400) will probably make your monitor go
+out of sync.
+
+Enter the HShift parameter: with the same sync position, it moves the screen
+0, 1, 2 or 3 characters to the left. This has the same effect as adding 0,
+8, 16 or 24 to the HSYNC position numbers, except that it still works if
+that would place the sync BEYOND the end of the maximum sync position.
+
+There is another reason to use this parameter. Some VGA chips seem to have
+problems with very-low-resolution modes (like the 40x15 one above). If you
+put the sync too much to the right (but still "legal"), you get lots of
+"snow" on the screen; almost the same stuff you get when using a clock that
+is too high.
+
+In this case, putting the sync close to the end of the active video instead
+of close to the other end solves that problem. You can then use the HShift
+parameter to get the display nicely centered again.
+
+The S3 BIOS uses this exact method for their standard VGA low-res text
+modes.
+
+.SH BUGS
+A configuration file has no bugs, of course. Any problems with it are either
+your own, SVGATextMode's, the man-file author's, or Murphy's fault.
+
+There are a few limitations. One of them being the 16K (16384)
+characters-per-screen limit. This is a limit imposed by the way the kernel
+sets up VGA textmode memory, and can be doubled if required (see below). You
+would need to define an awesome screen size before running into that limit:
+160x100 or 180x80 characters per screen is still possible...
+
+Increasing the number of characters on the screen reduces the size of the
+scroll-back buffer: since there are always (?) 16k chars on one screen, the
+scroll-back buffer will get the remainder of the 16k. If you have a screen
+size with 16k chars, there will be no scroll-back buffer...
+
+The more hacker-minded among you might want to experiment with a special
+#define in the kernel sources (VGA_CAN_DO_64KB, in
+/usr/src/linux/drivers/char/vga.c), that allows more (32K) characters per
+screen. This requires recompiling both the kernel and SVGATextMode (and the
+latter needs the same define in the Makefile).
+
+Another limit is the maximum amount of clocks in all the clocks lines
+together: 64.
+
+.SH FILES
+
+.TP
+.B /usr/sbin/SVGATextMode
+The program which needs the TextConfig file
+
+.TP
+.B /etc/TextConfig
+The configuration file described here
+
+.SH AUTHOR
+SVGATextMode was written by Koen Gadeyne <koen.gadeyne@barco.com>, with help from a
+lot of local and remote Linux fans. See the \fBCREDITS\fP
+file in the distribution for a full list of all helping hands.
+
+The XFree86 configuration file (Xconfig, XF86Config) has been the main
+guideline in creating the TextConfig format.
+
+.SH SEE ALSO
+.TP
+SVGATextMode(8)
+Textmode manipulation/enhancement tool
+
+.TP
+grabmode(8)
+An XFree86/SVGATextMode VGA mode grabber
+
+.TP
+XF86Config(5)
+Configuration file for XFree86
+
+.TP
+XF86_SVGA(1)
+Non-accelerated SVGA X Window System servers for UNIX on x86 platforms
+
+.TP
+XF86_Accel(1)
+Accelerated X Window System servers for UNIX on x86 platforms with an S3,
+Mach8, Mach32, Mach64, P9000, AGX, ET4000/W32 or 8514/A accelerator board
+
+.TP
+SVGATextMode/doc/FAQ
+A description of common problems related to SVGATextMode.
+
+.TP
+SVGATextMode/doc/README.ET4000*
+Two files describing some ET4000 specific stuff
+
+.TP
+SVGATextMode/doc/monitor-timings.howto
+A short tutorial on the Real Meaning of Monitor Timings
+

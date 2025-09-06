@@ -1,0 +1,181 @@
+
+                       SVGATextMode
+                       ============
+
+INTRODUCTION
+------------
+
+This program is designed to greatly improve the normal (EGA-based) textmodes
+on your Linux machine. It uses an Xconfig-like configuration file to set up
+better looking textmodes. (=higher resolution, larger font size, higher
+display refresh...) This is already a big boon on normal 14" displays, and
+it is an immense difference on larger and better (15" and up) screens.
+
+It stems from the idea that it is a real waste of hardware to use EGA
+textmodes on an SVGA-card, which was designed to do much better than that.
+
+Even the cheapest state-of-the-art VGA cards are capable of running at well
+over 60 MHz pixel clocks (at least in graphics mode). But most of the time
+they are used in text-only mode, and at 80x25 chars (that looks RIDICULOUS
+on a 20" screen!), using a mere 25 MHz clock? At best, they use 132x43
+textmode, which is still only a 40 MHz clock.
+
+Even the cheapest SVGA monitors can take at least 35 kHz of line-frequency,
+and if you go for a 15" or higher, 56 kHz and up are no longer the
+exception. But most of the time they are used only at 32 kHz for either
+80x25 or 132x43 modes. ALL VGA textmodes use just the standard VGA 32 kHz
+horizontal refresh. If you are the owner of such a monitor, don't you think
+it's a shame you only use one fifth of the available resolution in text
+mode? Especially if you see what that monitor/SVGA-card combination can do
+under Windows or X-Windows.
+
+If you own a VGA card that is NOT detected properly by the kernel (e.g. a
+Diamond card), you normally can use only 80x25, 80x28 and 80x50 modes. If
+you want to use any other mode (which might or might not be available
+through the BIOS) you had only one option: patch the kernel to force
+detection of your card. And then you can still only use what your VGA BIOS
+manufacturer put into the BIOS. Now you can use this program to get ANY text
+mode, independently of BIOSses and detection by the kernel! Only limited by
+what your SVGA-card and your monitor can take.
+
+People doing lots of programming, and who don't want to sacrifice speed
+(text modes scroll extremely fast) and memory (Xwindows is a real memory
+hog) for a nice-looking display will really benefit from this: you get the
+graphic detail and high refresh rates of X-windows, with the speed and
+ease-of-use of normal text modes. It doesn't take up any more memory than
+normal text modes, and it doesn't slow down your machine!
+
+Even if you want to stick with what you had (e.g. 132x43), this program can
+help you improve that, too! The so-called "high-res" 132x43 is not that nice
+to look at. It uses an 8x8 (sometimes 8x11) pixel font, which shows up as
+characters made up of stacked lines. Makes your screen look like in the old
+days, when monochrome 80x25 was the standard, and you could actually count
+on-screen how many lines your character was made up of. Now you could use
+the same text mode, but with a 16-pixel high font, resulting in MUCH crisper
+characters, and, if you want, higher refresh (less flicker).
+
+
+With this program, you could do the following things (providing your video
+card is supported, and providing your monitor can handle it, and providing
+your video card still works at the higher dot-clock rates):
+
+   50x15 text mode, for those with a visual impairment?
+   80x25 text mode with a 32-line character cell (VGA = 16 line)
+   80x25 at 100 Hz, or even 150 Hz instead of "just" 70 Hz (= VGA)
+   80x25 at 16 kHz interlaced, so you can show your text mode
+         on a TV monitor, or tape it on a VCR... (interlacing not supported
+         YET. If anyone needs it, let me know)
+   100x37 text mode. My favourite for 14" screens. Not available on
+          most VGA cards as a standard (some Cirrus Logic cards have it).
+          Now everybody can have it. Looks real neat!
+   132x43 improved over VGA default: 8x16 character cell instead of 8x8.
+          looks MUCH better, especially on 15" (and up) screens.
+   110x42 why not? everything is possible...
+   160x100 !!! We've tried this on an ET4000 and it's a screamer. On very
+           large screens (>17"), this is REAL cool.
+
+And since it uses the same kind of configuration file as the XFree X-server,
+it can do everything the X-server can, but in textmode instead of graphics
+mode. With a little bit of imagination and clever thinking, you can get
+almost any resolution at almost any refresh rate. 
+
+Another possible application: do you have some (old ?) workstation monitor
+somewhere, which you would LOVE to use under Linux, but it is a
+fixed-frequency one (= only works at ONE, mostly high, horizontal frequency,
+say 56 kHz), which does't support standard VGA modes, and thus doesn't
+support normal text modes? You would have to start up in X-windows
+immediately (xdm) and do all your work from X-windows. But that eats too
+much memory, and you have only a Trident card, which is MUCH too slow for X.
+Enter "SVGATextMode": now you can be in textmode, at the same 56 kHz
+frequency (1024x768 at 70 Hz) as you would in X-windows, on that big 19"
+SparcStation monitor you bought for virtually nothing (keep on dreaming ;-)
+
+
+What does it do?
+----------------
+
+SVGATextMode doesn't do a lot! It basically keeps running in native VGA text
+mode, as do the "normal" linux consoles. It changes some VGA registers in
+order to get different X/Y resolutions, and selects another pixel clock.
+
+SVGATextMode does NOT run in graphics mode, as the name would suggest, and
+as the use of an X-Windows-like configuration file would also suggest. The
+"SVGA" part of the name refers to the fact that it uses an extra feature
+found in all VGA cards: higher available dot clocks.
+
+The advantage: The same blazing text speed as you get from the normal text
+consoles. Performance is extremely fast, even on a low-end cheap Trident
+card, which is the standard for "slow" _graphics_ performance :-(
+
+The reason: it uses the hardware font-rendering that all VGA cards have.
+
+The Disadvantage: It can only use certain font sizes, and will never support
+extended character sets (like UniCode, UTF-8, ISO-10646, ...), unless some
+wizzard gets the standard Linux consoles to do that... SVGATextMode can do
+everything a standard text console can, but nothing more. SVGATextMode will
+not give your text modes features that weren't already available in your
+"old" normal text modes.
+
+Of course, proportional fonts are out of the question, as in a normal text
+console.
+
+
+What does it NOT do?
+--------------------
+
+SVGATextMode does NOT do anything OTHER than slightly tweaking your text
+modes. In fact, there is NO substantial change to what you already have in a
+normal "off the shelf" text mode. All it does is just changing a few
+parameters here and there. But the main functionality is the same. 
+
+You might have bought yourself a very expensive graphics accelerator with
+all 256 MS-Windows raster operations built-in, a blazingly fast blitter
+("pixel pusher"), a really sexy line-drawing engine, hardware assisted font
+scaling, built-in gouraud and phong shading, 3D acceleration hardware, 2 MB
+Z-buffer, 8 MB of lightspeed triple-port VRAM, a 256-bit wide 500 MHz
+RAMDAC, 128-bit memory bus, and whatever more they come up with. You might
+have a graphics speed of millions of polygons per second, and a few million
+X-stones. You might even have a built-in MPEG decoder on the VGA chip, or a
+real-time 3-D rendering engine.
+
+Forget about all that. SVGATextMode WILL NOT BENEFIT from all that junk. The
+only advantage your expensive board may (!) have over others in text mode,
+is that the maximum allowable text mode clock will probably be a bit higher,
+at least a little higher than that 20 $ VGA card your friend has.
+
+SVGATextMode leaves your text mode functionally intact. It just CHANGES some
+values here and there: a little more of this, a little faster there, and so
+on.
+
+SVGATextMode is a VISUAL enhancement to your Linux text modes, NOT a
+functional one! I hope you got the point by now...
+
+
+Author:
+-------
+
+Koen Gadeyne <koen.gadeyne@barco.com>
+
+
+Copyright notice:
+-----------------
+
+  SVGATextMode -- An SVGA textmode manipulation/enhancement tool
+
+  Copyright (C) 1995,1996,1997  Koen Gadeyne
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+

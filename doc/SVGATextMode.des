@@ -1,0 +1,5 @@
+SVGA textmode manipulation/enhancement tool. Uses SVGA card features (esp.
+high pixel clocks) to enhance Linux text modes. S3, Tseng Labs, Cirrus
+Logic, Trident, Western Digital, ATI, Video7 (Headland), Avance Logic (ALI),
+Oak Technology (OTI), SiS, RealTek, ARK, NCR, Genoa (GVGA), MX, Matrox
+Millennium and Mystique, Neomagic and RIVA128 cards supported.

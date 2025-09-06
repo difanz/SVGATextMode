@@ -1,0 +1,23 @@
+ClockProg
+---------
+
+This is an attempt to get ALL known chipsets in one program for use as a
+"ClockProg" program (either in X or SVGATextMode).
+
+This is useful for XFREE86, where some built-in clock chips (ICD2061a and
+ICS9161) don't support text clock restoration. If you use a ClockProg, you
+can make X restore the correct text mode clock again, so you CAN use
+SVGATextMode together with X.
+
+It also enables the low clocks needed for 320x200 modes in X, which X seems
+to deny, despite the "divide-by-2" mode that all VGA's have. So now any
+"normal" VGA card can always access e.g. the 12.5 MHz clock needed for
+320x200 (DOOM!).
+
+Also, because of the "divide by two" feature that X doesn't have, you
+actually get access to twice as many pixel clocks as you get from X!
+
+
+(this documentation is incomplete...)
+
+

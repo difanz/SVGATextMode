@@ -1,0 +1,369 @@
+svgatextmode (1.9-14) unstable; urgency=low
+
+  * Applied patch from Jindrich Makovicka for GF6600/6800, tested
+    on 6600 only so far.
+
+ -- Ron Lee <ron@debian.org>  Sun, 23 Oct 2005 22:22:30 +0930
+
+svgatextmode (1.9-13) unstable; urgency=low
+
+  * Typo fix for TextConfig.5  Closes: #326409, thanks!
+  * Fix a couple similar in SVGATextMode.8 too.
+  * Fix bashism's in preinst.  Thanks to the lintian crew.
+  * Update for new standard version.
+
+ -- Ron Lee <ron@debian.org>  Sat,  3 Sep 2005 13:45:48 +0930
+
+svgatextmode (1.9-12) unstable; urgency=low
+
+  * Applied NV31, NV34 patch from hmh@d.o, this seems to be the
+    last contender for entry to stable, thanks again!  Closes: #279744
+
+ -- Ron Lee <ron@debian.org>  Tue,  8 Feb 2005 23:01:01 +1030
+
+svgatextmode (1.9-11) unstable; urgency=low
+
+  * Fixed FTBFS on amd64.  Thanks to Kurt Roeckx.   Closes: #255540
+  * Applied patch from hmh@d.o for improved nVidia GeForce support,
+    this seemed like the sanest patch on offer.  Closes: #173590
+  * Update for new standards and dhv4.
+
+ -- Ron Lee <ron@debian.org>  Wed,  4 Aug 2004 14:37:30 +0930
+
+svgatextmode (1.9-10) unstable; urgency=low
+
+  * Added missing header patch from Jonathon Abbott, and flipped the order
+    of checking for tty's and devfs.  devfs systems with bc symlinks should
+    work correctly now.  Closes: #131826, #142151, #131821
+  * Applied patch from Matthew Mueller to fix palette mapping glitch,
+    Closes: #76679
+  * Made my peace with the grammar police, Closes: #125401
+  * Suggested svgalib-bin, since tools in there are mentioned in the docs.
+    Closes: #131482
+  * Thanks to everyone who submitted patches and/or offered to NMU,
+    please test it.
+
+ -- Ron Lee <ron@debian.org>  Mon, 15 Jul 2002 18:16:59 -0700
+
+svgatextmode (1.9-9) unstable; urgency=low
+
+  * GeForce3 Ti 200 driver patch, well it started that
+   way, ..now its the Grand Unified GeForce support patch
+   from Mark Glines (for a while we hope).  Thanks.
+
+ -- Ron Lee <ron@debian.org>  Sat, 13 Oct 2001 22:58:23 -0700
+
+svgatextmode (1.9-8) unstable; urgency=low
+
+  * Piped stderr of update-rc.d to /dev/null since it's
+    suddenly got noisy about asserting -f  Closes: #115331
+  * removed INSTALL from docs to pacify lintian.
+    (it did contain some useful information but not enough
+     to dick about with it more than that.)
+
+ -- Ron Lee <ron@debian.org>  Thu, 11 Oct 2001 21:29:29 -0700
+
+svgatextmode (1.9-7) unstable; urgency=low
+
+  * Applied GEFORCE support patch from Peter Gervai - Closes: #114983
+    Closes: #87621
+
+ -- Ron Lee <ron@debian.org>  Tue,  9 Oct 2001 10:56:31 -0700
+
+svgatextmode (1.9-6) unstable; urgency=low
+
+  * changed console-tools to depends to fix apt-get stm problem
+    Closes: #76104
+
+ -- Ron Lee <ron@debian.org>  Sat, 25 Nov 2000 19:07:19 -0800
+
+svgatextmode (1.9-5) unstable; urgency=low
+
+  * fixed typo in RivaTNT patch. (thanks Henrique) - Closes: #72818
+
+ -- Ron C. Lee <ron@debian.org>  Sat, 28 Oct 2000 23:28:03 +0930
+
+svgatextmode (1.9-4) unstable; urgency=low
+
+  * repackaged to use dh_v2, updated for current policy.
+  * made examples executable - Closes: #54377
+  * fixed build flags - Closes: #61268
+  * added some contributed mode lines to TextConfig - Closes: #56564
+  * applied patch from Tom Lees for Riva TNT/TNT2 support - Closes: #61840
+  * applied Tom Zerucha's MGAGx00 patch for Matrox cards - Closes: #55115
+  * coded some functions to enable STM to work transparently with both
+    devfs and traditional console devices.  Many thanks to Sergey Golod
+    for his initial patches which shed clues in just the right places.
+    - Closes: #63887
+  * silenced *lots* of warnings in the original code.
+
+ -- Ron C. Lee <ron@debian.org>  Tue, 26 Sep 2000 06:51:34 +1030
+
+svgatextmode (1.9-3) unstable; urgency=low
+
+  * modified sVinit script similar to a patch sent by
+    Eduard Bloch (thanks!!) to check for framebuffer
+    devices - Closes: #50340
+  * added man page for STM_nocheckfb
+  * fixed section typo in STM_utilities.8
+  * added -isp switch to dpkg-gencontrol to silence new
+    lintian warnings.
+
+ -- Ron C. Lee <ron@debian.org>  Sun,  2 Jan 2000 17:57:59 +1030
+
+svgatextmode (1.9-2) unstable; urgency=low
+
+  * added suggested config line for riva128 to TextConfig
+    (thanks to Francesco Potorti - Closes: #36074 )
+  * changed it's -> its in Textconfig - Closes: #36550
+  * now configured to support console-tools by default
+    instead of kbd - Closes: #20492, #43084
+  * changed startup timing from S40 to S60 so STM now
+    starts after /var/run is cleaned - Closes: #46509
+  * applied patch from Stanislav Voronyi for S3 Trio 3D2X support
+  * updated to standards version 3 and FHS compliance
+
+ -- Ron C. Lee <ron@debian.org>  Fri, 22 Oct 1999 14:45:32 +0930
+
+svgatextmode (1.9-1) unstable; urgency=low
+
+  * New upstream release.
+  * New maintainer.
+  * Streamlined debian/rules to use debstd
+  * bloated them again adding man page links to satisfy lintian.
+  * Added preinst warning that some old modes in Textconfig may
+    now be invalid due to upstream changes to Vertical limit.
+  * fixes: #17089, #17255, #20493, #23048, #27210, #17326(??)
+
+ -- Ron C. Lee <ron@debian.org>  Fri,  9 Apr 1999 21:20:55 +0930
+
+svgatextmode (1.8-5.3) unstable; urgency=medium
+
+  * Non-maintainer upload
+  * Changed Fontselect lines in TextConfig to avoid fonts removed
+    in kbd-data 0.97-1 and to fix #33463
+  * fixed path to SVGATextMode in STMmenu (#34963)
+  * patched for new gpm.pid in STM_reset (#31815, #32339, #34703,
+    #35339 )
+  * STM is now started from rcS.d, not at runlevel change (#25829)
+
+ -- Ron C. Lee <ron@debian.org>  Mon,  5 Apr 1999 19:59:37 +0930
+
+svgatextmode (1.8-5.2) frozen unstable; urgency=low
+
+  * Interim release.
+  * Changed the "Depends: kbd (>= 0.92-3)" into "Conflicts: kbd (<<
+    0.92-3)" and "Recommends: kbd".
+  * Added note in Description why kbd is recommended.
+  * Corrected the case of "SVGATextMode" in startup messages (Fixes:
+    Bug#21059).
+
+ -- Yann Dirson <dirson@debian.org>  Mon, 27 Apr 1998 22:42:59 +0200
+
+svgatextmode (1.8-5.1) frozen unstable; urgency=low
+
+  * Interim release.
+  * Fixed init.d messages to comply with current policy.
+  * Factorized uselessly duplicated lines in init.d script.
+  * Do not hide error messages (Fixes: Bug#19889).
+
+ -- Yann Dirson <dirson@debian.org>  Tue, 31 Mar 1998 22:40:13 +0200
+
+svgatextmode (1.8-5) unstable; urgency=low
+
+  * vgaset now GPL'ed!
+  * patched xfree_compat.c to fix a bug with Matrox and some S3 cards
+  * STM_reset now uses /bin/sh
+  * added a note about STM_reset to README.debian
+  * added call to update-rc.d in postrm
+  * /etc/init.d/svgatextmode now supports all required options 
+
+ -- Igor Grobman <igor@debian.org>  Fri, 13 Mar 1998 11:05:59 -0500
+
+svgatextmode (1.8-4) unstable; urgency=low
+
+  * #include <sys/io.h> in vga_prg.c.  Hopefully, this is the source of odd
+    behaviour reported in some bugs.
+  * added 'chmod 755 /usr/doc/svgatextmode' to postinst.  This is to fix older
+    package's incorrect permissions. 
+  * added a note to README.debian about some cards that need to be
+    initialized by cat /proc/pci
+
+ -- Igor Grobman <igor@debian.org>  Thu, 22 Jan 1998 20:01:24 -0500
+
+svgatextmode (1.8-3) unstable; urgency=low
+
+  * fixed some bugs in TextConfig
+  * use rm -f to remove obsolete conffiles in postinst 
+
+ -- Igor Grobman <igor@debian.org>  Wed, 24 Dec 1997 21:51:51 -0500
+
+svgatextmode (1.8-2) unstable; urgency=low
+
+  * ugh, I messed up with the first revision.  Many things weren't included 
+    or written properly.  This should fix all problems mentioned in 
+    bug #15974 
+
+ -- Igor Grobman <igor@debian.org>  Mon, 15 Dec 1997 20:16:38 -0500
+
+svgatextmode (1.8-1) unstable; urgency=low
+
+  * New upstream release
+  * changed the package to start svgatextmode in /etc/init.d, not
+   /etc/rc.boot to make sure it starts after all the partitions are mounted 
+  * renamed README.debian to README.Debian
+  * all binaries stripped
+
+ -- Igor Grobman <igor@debian.org>  Wed, 26 Nov 1997 15:25:22 -0500
+
+svgatextmode (1.6-5) unstable; urgency=low
+
+  * removed / in the beginning of TextConfig
+  * added dpkg-shlibdeps call (forgot to add it after removing debstd, but the
+    binary deps were not screwed up, because rules clean did not remove
+    debian/substvars) 
+  * renamed changelog.gz to changelog.Debian.gz
+
+ -- Igor Grobman <igor@debian.org>  Thu, 13 Nov 1997 10:06:40 -0500
+
+svgatextmode (1.6-4) unstable; urgency=low
+
+  * copyright and changelog files are back in the package.
+
+ -- Igor Grobman <igor@debian.org>  Tue,  4 Nov 1997 12:19:02 -0500
+
+svgatextmode (1.6-3) unstable; urgency=low
+ 
+  * do not use absolute path in postinst
+  * restructured rules file
+  * all docs and examples should now be installed correctly 
+
+ -- Igor Grobman <igor@debian.org>  Sat, 1 Oct 1997 23:19:38 -0400
+
+svgatextmode (1.6-2) unstable; urgency=low
+
+  * included STM_reset script that sends SIGWINCH to gpm on screen resize. 
+    Enabled it as ResetProg in default TextConfig (fixes bug #9220 filed
+    against gpm 
+  * All files in /usr/doc/svgatextmode should have correct permissions now
+   (bug #11092)
+
+ -- Igor Grobman <igor@debian.org>  Sat, 12 Jul 1997 16:51:24 -0400
+
+svgatextmode (1.6-1) unstable; urgency=low
+
+  * New upstream release
+  * svgatextmode uses /dev/tty0 for VT interface now instead of /dev/console 
+   (bug #10586)
+  
+ -- Igor Grobman <igor@debian.org>  Tue,  1 Jul 1997 12:07:56 -0400
+
+svgatextmode (1.5-2) unstable; urgency=low
+
+  * fixed wrong permissions in /usr/doc/svgatextmode
+  * added get/setpallette and get/setVGAreg utilities to the package
+  * applied patches provided by author (can be found in stm.patches)
+  * compiled with libc6
+
+ -- Igor Grobman <igor@debian.org>  Sun, 18 May 1997 00:50:41 -0400
+
+svgatextmode (1.5-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Igor Grobman <igor@debian.org>  Sun, 20 Apr 1997 20:09:07 -0400
+
+svgatextmode (1.4-10) frozen unstable; urgency=low
+
+  * changed the FontPath in TextConfig to make stm compatible with the latest 
+    kbd package
+  * added a hint on how to reset text mode to standard 80x25 on reboot
+    (needed for some buggy video cards)
+
+ -- Igor Grobman <igor@debian.org>  Mon, 31 Mar 1997 14:01:16 -0500
+
+svgatextmode (1.4-9) unstable; urgency=low
+  
+  * New maintainer
+  * Disabled activation on install (the lines in /etc/rc.boot/svgatextmode
+    are now commented out).  bugs #6189 and #7140
+  * applied Stuart Lamble's patch to fix the bug with the display of
+    continuous lines (bug #7493)
+
+ -- Igor Grobman <igor@vaca.net>  Mon, 10 Mar 1997 16:46:52 -0500
+
+svgatextmode (1.4-8) unstable; urgency=low
+
+  * got rid of postrm and postinst script. Put the instructions that
+    postinst displayed into README.debian
+  * included parts of the contrib section in /usr/doc/svgatextmode/samples
+  * debmake upgrade may finally compress the files the way they should be.
+
+ -- Christoph Lameter <clameter@debian.org>  Sun, 20 Oct 1996 09:53:31 -0800
+
+svgatextmode (1.4-7) unstable; urgency=low
+
+  * debmake bug: scripts not included in -6
+
+ -- Christoph Lameter <clameter@debian.org>  Thu, 17 Oct 1996 06:53:06 -0800
+
+svgatextmode (1.4-6) unstable; urgency=low
+
+  * Adapted to use debmake. Thus compressed manpages + docs.
+
+ -- Christoph Lameter <clameter@debian.org>  Wed, 16 Oct 1996 21:59:08 -0800
+
+svgatextmode (1.4-5) unstable; urgency=low
+  
+  * Remove prerm script. Caused too much trouble.
+  * removed /etc/init.d/svgatextmode script. Instead installed svgatextmode
+    initialization in /etc/rc.boot/svgatextmode
+
+ -- Christoph Lameter <clameter@debian.org>  Sat, 5 Oct 1996 9:00:00 -0800
+
+svgatextmode (1.4-4) unstable; urgency=high
+  
+  * another bug in /etc/init.d/svgatextmode
+
+ -- Christoph Lameter <clameter@debian.org>  Thu, 26 Sep 1996 9:00:00 -0800
+
+svgatextmode (1.4-3) unstable; urgency=high
+
+  * added changelog.DEBIAN to /usr/doc/svgatextmode
+  * Bugs and suggestions reported by Eric Delaunay
+
+ -- Christoph Lameter <clameter@debian.org>  Wed, 25 Sep 1996 9:00:00 -0800
+
+svgatextmode (1.4-2) unstable; urgency=low
+
+  * Missing "then" in postinst
+  * Had a garbled up screen in testing the thing. Dont know if it was
+    because I was running an experimental version?
+
+ -- Christoph Lameter <clameter@debian.org>  Mon, 23 Sep 1996 9:00:00 -0800
+
+svgatextmode (1.4-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Christoph Lameter <clameter@debian.org>  Mon, 23 Sep 1996 9:00:00 -0800
+
+svgatextmode (1.3-4) unstable; urgency=low
+
+  * Bug #4533: problem in postinst script and svgatextmode
+
+ -- Christoph Lameter <clameter@debian.org>  Fri, 20 Sep 1996 9:00:00 -0800
+
+svgatextmode (1.3-3) unstable; urgency=low
+
+  * First Release with standards 2.1.0.0
+  * Removed manpages from /usr/doc/svgatextmode
+  * Added script to /etc/init.d to automatically switch svgatextmode on and
+    off.
+  * Added a configuration file /etc/svgamode to define the default mode
+
+ -- Christoph Lameter <clameter@debian.org>  Wed, 18 Sep 1996 9:00:00 -0800
+
+Local variables:
+mode: debian-changelog
+End:

@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# syntax: checkTextConf_version <configfile> <version_string>
+#
+# check if TextConfig file version is older than <version_string>
+# This is used by the Makefile
+
+if [ "$1" = "" -o "$2" = "" ]; then
+	echo "Missing parameter. Correct syntax is:"
+	echo "$0 <configfile> <version_string>"
+	echo "      <configfile> is the full path to the TextConfig file."
+	echo "      <version_string> is of the form \"1.2.3\""
+	exit 1
+fi
+
+TextConfV=$(fgrep "#@stm_version_number@" $1 | awk -F "." "{ print \$2*1000000+\$3*1000+\$4 }")
+ReqV=$(echo $2 | awk -F "." "{ print \$1*1000000+\$2*1000+\$3 }")
+#echo "TextConfVer: $TextConfV"
+#echo "ReqV:        $ReqV"
+
+if [ "$TextConfV" = "" ]; then
+	echo "WARNING:"
+	echo "	The TextConfig file currently installed in $1 is"
+	echo "	from an old version of SVGATextMode."
+	echo "	You MUST upgrade it to a newer TextConfig file."
+	echo "	The version installed now is INCOMPATIBLE with the new version"
+	echo "	of SVGATextMode you installed."
+	echo
+	echo "	The most important syntax changes are:"
+	echo " 	  - ALL strings must be enclosed in double quotes"
+	echo "	    (this was not required in pre 1.2 versions)"
+	echo "	  - The "FontSelect" line syntax has changed."
+	echo
+	echo "	You will get an error similar to the following when"
+	echo "	NOT upgrading or editing the TextConfig file:"
+	echo "		stm: ERROR: Unknown token on line 788 of config file"
+	exit 0
+fi
+
+if [ $[ $TextConfV >= $ReqV ] = 0 ]; then
+	echo "The TextConfig file currently installed in $1 is from a previous"
+	echo "version of SVGATextMode. You might consider upgrading it with a"
+	echo "newer TextConfig file, so you can use the new modes and/or features"
+	echo "in it (if any). This is _not_ required however."
+fi
+
+

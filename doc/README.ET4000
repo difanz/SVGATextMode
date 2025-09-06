@@ -1,0 +1,67 @@
+
+		Information for Tseng Chipset Users
+		-----------------------------------
+
+Clock selection problems with some ET4000 boards (from XFree86 documentation)
+-----------------------------------------------------------------------------
+
+  XFree86 has some problems getting the clock selection right with some
+ET4000 boards when the server is started from a high-resolution text mode.
+The clock selection is always correct when the server is started from a
+standard 80x25 text mode.
+
+This problem is indicated when the reported clocks are different when the
+server is started from the high-resolution text mode from what they are
+when it is started from the 80x25 text mode.  To allow the server to work
+correctly from the high-resolution text mode, there are some Option flags
+that may be set in Xconfig.  To find out which flags to set, start the
+server with the -probeonly flag from an 80x25 text mode and look at the
+information printed by the server.  If the line:
+
+  VGAXXX: ET4000: Initial hibit state: low
+
+is printed, put the following in the VGA256 and VGA2 sections of your Xconfig:
+
+  Option "hibit_low"
+
+If the line:
+
+  VGAXXX: ET4000: Initial hibit state: high
+
+is printed, put the following in the VGA256 and VGA2 sections of your Xconfig:
+
+  Option "hibit_high"
+
+--------------------------------------------------------------------------------------
+
+ ##############################################################################
+ #                                                                            #
+ #  >>>>>>>>>>>>>>>   IMPORTANT NOTE FOR SVGATEXTMODE   <<<<<<<<<<<<<<<<<<<<  #
+ #                                                                            #
+ ##############################################################################
+ #                                                                            #
+ #  Users of SVGATextMode with an ET4000 board MUST put the "hibit_high" or   #
+ #  "hibit"low" option in their XF86Config as well. This means the option     #
+ #  MUST be in TextConfig AND in XF86Config, and it must of course be the     #
+ #  same one in both files. Failure to do so may cause either X or            #
+ #  SVGATextMode to select the wrong clock. Your monitor may not like that.   #
+ #                                                                            #
+ ##############################################################################
+
+Note also that changing the "hibit" option from low to high or vice versa is
+equivalent to swapping the lower 8 clocks with the higher 8 clocks in the
+"clocks" line in XF86Config or TextConfig.
+
+Example:
+
+  clocks  25.1 28.3 32.5 36 40 44.9 50 65
+  clocks  50 56.6 65 72 80 90 63 75
+  option "hibit_high"
+  
+is equivalent to:
+
+  clocks  50 56.6 65 72 80 90 63 75
+  clocks  25.1 28.3 32.5 36 40 44.9 50 65
+  option "hibit_low"
+
+   

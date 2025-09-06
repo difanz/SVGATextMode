@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+# This scripts is called from the "resetprog" line in TextConfig,
+# when SVGATextMode has finished switching modes.
+#
+# This example only restarts selection, since that's all I need.
+# 
+# Adapt this script so it suits YOUR system setup. 
+#
+
+#
+# The following should work, too, but a kernel bug prevents it from working
+# on some kernel versions (according to Mr Rubini).
+#
+
+# *** old gpm pid file.. kept for backward compatibility ***
+if [ -f /var/run/gpmpid ]
+then
+        echo "Screen resized to $1x$2. Restarting GPM..."
+        kill -WINCH `cat /var/run/gpmpid`     # gets pid from current gpm daemon, and send resize signal to it
+fi
+
+# *** modified by Ron Lee ***
+# *** to do the same for the new one ***
+if [ -f /var/run/gpm.pid ]
+then
+	echo "Screen resized to $1x$2. Restarting GPM..."
+	kill -WINCH `cat /var/run/gpm.pid`     # gets pid from current gpm daemon, and send resize signal to it
+fi
+
+#
+# In the case of that bug, you may want to thow a bigger axe at it:
+#
+# echo "Screen resized to $1x$2. Restarting GPM..."
+# /usr/bin/gpm -k         # kill gpm
+# /usr/bin/gpm -t ms      # for MicroSoft Mice
+
+
+# Some programs need not be restarted, but just need a "SIGWINCH" signal sent to them.
+# Emacs and gpm seem to be examples of this (according to Alessandro Rubini)
+#
+# killall -WINCH -v emacs       # this sends window change signal to all processes called "emacs"
+#
+# for those still using selection: this restarts it
+#
+# /bin/killall -v selection
+# (/usr/bin/selection -t ms &)   # for MicroSoft mouse. Other mice need other option!
+
+
+#
+# If you want to make sure you also get back to a sane keyboard state, use
+# "kbd_mode -a" here, and put the command "stm -o <your_mode> under a
+# mousebutton combination in the GPM mouse driver
+#
+

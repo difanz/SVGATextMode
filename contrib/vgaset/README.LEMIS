@@ -1,0 +1,32 @@
+This directory contains source and objects for vgaset, a program for
+optimising video card and monitor setup.
+
+Program:	vgaset
+Revision:	1.1
+Date ported:	15 May 1993
+Ported by:	Greg Lehey, LEMIS
+Compiler used:	gcc-2.3.3
+
+Prerequisites:	
+
+Documentation:	man page, installed with make install
+
+
+Installation:	make install
+
+Comments:	Comments in the file ../README.LEMIS are not repeated
+		here. You should read ../README.LEMIS first.
+
+		This program was originally designed to work with the
+		Thomas Roell X server and the XFree86 server which
+		developed out of it. It is, however, of some use with
+		other servers.
+
+		Note that this program can be dangerous: if you use it
+		to adjust scan frequencies outside what your monitor
+		can handle, hardware damage can be the result. LEMIS
+		will not be responsible for any such damage.
+
+Modifications:
+
+0. (none - already configured for svr4)

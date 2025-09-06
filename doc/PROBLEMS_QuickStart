@@ -1,0 +1,34 @@
+
+Most problems with SVGATextMode are related to clock selection. If your
+screen goes nuts, it means that SVGATextMode (or you!) made a mistake when
+selecting a clock.
+
+95% of SVGATextMode problems reported to me get the reply "TRY GRABMODE!"
+
+Grabmode allows you to measure the pixel clock that is ACTUALLY used, not
+the one SVGATextMode _thinks_ it uses.
+
+
+These are the three most complained-about things about SVGATextMode:
+
+1) SVGATextMode doesn't know how to program the clock on your VGA chip,
+   because it is not (yet) supported.
+   
+2) You entered the wrong "clocks" line, or, worse even, you just used the
+   example clocks line in the example TextConfig file, despite the numerous
+   warnings allover the documentation not to do so.
+
+3) You are attempting to use a pixel clock that is too high. First try using
+   lower clocks (i.e. < 40 MHz)
+
+
+RTFM note: these three things are discussed in detail in the documentation...
+
+
+Use grabmode before you start complaining. It'll save you (and me) a lot of
+trouble.
+
+
+If you want to know more, read the FAQ file in this directory.
+
+

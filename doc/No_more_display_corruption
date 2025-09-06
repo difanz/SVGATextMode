@@ -1,0 +1,64 @@
+
+Despite all the effort I put into SVGATextMode, and despite the huge efforts
+the XFree86 team put in their software, and despite the efforts of the
+SVGALIB coders, VGA stuff in Linux is still hazardous at best.
+
+You have probably encountered one of the following phenomena:
+
+- When switching consoles while XFree86 is just starting up sometimes messes
+  up your screen for real. Only rebooting helps.
+  
+- The same thing happens under SVGATextMode.
+
+- and under SVGALIB.
+
+- DOSEMU is another potential VGA-killer.
+
+- Worse even: when some (or all) of these VGA-aware programs are used
+  together, even more trouble spawns.
+  
+- When one of these programs crashes due to either a bug or an
+  interaction-problem, it leaves your screen ... messed up.
+  Only rebooting helps
+  
+  
+Have you noticed how many times it says "only rebooting helps"?
+
+
+Enter the GGI project...
+
+GGI is a kernel-level graphics subsystem that is intended to be the basis
+upon which all other graphics programs add their functionality.
+
+Because it is intended to be the only thing actually accessing VGA hardware,
+interaction problems between various graphics systems are eliminated.
+
+And because it is ALWAYS running, it is able to restore the screen from a
+crashed program without a glitch.
+
+In fact, once GGI is on your system, most (if not all) VGA-related reboots
+are history.
+
+GGI already has much of the functionality of SVGATextMode and SVGALIB (it
+already has an SVGALIB emulation library that runs most SVGALIB
+applications), and once they start porting XFree86 upon their code, those
+problems will be gone also (GGI already solves many of the XFree86 problems,
+because it will always return you to a working textmode screen when you need
+to).
+
+GGI is the VGA HAL (Hardware Abstraction Layer) for Linux.
+
+
+More information on GGI can be found here: 
+
+- The November 1996 issue of Linux Journal (#31)
+
+- Andreas Beck's home page:
+
+	http://www-public.rz.uni-duesseldorf.de/~becka/doc/scrdrv.html
+
+  Steffen Seeger's home page:
+  	
+  	href="http://www.tu-chemnitz.de/~sse/scrdrv
+
+

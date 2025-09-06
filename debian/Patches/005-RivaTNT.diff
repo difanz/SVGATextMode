@@ -1,0 +1,220 @@
+On Fri, Apr 07, 2000 at 12:13:04AM +0100, Tom Lees wrote:
+
+OK, as promised, here's the fixed patch. It still works with my TNT2, hopefully it should
+also work with the TNT, Ultra TNT2 etc and more importantly, still work with the Riva 128.
+
+-- 
+Tom <tom@debian.org>
+
+diff -ur svgatextmode-1.9.orig/XFREE/riva128_clock.c svgatextmode-1.9.tom/XFREE/riva128_clock.c
+--- svgatextmode-1.9.orig/XFREE/riva128_clock.c	Mon Oct 19 12:28:32 1998
++++ svgatextmode-1.9.tom/XFREE/riva128_clock.c	Sat Apr  8 13:53:46 2000
+@@ -76,6 +76,13 @@
+ 
+ #define PCI_VENDOR_NVIDIA_SGS   0x12d2
+ #define PCI_CHIP_RIVA128        0x0018
++#define PCI_VENDOR_ID_NVIDIA		0x10de
++#define PCI_DEVICE_ID_NVIDIA_TNT	0x0020
++#define PCI_DEVICE_ID_NVIDIA_TNT2	0x0028
++#define PCI_DEVICE_ID_NVIDIA_UTNT2	0x0029
++#define PCI_DEVICE_ID_NVIDIA_VTNT2	0x002C
++#define PCI_DEVICE_ID_NVIDIA_UVTNT2	0x002D
++#define PCI_DEVICE_ID_NVIDIA_ITNT2	0x00A0
+ 
+ vgaPCIInformation *vgaPCIInfo;
+ 
+@@ -87,6 +94,9 @@
+ 
+ #define NV3_MIN_CLOCK_IN_KHZ  25000    // Not sure about this, but it seems reasonable
+ #define NV3_MAX_CLOCK_IN_KHZ 230000
++#define NV4_MAX_CLOCK_IN_KHZ 350000
++
++static int max_clock, is_nv3, pll_coeff;
+ 
+ /* NTSC cards have approx 14.3Mhz. Need to detect, but leave for now*/
+ #define PLL_INPUT_FREQ 13500 
+@@ -94,51 +104,82 @@
+ #define M_MAX 13
+ 
+ #define P_MIN 0
+-#define P_MAX 7 /* Not sure about this. Could be 4 */
++#define P_MAX 4
+ 
+ //=== Function section ===
+-// This function copied straight out the of nv3driver.c in the Xserver
+-static int NV3ClockSelect(float clockIn,float *clockOut,int *mOut,
+-                                        int *nOut,int *pOut)
+-{ 
+-  int m,n,p;
+-  float bestDiff=1e10;
+-  float target=0.0;
+-  float best=0.0;
+-  float diff;
+-  int nMax,nMin;
+-  
+-  *clockOut=0.0;
+-  for(p=P_MIN;p<=P_MAX;p++) {
+-    for(m=M_MIN;m<=M_MAX;m++) {
+-      float fm=(float)m;
+-      /* Now calculate maximum and minimum values for n */
+-      nMax=(int) (((256000/PLL_INPUT_FREQ)*fm)-0.5);
+-      nMin=(int) (((128000/PLL_INPUT_FREQ)*fm)+0.5);
+-      n=(int)(((clockIn*((float)(1<<p)))/PLL_INPUT_FREQ)*fm);
+-      if(n>=nMin && n<=nMax) {  
+-        float fn=(float)n;
+-        target=(PLL_INPUT_FREQ*(fn/fm))/((float)(1<<p));
+-        diff=fabs(target-clockIn);
+-/*        PDEBUG(("m=%d, n=%d, p=%d => %.2f\n", m, n, p, target ));*/
+-        if(diff<bestDiff) {
+-          bestDiff=diff;
+-          best=target;
+-          *mOut=m;*nOut=n;*pOut=p;
+-          *clockOut=best;
++// From xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/riva_hw.c in XFree86 3.3.6
++/*
++ * Calculate the Video Clock parameters for the PLL.
++ */
++static int CalcVClock
++(
++    int           clockIn,
++    int           double_scan,
++    int          *clockOut,
++    int          *mOut,
++    int          *nOut,
++    int          *pOut/*,
++    RIVA_HW_INST *chip*/
++)
++{
++    unsigned lowM, highM, highP;
++    unsigned DeltaNew, DeltaOld;
++    unsigned VClk, Freq;
++    unsigned M, N, P;
++    
++    DeltaOld = 0xFFFFFFFF;
++
++    VClk     = (unsigned)clockIn;
++    if (double_scan)
++        VClk *= 2;
++    
++    if (/*chip->CrystalFreqKHz*/PLL_INPUT_FREQ == 14318)
++    {
++        lowM  = 8;
++        highM = 14 - (/*chip->Architecture == NV_ARCH_03*/is_nv3);
++    }
++    else
++    {
++        lowM  = 7;
++        highM = 13 - (/*chip->Architecture == NV_ARCH_03*/is_nv3);
++    }                      
++
++    highP = 4 - (/*chip->Architecture == NV_ARCH_03*/is_nv3);
++    for (P = 0; P <= highP; P ++)
++    {
++        Freq = VClk << P;
++        if ((Freq >= 128000) && (Freq <= /*chip->MaxVClockFreqKHz*/max_clock))
++        {
++            for (M = lowM; M <= highM; M++)
++            {
++                N    = (VClk * M / /*chip->CrystalFreqKHz*/PLL_INPUT_FREQ) << P;
++                Freq = (/*chip->CrystalFreqKHz*/PLL_INPUT_FREQ * N / M) >> P;
++                if (Freq > VClk)
++                    DeltaNew = Freq - VClk;
++                else
++                    DeltaNew = VClk - Freq;
++                if (DeltaNew < DeltaOld)
++                {
++                    *mOut     = M;
++                    *nOut     = N;
++                    *pOut     = P;
++                    *clockOut = Freq;
++                    DeltaOld  = DeltaNew;
++                }
++            }
+         }
+-      }
+     }
+-  }
+-  return (best!=0.0);    
++    return (DeltaOld != 0xFFFFFFFF);
+ }
++
+            
+ // Set the clock to the given speed (in KHz)
+ Bool RIVA128ClockSelect( int clockspeed )
+ {
+   int *ptr;
+ 
+-  float out;
++  //float out;
++  int out;
+   int m, n, p, value;
+   int i = 0;
+   pciConfigPtr pcr = NULL;
+@@ -151,19 +192,39 @@
+   		if (pcr->_vendor == PCI_VENDOR_NVIDIA_SGS)
+   		{
+   			if (pcr->_device == PCI_CHIP_RIVA128)
++  			{
++  				is_nv3 = 1;
++  				pll_coeff = 0x00010100;
++  				max_clock = NV3_MAX_CLOCK_IN_KHZ;
++  				break;
++  			}
++  		}
++  		if (pcr->_vendor == PCI_VENDOR_ID_NVIDIA)
++  		{
++  			if (pcr->_device == PCI_DEVICE_ID_NVIDIA_TNT ||
++  				pcr->_device == PCI_DEVICE_ID_NVIDIA_TNT2 ||
++  				pcr->_device == PCI_DEVICE_ID_NVIDIA_UTNT2 ||
++  				pcr->_device == PCI_DEVICE_ID_NVIDIA_VTNT2 ||
++  				pcr->_device == PCI_DEVICE_ID_NVIDIA_UVTNT2 ||
++  				pcr->_device == PCI_DEVICE_ID_NVIDIA_ITNT2)
++  			{
++  				is_nv3 = 0;
++  				pll_coeff = 0x00010700;
++  				max_clock = NV4_MAX_CLOCK_IN_KHZ;
+   				break;
++  			}
+   		}
+   	}
+   }
+   else 
+   {
+-    PERROR(("No RIVA128 chip found in PCI info!\n"));
++    PERROR(("No RIVA128/TNT/TNT2 chip found in PCI info!\n"));
+     return FALSE;
+   }
+ 
+-  if ( (!pcr) || (pcr->_device != PCI_CHIP_RIVA128) )
++  if ( (!pcr) )
+   {
+-    PERROR(("No RIVA128 chip found in PCI info!\n"));
++    PERROR(("No RIVA128/TNT/TNT2 chip found in PCI info!\n"));
+     return FALSE;
+   }
+   
+@@ -199,7 +260,8 @@
+ #endif
+ 
+   // Calculate the clock  
+-  NV3ClockSelect( (float)clockspeed, &out, &m, &n, &p );
++  //NV3ClockSelect( (float)clockspeed, &out, &m, &n, &p );
++  CalcVClock ((float) clockspeed, 0, &out, &m, &n, &p);
+     
+   value = (m) + (n<<8) + (p<<16);
+   
+@@ -207,10 +269,10 @@
+   PDEBUG(( "Wanted %dkHz, got %dkHz (m=%d, n=%d, p=%d, value=0x%08X)\n",
+     clockspeed, (int)out, m, n, p, value ));
+     
+-  // Default value is 0x00000100
+-  // X uses 0x10010100
+-  // We use 0x00010100
+-  ptr[PRAMDAC_PLL_COEFF_SELECT/4] = 0x00010100;  // could use |=
++  // Default value is 0x00000100 (NV3)
++  // X uses 0x10010100 (NV3) or 0x10000700 (NV4)
++  // We use 0x00010100 (NV3) or 0x00010700 (NV4)
++  ptr[PRAMDAC_PLL_COEFF_SELECT/4] = pll_coeff;  // could use |=
+ 
+   // Divide by 4 because we're dealing with integers
+   ptr[PRAMDAC_PLL_COEFF/4] = value;

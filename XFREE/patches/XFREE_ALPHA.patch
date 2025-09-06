@@ -1,0 +1,68 @@
+*** /home/kmg/XFree86-3.1.1-1/xc/programs/Xserver/hw/xfree86/common/compiler.h	Sun Feb 19 11:10:06 1995
+--- common/compiler.h	Mon Jun 19 20:18:34 1995
+*************** extern int textinx();
+*** 74,79 ****
+--- 74,81 ----
+  
+  #ifdef __GNUC__
+  
++ #if defined(__i386__)
++ 
+  #ifndef FAKEIT
+  #ifdef GCCUSESGAS
+  
+*************** inl(port)
+*** 246,251 ****
+--- 248,264 ----
+  }
+  
+  #endif /* FAKEIT */
++ 
++ #elif defined(__alpha__)
++ 
++ #define inb(p)		_inb((p))
++ #define inw(p)		_inw((p))
++ #define inl(p)		_inl((p))
++ #define outb(p,v)	_outb((v),(p))
++ #define outw(p,v)	_outw((v),(p))
++ #define outl(p,v)	_outl((v),(p))
++ 
++ #endif
+  
+  #else /* __GNUC__ */
+  #if !defined(AMOEBA) && !defined(MINIX)
+*** /home/kmg/XFree86-3.1.1-1/xc/programs/Xserver/hw/xfree86/common_hw/IODelay.s	Thu Sep 15 00:02:00 1994
+--- common_hw/IODelay.S	Tue Jun 13 21:05:49 1995
+*************** glenn@cs.utexas.edu)
+*** 33,38 ****
+--- 33,55 ----
+   *   100-MHz CPU, produce at least a delay of 1,000ns.
+   */ 
+  
++ #if defined(__alpha__)
++        /*
++         * Really ought to use the cycle counter
++         * here but that would require an easy
++         * way to get at the frequency of the
++         * cycle counter (it's in the hwrpb).
++         */
++        .globl GlennsIODelay
++ 
++ GlennsIODelay:
++        bis     $31, 1000, $1
++ loop:  subl    $1, 1, $1
++        bne     $1, loop
++        ret     ($26)
++ 
++ #else
++ 
+  #include "assyntax.h"
+  
+  	FILE("DACDelay.s")
+*************** delay_it:
+*** 50,52 ****
+--- 67,70 ----
+  	JNE	(delay_it)
+  	RET
+  
++ #endif

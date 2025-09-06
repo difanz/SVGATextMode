@@ -1,0 +1,96 @@
+
+These little programs are a VERY crude method to change fonts manually.
+
+`dump' will take as standard input a raw font file and output a text file
+which represents the font.
+
+Example: typing `dump </usr/lib/kbd/consolefonts/Cyr_a8x16' will produce:
+
+[part cut away for clearness]        
+        
+        
+        
+        
+        
+   OOOO 
+    OO  
+    OO  
+    OO  
+    OO  
+    OO  
+OO  OO  
+OO  OO  
+OO  OO  
+ OOOO   
+        
+        
+        
+        
+        
+        
+OOO  OO 
+ OO  OO 
+ OO  OO 
+ OO OO  
+ OOOO   
+ OOOO   
+ OO OO  
+ OO  OO 
+ OO  OO 
+OOO  OO 
+        
+        
+        
+        
+        
+        
+OOOO    
+ OO     
+ OO     
+ OO     
+ OO     
+ OO     
+ OO     
+ OO   O 
+ OO  OO 
+OOOOOOO 
+        
+
+
+
+etc...
+
+
+Each character is printed as a bitmap of O's, in a box of 8 characters wide
+by 16 high. In this case 16 characters high since we're using a font which
+is represented in a 16-high space).
+
+NOTE: This is NOT absolute however: you can represent an 8x16 font in a
+32-high cell also, which will have the added advantage that if it is
+actually used in a text mode with 8x32 fonts, the lower 16 character lines
+will be blank, and not garbage. The `8x8plus' font file in the SVGATextMode
+distribution is such an example.
+
+
+You can now edit this output of `dump' with a normal text editor. Preferably
+use overstrike mode and not in insert mode, because the `undump' program
+expects 8 characters per line (O's or spaces).
+
+As you'd expect, `undump' will take such a text file, and recreate the font
+file from that.
+
+
+It is important to keep the number of characters per line and the total
+number of lines in the font equal to what it was when it came fresh out the
+`dump' program. Otherwise you risk getting a screwed-up font.
+
+
+Creating a NEW font with this method is a bit cumbersome, and it would
+probably be better to start from an existing font, so you have the right
+format already.
+
+
+
+If anyone comes up with a better font creator, let me know! It would be a
+handy addition to SVGATextMode.
+

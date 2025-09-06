@@ -1,0 +1,298 @@
+This file documents what should be changed to this program in the future. 
+It is mainly for "internal use only", so don't worry if it's completely rubbish.
+
+
+1) Ideas and suggestions for enhancements
+-----------------------------------------
+
+- More "man" files for _all_ tools would be nice...
+
+- when an error occurs in the middle of hardware programming, recovering
+  from it would be nice instead of just bailing out, and leaving all
+  registers in an undefined state (= a bad state) ...
+  How to to this? Is it worth the trouble?
+
+  Maybe use the "save_regs" function from the XFREE code before doing
+  anything, and perform a "restore_regs" afterwards. This is only realistic
+  when using more of the XFREE code.
+
+  [ this is unlikely to be ever implemented ]
+
+- Of course, even MORE CHIPSETS!
+
+- Should really consider moving SVGATextMode closer to the XFREE3.x code, so
+  developing new chipset-support is faster. Also use their code for some
+  things (chipset detection, clock selection, register programming
+  macro's...).
+  
+  check out xfree86/vga256/vga/vgaHW.c: contains register programming stuff
+  
+  This would allow me to use CLKREG_SAVE and RESTORE, so when something goes
+  wrong, I can always restore registers. Much safer...
+
+  [ this is unlikely to be ever implemented ]
+
+- A new program: "Xclockprobe": probes for the ENTIRE clocks line (like X):
+  do one clockprobe for the 25 (or 28 MHZ) clock, warn if 25 and/or 28 are
+  not there (=non-VGA), do other clocks like X (or not?) Could thsi be
+  combined with grabmode?
+
+  [ this is unlikely to be ever implemented ]
+
+- Try to parse text mode label, and see if the X x Y values match the real
+  ones, and give warning if not! (useful for people who don't understand the
+  non-relationship between the label and the actual text mode size.)
+
+  [ this is unlikely to be ever implemented ]
+
+- some people (correctly) argue that the lex/yacc parser does too much in
+  lex that could be done in yacc. Most of them agree this is not a big issue...
+  This is not a high-priority issue.
+
+- Chips&Tech chipsets are still lacking.
+
+- translate output from "X -probeonly" to a piece of TextConfig file that can be
+  appended to the default one.
+
+- make STM programs print out in which kernel they were compiled, next to the
+  the version number
+
+- Must include Harald's "user_time" patches to compile grabmode for Windows.
+  This would make for a highly useful tool... They are inclued now, but
+  don't work yet.
+
+
+2) Really wild or less useful ideas
+-------------------------------------
+
+  [ this is unlikely to be ever implemented ]
+
+- Measure the V-freq of the mode that was programmed in the chips, and
+  compare it with the calculated one. If there's too much difference, do
+  something nice (like restoring the old state)... (a "paranoia" switch ?)
+  
+- check out mkmf, mkmk!!
+
+- Consider an X/Windows style "rgb.txt" and being able to say in TextConfig
+  "Palette 0 navy blue" & "Palette 7 IvoryWhite". (K. Albanowski again ;-)
+
+- Extend the monitor range checking to allow the user to ask for the "best
+  fitting (refresh, font size, ...) "X*Y" mode for his setup. Maybe call the
+  the "-b" option ("best"). (suggested by Mr Albanowski)
+    
+- Another obvious extension is full Monitor/Card blocks, like in XFree.
+  3.1. (suggested by the same one...)
+
+- A utility to test the monitor capabilities by sweeping through the freq
+  ranges: first H, keeping V constant at 60 Hz (by decreasing H-size), then,
+  using the H limits, test V!
+
+  Dangerous... (?)
+
+- In theory, H-timings CAN be given with PIXEL precision instead of 8-pixel,
+  using the "pixel panning" registers for both screen and cursor.
+
+- Allow the user to select color or monochrome mode from the config file.
+
+- grabmode/clockprobe: let them scan for config file, and if there is one,
+  use device-dependent extensions.
+  
+  Of course, this breaks the entire "chipset-independance" idea behind the
+  mode grabber. 
+
+- try to create a better 32-high font, and maybe even some fonts between the
+  16 and 32 pixel boundaries. Let someone else do this :-)
+
+- sorting the default TextConfig per Hor refresh frequency instead of the
+  hodgepodge it is now.
+
+- see Ferraro (I) pg 363: DES could be used to allow VGA more time to access
+  font/char data. e.g. start using this when pixclock > (DEFAULT_MAXCLK - 10).
+
+- See if DOSEMU can be compiled with SVGALIB support, so it can restore
+  chipset regs for more chipsets/clockchips. This way they don't have to do
+  it themselves (again).
+
+- for V2.0: maybe use svgalib interfaces for hardware instead of custom
+  routines. Could be compile-time switch?
+
+- try making this into MODULE that can be loaded VERY early on (for seeing
+  error msg)  
+  
+- GGI support!
+
+
+3) BUGS and other "features" that should be improved.
+-----------------------------------------------------
+
+- VT_RESIZE problem: when a previous attempt via 1x1 failed, then the next
+  user attempt at restoring the screen back from 1x1 to something a little
+  more useful will not even TRY, since it believes the screen doesn't need
+  to be resized (intelligent software ...).
+
+  In fact, I need to re-think use of VT_RESIZE and the out-of-memory problem
+  completely. It sucks (pond slime).
+  
+  Maybe we should check on the amount of free memory BEFORE doing the
+  VT_RESIZE call (/proc/meminfo?)
+  
+  Maybe even wait until memory is there (with proper warning, as fron the
+  NFS-server when it loses connection: "Not enough memory... waiting until
+  we get some")
+  
+  using shrink_buffers() could help : do it with priorities going up on each
+  attempt (start with 4, then 3...0). 
+
+- LOTS of DOSEMU compatibility problems...:
+
+  * ET4000W32p/ics5431: DOSEMU re-programs original values in clock regs! So
+    when you switch back to linux console, your text mode clock is wrong.
+
+  * Maybe even use ClockProg as in X to restore textmode clock when
+    returning to text mode. This is especially useful for clockchip owners
+    where clock is not restored in programmable clock regs)
+
+- For some reason, ClockPrg is VERY flaky in X! On some et4000's, the SEQ
+  regs cannot be programmed from the ClockProg...
+
+- dependencies: if a file in XFREE/common_hw has changed, "make" doesn't
+  re-make anything! Should we use a Makefile in that directory?
+
+- clear all chipset-specific H/V size extended regs (they are not used, and
+  not even programmed in STM, so they could cause mayhem. They also reduce
+  the chance for succes when trying to restore a broken textmode with STM).
+
+- grabmode: interlace detection: maybe check vga address each V retrace (how?), if +-
+  equal, non-interlace.
+
+- mode 7 in svgalib's vgatest program still detects as 640x400 instead of
+  320x400 (on S3 805)
+
+- S3 + ti3026 still doesn't work for some people. Without proper
+  feedback/help/testcard, this will never get fixed.
+
+- grabmode: - first attempt with 50 measurements, second with 100, 3rd with 200!
+            - make it also remember the tv_sec field of the gettimeofday() call,
+              so it can determine (and fold back!) wrapped measurements.
+            - bug with debug mode: center detection is wrong (always last one time
+              band taken). This looks like a compiler bug... (making some vars "volatile"
+              fixes the problem).
+
+- detect multiple chipset/clockchip/... entries in config file, and flag them
+
+- include Stephen Lee's suggestions for improving the parser (esp. the
+  quote-removal thingie). Here's what he said:
+
+> Well, let me atone myself by telling you how to do the quoted string
+> thing.  Actually it is in flex.info.  It has a longer one for doing C-like
+> escapes and etc.  But I guess you won't need that.  My shorter version is
+> below.
+> 
+> Also, I'm quite puzzled by all the <X_????> you use in the lex file.  I
+> don't think you need them.  The only reason I give to their existence is
+> that you can have that
+> 
+> . { yyerror("Unknown token"); }
+> 
+> rule (instead of "parse error" from yacc), but that doesn't buy you much.
+> Parsing should be done in the .y file, and if somebody writes:
+> 
+> Clockchip font
+> 
+> Then so what?  It would not matter whether you pass CLOCKCHIP FONT or
+> CLOCKCHIP 'f' to the .y file anyway, both would still be an error.  And if
+> you quote all strings, it would work even if somebody writes
+> 
+> Clockchip "font"
+> 
+> Thus, I don't see any reason to have a X_CLOCKCHIP state.
+> 
+> Back to the string thing.  In your lex file do this:
+> 
+> %{
+> 
+> int string_caller;
+> char string_buf[MAX_STR_CONST];
+> char *string_buf_ptr;
+> 
+> %}
+> 
+> %x X_STR
+> 
+> %%
+> 
+> <whatever context that supports the use of a string>
+> \"      {   /* start of a string */
+>             string_caller = YY_START;
+>             string_buf_ptr = string_buf;
+>             BEGIN(X_STR);
+>         }
+> 
+> <X_STR>{
+> \"      {   /* done */
+>             BEGIN(string_caller);
+>             *string_buf_ptr++ = '\0';
+>             yylval.sval = strdup(string_buf);
+>             return (STRING);
+>         }
+> \n      {   /* unterminated string, error */
+> 	    yyerror("unterminated string");
+>         }
+> [^\n\"]+      {
+>                     char *yptr = yytext;
+> 
+>                     while ( *yptr )
+>                         *string_buf_ptr++ = *yptr++;
+> 		    /* you might want to check the length as well */
+>                 }
+> } /* <X_STR> */
+> 
+> %%
+
+  - CRTC index 5 bits 5 and 6 should be "01" for low-res modes (clkdiv2?) to
+    avoid a right shift. grabmode should also know about this:
+       
+       The left/right shifting of the display is correlated only to bits 5 and 6
+       of CRTC index 5.
+
+       The description of these bits in vgadoc4b is quite cryptic.
+
+       Normally, CRTC index 5 has both bits 5 and 6 set to 0.
+       Setting them to 01 (bit 5=1, bit 6=0) shifts the screen 1 char left.
+       Setting them to 10 shifts 2 chars left,
+       Setting them to 11 shifts 3 chars left.
+
+       My BIOS just sets them to 01 in text 40x25,
+       but it works the same way in all modes I tested, both text and graphics.
+
+       Strangely, grabmode seems to ignore these bits in all modes (grabbed timings
+       do not depend on them) except in text 40x25, where it reports that strange
+       512 for hsync end if the bits are set to 01.
+       
+       ...
+
+       It _depends_ on the shift value. I tried setting up 40x25x9 with STM
+       and I got the usual right-shifted screen. grabmode reported it correctly:
+       "40x25"  12.06   320  344  384  400   200  206  207  225 ...
+
+       Then I set the "shift" value to 01. The screen was perfectly centered,
+       but grabmode reported:
+       "40x25"  12.06   320  344  512  400   200  206  207  225 ...
+
+       just as it does with the 40x25 built by the BIOS. Is that a bug in grabmode,
+       some strange interaction between "shift" value and timings, or what?
+
+                                     Massimiliano Ghilardi
+
+
+
+
+- add minimal chipset detection. Esp. on PCI chips this is easy. NOT full
+auto-detect, just check if specified chipset is present. If not: refuse
+(unless "-v" is given)
+
+
+- IBM RGB ramdac: all clocks >80Mhz are set to 80Mhz.
+
+
+

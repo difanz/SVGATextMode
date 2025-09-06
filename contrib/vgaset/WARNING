@@ -1,0 +1,9 @@
+This program can be dangerous: if you use it to adjust scan
+frequencies outside what your monitor can handle, hardware damage can
+be the result.  In particular, if you adjust the image until the
+monitor can no longer keep the picture still, you could cause the
+monitor to overheat and eventually burn out.  This will normally not
+be a problem if you stop running in this mode within a few seconds.
+
+LEMIS will not be responsible for any such damage.  Read the man page
+for more details.

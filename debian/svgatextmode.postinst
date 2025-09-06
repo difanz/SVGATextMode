@@ -1,0 +1,57 @@
+#!/bin/sh
+
+set  -e
+
+if grep -q CLGD542x /etc/TextConfig
+then
+	echo 'fixing your TextConfig to reflect Cirrus chipset name change.' 
+	echo 'see /usr/doc/HISTORY for more information'
+	sed '/'CLGD542x'/s/'CLGD542x'/'Cirrus'/' /etc/TextConfig > /etc/TextConfig.new  
+        mv /etc/TextConfig.new /etc/TextConfig
+fi
+
+if [ -f /etc/rc.boot/svgatextmode ] || [ -f /etc/svgamode ]
+then
+	echo "It appears that you have obsolete conffiles:" 
+	echo "/etc/rc.boot/svgatextmode and /etc/svgamode." 
+	echo "Do you want them to be deleted or moved to a different place" 
+	echo "Say yes if you want the files deleted, no if you want them moved:"
+	echo -n "Y/n"; read answer
+
+	case $answer 
+	in
+	N*|n*)
+		echo -n  "Enter the location where files should be moved:" 
+		read answer1
+		mv /etc/rc.boot/svgatextmode $answer1 || true
+		mv /etc/svgamode $answer1  || true
+		;;
+	*) 
+		echo "Removing obsolete conffiles"
+		rm -f /etc/rc.boot/svgatextmode /etc/svgamode
+		;;
+	esac
+fi
+# fix permissions on /usr/doc/svgatextmode which were possibly messed up by 
+# previous versions of the package
+# (this seems to be an old problem and can probably be removed, but for now
+# we'll err on the cautious side and just make sure its not a symlink - Ron )
+if [ -d /usr/doc/svgatextmode ];
+then
+	chmod 755 /usr/doc/svgatextmode
+fi
+
+# ** changed by Ron Lee for version 1.8-5.3 **
+# to remove links previously created by
+# update-rc.d svgatextmode defaults 40 > /dev/null
+# and start STM from rcS.d instead.
+
+if [ ! -e /etc/rcS.d/S60svgatextmode ];
+then
+	update-rc.d -f svgatextmode remove > /dev/null 2>&1
+fi
+
+update-rc.d svgatextmode start 60 S . > /dev/null 2>&1
+
+#DEBHELPER#
+

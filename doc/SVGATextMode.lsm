@@ -1,0 +1,38 @@
+Begin3
+Title: SVGA textmode manipulation/enhancement
+Version: 1.9
+Entered-date: 12MAR99
+Description: Uses extra features found on SVGA video cards (high pixel
+             clocks) to enhance Linux text modes, independently of what the
+             BIOS can do. It is configured with an XF86Config-like file, and
+             allows setting of pixel clock, H/V timings, font size, cursor
+             size, etc.
+             Enables using the video card AND the monitor to their full
+             potential in textmode, as with the XFree86 X-server. Current
+             support includes S3, Tseng Labs, Cirrus Logic, Trident, Western
+             Digital, ATI, ATI MACH8, MACH32 and MACH64CT, Video7
+             (Headland), Avance Logic (ALI), Oak Technology (OTI), SiS,
+             RealTek, ARK, NCR, Genoa (GVGA), MX, Matrox (Millennium and
+             Mystique), NeoMagic and RIVA128 chips.
+             It can also use an external clock program and supports all S3
+             clock chips from XFREE 3.3. Features automatic font loading,
+             monitor definition (H/V frequency limits), on-the-fly screen
+             resizing, cursor shape definition, ...
+             Also includes: palette changer, pixelclock probe, text/graphics
+             mode grabber, VGA register hacking tool, and a multi-chipset/
+             clockchip ClockProg for X that supports ALL chipsets and
+             clockchips from SVGATextMode.
+             Binaries for Linux-ELF and DOS included for SVGATextMode and
+             grabmode.
+Keywords: SVGA VGA console screen monitor XFree86 Xconfig XF86Config
+Author: koen.gadeyne@barco.com (Koen Gadeyne)
+Maintained-by: koen.gadeyne@barco.com (Koen Gadeyne)
+Primary-site: tsx-11.mit.edu /pub/linux/sources/sbin
+              483k SVGATextMode-1.9-src.tar.gz
+              233k SVGATextMode-1.9-bin.tar.gz
+Alternate-site: sunsite.unc.edu /pub/Linux/utils/console
+Original-site:
+Platforms: Linux machine (Intel or Alpha) with one of the supported VGA
+           cards, kernel 1.1.54 or newer.
+Copying-policy: GNU General Public License (GPL) version 2
+End

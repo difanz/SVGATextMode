@@ -1,0 +1,75 @@
+#!/bin/sh
+#
+#
+# This is an example application of the getVGAreg tool
+#
+# This script produces an svgalib-compatible mode line for an ET4000, from the
+# current mode. Running this from X will enable you to use EXACTLY the same
+# mode from svgalib as from X.
+#
+# It can be easily adapted for other cards that use the dynamic configuration
+# mode of svgalib. 
+#
+# NOTE that `dumpreg' from SVGALIB is much faster, and should give the same
+# result as this one (except for the high registers, which are ordered differently).
+#
+#
+# written by Kris Coryn, adapted for S3 by Koen Gadeyne
+#
+
+GX=../../getVGAreg
+CLOCK=`../../clockprobe`
+
+echo "
+/* mode -- $1 */
+/* Video timing:
+$CLOCK */
+
+static unsigned char g$1_regs[xx] = { 
+\
+  `$GX -x CRTC 0x00`,`$GX -x CRTC 0x01`,`$GX -x CRTC 0x02`,`$GX -x CRTC 0x03`,\
+`$GX -x CRTC 0x04`,`$GX -x CRTC 0x05`,`$GX -x CRTC 0x06`,`$GX -x CRTC 0x07`,\
+`$GX -x CRTC 0x08`,`$GX -x CRTC 0x09`,`$GX -x CRTC 0x0A`,`$GX -x CRTC 0x0B`,
+\
+  `$GX -x CRTC 0x0C`,`$GX -x CRTC 0x0D`,`$GX -x CRTC 0x0E`,`$GX -x CRTC 0x0F`,\
+`$GX -x CRTC 0x10`,`$GX -x CRTC 0x11`,`$GX -x CRTC 0x12`,`$GX -x CRTC 0x13`,\
+`$GX -x CRTC 0x14`,`$GX -x CRTC 0x15`,`$GX -x CRTC 0x16`,`$GX -x CRTC 0x17`,
+\
+  `$GX -x ATRCTL 0x00`,`$GX -x ATRCTL 0x01`,`$GX -x ATRCTL 0x02`,`$GX -x ATRCTL 0x03`,\
+`$GX -x ATRCTL 0x04`,`$GX -x ATRCTL 0x05`,`$GX -x ATRCTL 0x06`,`$GX -x ATRCTL 0x07`,\
+`$GX -x ATRCTL 0x08`,`$GX -x ATRCTL 0x09`,`$GX -x ATRCTL 0x0A`,`$GX -x ATRCTL 0x0B`,
+\
+  `$GX -x ATRCTL 0x0C`,`$GX -x ATRCTL 0x0D`,`$GX -x ATRCTL  0x0E`,`$GX -x ATRCTL  0x0F`,\
+`$GX -x ATRCTL  0x10`,`$GX -x ATRCTL  0x11`,`$GX -x ATRCTL  0x12`,`$GX -x ATRCTL  0x13`,\
+`$GX -x ATRCTL  0x14`,
+\
+  `$GX -x GRCTL 0x00`,`$GX -x GRCTL 0x01`,`$GX -x GRCTL 0x02`,`$GX -x GRCTL 0x03`,\
+`$GX -x GRCTL 0x04`,`$GX -x GRCTL 0x05`,`$GX -x GRCTL 0x06`,`$GX -x GRCTL 0x07`,\
+`$GX -x GRCTL 0x08`,
+\
+  `$GX -x SEQ 0x00`,`$GX -x SEQ 0x01`,`$GX -x SEQ 0x02`,\
+`$GX -x SEQ 0x03`,`$GX -x SEQ 0x04`,
+\
+  `$GX -x MISC`,
+\
+  `$GX -xu CRTC 0x30`,`$GX -xu CRTC 0x31`,`$GX -xu CRTC 0x32`,`$GX -xu CRTC 0x33`,\
+`$GX -xu CRTC 0x34`,`$GX -xu CRTC 0x35`,`$GX -xu CRTC 0x36`,`$GX -xu CRTC 0x37`,\
+`$GX -xu CRTC 0x38`,`$GX -xu CRTC 0x39`,
+\
+  `$GX -xu CRTC 0x3a`,`$GX -xu CRTC 0x3b`,`$GX -xu CRTC 0x3c`,`$GX -xu CRTC 0x3d`,\
+`$GX -xu CRTC 0x3e`,`$GX -xu CRTC 0x3f`,`$GX -xu CRTC 0x40`,`$GX -xu CRTC 0x41`,\
+`$GX -xu CRTC 0x42`,`$GX -xu CRTC 0x43`,
+\
+  `$GX -xu CRTC 0x44`,`$GX -xu CRTC 0x45`,`$GX -xu CRTC 0x46`,`$GX -xu CRTC 0x47`,\
+`$GX -xu CRTC 0x48`,`$GX -xu CRTC 0x49`,`$GX -xu CRTC 0x4a`,`$GX -xu CRTC 0x4b`,\
+`$GX -xu CRTC 0x4c`,`$GX -xu CRTC 0x4d`,
+\
+  `$GX -xu CRTC 0x4e`,`$GX -xu CRTC 0x4f`,`$GX -xu CRTC 0x50`,`$GX -xu CRTC 0x51`,\
+`$GX -xu CRTC 0x52`,`$GX -xu CRTC 0x53`,`$GX -xu CRTC 0x54`,`$GX -xu CRTC 0x55`,\
+`$GX -xu CRTC 0x56`,`$GX -xu CRTC 0x57`,
+\
+  `$GX -xu CRTC 0x58`,`$GX -xu CRTC 0x59`,`$GX -xu CRTC 0x5a`,`$GX -xu CRTC 0x5b`,\
+`$GX -xu CRTC 0x5c`,`$GX -xu CRTC 0x5d`,`$GX -xu CRTC 0x5e`,`$GX -xu CRTC 0x5f`
+\
+};
+"

@@ -1,0 +1,44 @@
+mga_clock.o: mga_clock.c ../misc.h ../messages.h common/compiler.h \
+ mgareg.h include/Xmd.h vgaPCI.h common_hw/xf86_PCI.h
+riva128_clock.o: riva128_clock.c ../messages.h ../vga_prg.h ../misc.h \
+ ../chipset.h ../cfg_structs.h include/Xmd.h vgaPCI.h \
+ common_hw/xf86_PCI.h
+vgaPCI.o: vgaPCI.c ../misc.h include/Xmd.h os-support/xf86_OSlib.h \
+ common/compiler.h ../messages.h vgaPCI.h common_hw/xf86_PCI.h
+xfree_compat.o: xfree_compat.c common/compiler.h xfree_compat.h \
+ ../misc.h ../chipset.h ../cfg_structs.h common_hw/Ti302X.h
+ATTDac.o: common_hw/ATTDac.c include/Xfuncproto.h common/compiler.h \
+ os-support/xf86_OSlib.h ../misc.h
+Ch8391clk.o: common_hw/Ch8391clk.c include/Xfuncproto.h \
+ common/compiler.h os-support/xf86_OSlib.h
+CirrusClk.o: common_hw/CirrusClk.c include/Xfuncproto.h \
+ common/compiler.h ../misc.h os-support/xf86_OSlib.h
+I2061Aalt.o: common_hw/I2061Aalt.c include/Xfuncproto.h \
+ common/compiler.h os-support/xf86_OSlib.h
+I2061Acal.o: common_hw/I2061Acal.c include/Xfuncproto.h \
+ common/compiler.h common_hw/ICD2061A.h
+I2061Aset.o: common_hw/I2061Aset.c include/Xfuncproto.h \
+ common/compiler.h common_hw/ICD2061A.h
+IBMRGB.o: common_hw/IBMRGB.c include/Xfuncproto.h common/compiler.h \
+ os-support/xf86_OSlib.h common_hw/IBMRGB.h
+ICS1562.o: common_hw/ICS1562.c include/Xfuncproto.h \
+ os-support/xf86_OSlib.h common/compiler.h common_hw/xf86_HWlib.h
+ICS2595.o: common_hw/ICS2595.c include/Xfuncproto.h \
+ common_hw/ICS2595.h common/compiler.h os-support/xf86_OSlib.h
+IODelay.o: common_hw/IODelay.c
+S3gendac.o: common_hw/S3gendac.c include/Xfuncproto.h \
+ common_hw/S3gendac.h common/compiler.h os-support/xf86_OSlib.h \
+ common_hw/xf86_HWlib.h
+SC11412.o: common_hw/SC11412.c include/Xfuncproto.h \
+ common_hw/SC11412.h common/compiler.h os-support/xf86_OSlib.h
+STG1703clk.o: common_hw/STG1703clk.c include/Xfuncproto.h \
+ common/compiler.h os-support/xf86_OSlib.h
+TGUIclk.o: common_hw/TGUIclk.c ../chipset.h ../cfg_structs.h ../misc.h \
+ common/compiler.h os-support/xf86_OSlib.h
+Ti3025clk.o: common_hw/Ti3025clk.c include/Xfuncproto.h \
+ common_hw/Ti302X.h common/compiler.h os-support/xf86_OSlib.h
+Ti3026clk.o: common_hw/Ti3026clk.c include/Xfuncproto.h \
+ common_hw/Ti302X.h common/compiler.h os-support/xf86_OSlib.h
+xf86_PCI.o: common_hw/xf86_PCI.c common/compiler.h include/Xmd.h \
+ /usr/include/stdlib.h os-support/xf86_OSlib.h common_hw/xf86_PCI.h
+IODelay.o: common_hw/IODelay.S os-support/assyntax.h

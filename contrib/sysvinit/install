@@ -1,0 +1,72 @@
+From: mikedlr@it.com.pl
+
+This is a SYSV style init script for SVGATextMode.  It sets to
+specific text mode and then changes back to 80x25 on shutdown.  To make it
+work on a SYSVInit / RedHat machine either:
+
+install as /etc/rc.d/init.d/svgatextmode
+cd /etc/rc.d
+for i in 3 4 5; do ln -s ../init.d/svgatextmode rc$i.d/S83svgatextmode; done
+for i in 0 6; do ln -s ../init.d/svgatextmode rc$i.d/K05svgatextmode ; done
+
+	or 
+
+install as /etc/rc.d/init.d/svgatextmode
+for i in 0 6; do ln -s rc$i.d/K05svgatextmode ../init.d/svgatextmode
+Run TkSYSV (runlevel editor) from the control panel and add it to your
+favourite modes.
+
+83 is chosen because it's after gpm so no restart of that is needed.
+
+----------------------------------------------------------------------
+#!/bin/sh
+#
+# SVGATextMode
+#
+# This must be executed *after* /usr is mounted.
+# This means is /usr is NFS-mounted, it needs to
+# run after networking and NFS mounts are up.
+
+# description: this changes the screen sizing.  Since SVGATextMode can
+# use the first clock on a video card (the normal text one) it's
+# important to return to the default video mode before shutdown so
+# that dos then works correctly.
+
+# Copyright Michael De La Rue 1998.  This may be distributed under the 
+# terms of the GNU General Public License, version 2 or, at your option, 
+# later.  Based on scripts copyright RedHat Software under the same license.
+
+[ -f /usr/etc/TextConfig ] || exit 0
+
+[ -f /usr/sbin/SVGATextMode ] || exit 0
+
+case "$1" in
+	start)
+		# Set working TextMode
+		echo -n "Changing Text Mode to 100x37+: "
+		/usr/sbin/SVGATextMode 100x37+ #choose your favourite.
+	        touch /var/lock/subsys/svgatextmode
+		;;
+	stop)
+		# This means that after reboot the system will be able to
+		# understand the clocks safely.
+		/usr/sbin/SVGATextMode 80x25 # defaultmode
+	        rm -f /var/lock/subsys/svgatextmode
+		;;
+	restart)
+		$0 start #which should correct any mode problems
+		;;
+	status)
+		if [ -f /var/lock/subsys/svgatextmode ] 
+		then 
+			echo Display is in non standard textmode
+		fi	
+		exit 0
+		;;
+	*)
+		echo "Usage: keytable {start|stop|restart|status}"
+		exit 1
+esac
+
+exit 0
+--------------------------------------------------------------------

@@ -1,0 +1,12 @@
+# Makefile for vgaset. 
+
+# Set HAS_USL_VTS if you are using SRV4 or (reportedly) Linux
+# HAS_USL_VTS=-DHAS_USL_VTS
+
+# set COMMON to the pathname of the x386/common/compile.h header file
+COMMON=/bsdi/src/X11.free/mit/server/ddx/x386/common
+CC=gcc
+CFLAGS=-g -O3 $(HAS_USL_VTS)
+
+vgaset: vgaset.c svga.h
+	$(CC) $(CFLAGS) -I$(COMMON) vgaset.c -o vgaset

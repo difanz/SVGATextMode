@@ -1,0 +1,1033 @@
+
+
+	FREQUENTLY ASKED QUESTIONS ... AND ANSWERS!
+	===========================================
+
+This file describes some possible problems that you could encounter when
+using SVGATextMode, and, if any, the suggested solution(s). It also
+describes what you should do when you want to report a problem to the
+author (like reading this FAQ for example...).
+
+
+
+Contents
+
+  1. SVGATextMode doesn't work. Please help me.
+     (what to do when you have no idea what's wrong)
+
+  2. SVGATextMode causes problems together with SVGALIB.
+
+  3. SVGATextMode causes problems together with the XFree86 X-server
+
+  4. SVGATextMode causes problems together with Accelerated-X
+    
+  5. SVGATextMode causes problems together with DOSEMU
+
+  6. SVGATextMode causes problems together with GPM
+
+  7. Why are text mode clock limits are mostly LOWER than graphics mode
+     clocks
+
+  8. SVGATextMode produces a Completely Blank Screen!
+
+  9. The screen seems to sync up, but is completely unreadable
+
+ 10. When rebooting to DOS, the screen is black or not syncing.
+
+ 11. stm: ERROR: Could not get Millennium PCI info
+
+ 12. segfault when running SVGATextMode on newly compiled kernel
+
+ 13. problems with 2.1.xx kernels (VT_RESIZEZ failing)
+
+ 14. How do I configure SVGATextMode for a laptop?
+
+
+=============================================================================
+
+
+  1. SVGATextMode doesn't work. Please help me.
+     (what to do when you have no idea what's wrong)
+  --------------------------------------------------
+
+Yes, people ask that all too often.
+
+Before throwing either SVGATextMode or your computer out the window,
+consider doing some tests to see what goes wrong.
+
+When first trying out SVGATextMode, you might run into a bunch of problems.
+
+Some general guidelines for configuring SVGATextMode correctly:
+
+ - Make ABSOLUTELY sure the chipset selection is correct. Unlike the XFREE
+   X-server program SVGATextMode does NOT check if you actually HAVE the
+   chipset you defined in the config file!
+   
+ - Do NOT enable the Clocks lines in the TextConfig file just like that.
+   They are true only for a CERTAIN card using that chipset. You should
+   enter the CORRECT clocks, as derived from the X-server with
+   
+         "X -probeonly"
+         
+   If you enter the wrong clocks line, all modes above 80x25 will NOT work
+   as expected. You've been warned. 
+   
+ - If you've already configured X-Windows on your system, take a look into
+   the XF86Config file. It contains a lot of stuff that can be copied right
+   into the TextConfig file!
+   
+ - To avoid a lot of non-functionning modes, fill in the correct monitor
+   limits in the HorizSync and VertRefresh variables. Especially if you have
+   a smaller/cheaper/older monitor.
+
+ - If all simple methods fail, my BEST advice is to look for ANOTHER monitor
+   (rob a store, a friend, or any other innocent victim from his/her monitor
+   for a while!), and hook it up to your machine. Now try if the same modes
+   that DON'T work on your screen, work on the other screen! Some monitors
+   are VERY picky on video timings, and switching monitors is the best way
+   to find out if SVGATextMode is wrong, or your monitor...
+   
+   
+And if all these points have been adequately taken care off, the time has
+come to do some more extensive tests. 
+
+You need to know WHAT exactly is going wrong. Don't send me a mail like
+this (this is REAL. Someone really sent me this!) :
+ 
+     Hi,
+     
+     I've just downloaded the latest version of SVGATextMode, and it doesn't
+     work. What should I do??? What am I doing wrong????
+     
+     Any help would be greatly appreciated!!!!!!
+     
+     Mr X.      (you didn't think I would print his name here, would you?)
+     
+I'm sorry, but my response (if any!) to that will be somewhat sarcastic.
+
+Don't even for a minute think I can help you if you tell me NOTHING.
+The example above is really the worst one I ever received, but some come
+close.
+
+My first advice is: READ THE DOCUMENTATION! I am really trying to put as
+much useful information in it as possible, so read it. I never read a lot
+of docs myself when I try something new, but if it doesn't work, reading
+docs is the thing to do!
+
+And secondly: either be prepared to do some solid tests, or throw it away
+right now. 
+
+The best test to do, is to select a text mode that doesn't work, and then
+grab it using "grabmode". If you need to do this blindly ('cause the stupid
+piece of &^%#@* makes the screen go nuts), redirect the output to a file,
+restore the text mode to a readable one (either through SVGATextMode or a
+reboot), and COMPARE THE OUTPUT OF GRABMODE WITH WHAT YOU SELECTED FROM THE
+CONFIG FILE.
+
+See what's different. In fact, there should be NO BIG DIFFERENCES. If there
+are, then you've probably found the cause of your trouble. As in any kind of
+problem, locating the cause if half of the solution!
+
+The font size and sync polarities reported by grabmode should be EXACTLY the
+same as the selected text mode from the config file.
+
+The vertical video timings (second group of 4 numbers) should be EXACTLY the
+same, except for the first one, which was rounded to the nearest multiple of
+the font height when programmed into the VGA chip.
+
+The horizontal timings should be close: a maximum difference of 7 is
+allowable (these numbers are rounded down to a multiple of 8 before sending
+them to the VGA chip).
+
+And the pixel clock should at least be close. There are two reasons for a
+difference: first of all, when looking for a suitable clock in the clocks
+line, SVGATextMode picks the CLOSEST clock, allowing for a 3 MHz difference.
+And the second cause is the clock probe, which could, under very bad
+conditions, add another  MHz or so to the error. So if the probed clock is
+off by 4 or more MHz, then the clock selection code selected the wrong
+clock.
+
+This can have several causes:
+
+  - a bug (but there are none... :-(
+  
+  - an incorrect clocks line: if it tells SVGATextMode that clock index 7 is
+    a 50 MHz clock, and it is IN FACT 80 MHz, don't be surprized if it
+    doesn't work. SVGATextMode sopposes the clocks line is reality, and will
+    select the clock at index 7 when you select a nmode at 50 MHz.
+    with the appropriate testing, you should be able to determine what
+    entries in the clocks line are wrong, or what they should be. You could
+    even make your own clock probing script by selecting each possible clock
+    index, and doing clockprobe on each mode with that clock. That way you could
+    eventually create a correct clocks line from it. It's rather cumbersome,
+    but it might help. Until I add a real clock probe (as in X).
+
+  - If you use an external clock program. through the "clockprog" line, it
+    could be the wrong one (=designed for ANOTHER card, with probably
+    ANOTHER clock chip one it), or the clock program doesn't interpret the
+    arguments given to it correctly, or a million other reasons. Check the
+    program WITHOUT SVGATextMode: use the clock probe to see what clock
+    you're currently using, and then manually select the SAME clock with
+    that external clock program. Nothing should change, since you replace the
+    current clock with the same one. As long as this doesn't work, don't
+    bother trying it in SVGATextMode.
+      e.g.:
+          command: ./clockprobe
+          result: ./clockprobe: Estimated vertical scanrate = 70.07 Hz.
+                  ./clockprobe: Estimated horizontal scanrate = 31.547 kHz.
+                  ./clockprobe: Estimated pixel clock = 28.387 MHz.
+                  
+      so the clock is 28.3 MHz. try:
+          <your_cloc_program> 28.3      (if it takes MHz as arguments).
+          
+      if nothing changes, it COULD work. Now try this from your other text
+      modes also (especially the 132x... modes, since they use another
+      clock: 40 or 45 MHz)
+  
+  - If you use a clockchip line, make sure it is the correct one (it should
+    be the same one you use in X). If you're in doubt, try some of them, but
+    prepare for some reboots!
+    
+  - The clock selection mechanism of your VGA chip simply isn't supported. 
+    If the docs of SVGATextMode say it SHOULD be supported, try reading some
+    more docs, they might give you some ideas.
+    
+  - If you're using an ET4000, watch that hibit_... option ! (it's in the
+    docs).
+    
+  - ?
+      
+
+Example: 
+
+  TextConfig mode:
+  "B132x48" 75 1056 1088 1240 1336 768 775 776 800 +hsync +vsync font 8x16
+                           
+  grabmode report: 
+  "132x48" 75.165  1056 1088 1240 1336  768 775 776 800  +Hsync +Vsync font 8x16
+               >>   # 56.261kHz/70.33Hz
+               
+When you see this, you know the card is configured properly. All numbers are
+roughly the same.
+
+If your monitor doesn't show an image, maybe it cannot cope with the scan
+rates this mode uses: SVGATextMode tells you those when loading the mode,
+and grabmode adds them as a comment at the end of the mode line. If you have
+no idea what I'm talking about: READ THE "monitor-timings.howto" FILE! 
+
+If grabmode would e.g. report a 25 or 28 MHz clock in the example above (or
+40/45 MHz when started from a 132x... mode), SVGATextMode probably didn't
+change the clock at all. See above for some possibe causes. If any other
+number comes out, 
+
+
+When all this doesn't help you, you could try looking INSIDE SVGATextMode,
+to see what it does to select your text mode. That's why the "-d" option was
+added: it shows all steps and their results as SVGATextMode goes through the
+process of parsing the TextConfig file, and finally selecting your mode. It
+wasn't made to be easy-reading prose, but rather to contain as much as
+possible information on the internals of SVGATextMode. Try patiently
+browsing through the output, and maybe you'll find the reason for your
+problems.
+
+And if, after trying all this an more of your own ideas, you are still stuck
+with a problem, THEN you can try asking the author. But make sure to add all
+relevant information:
+
+   - version of SVGATextMode used.
+   - the part of the TextConfig file you enabled for your card (clocks,
+     clockprog, clockchip, options, ...). Don't send the entire TextConfig,
+     I know what it looks like ;-)
+   - If you have tried configuring X before, add the relevant part of your
+     Xconfig (or XF86Config for XFREE 3.x), and comment on the behaviour of
+     X: what worked, and what didn't. 
+   - your Linux kernel version number.
+   - the type of VGA card!!!! (some forget this, can you imagine?)
+     brand, chipset, memory, bus, ... any related or non-related problems
+     you had with it, ...
+     Mention your VGA card type in EVERY mail to me. This saves me a lot of
+     mail-backtracking to find out what you're talking about!
+   - which text modes worked, and which didn't. Also add the results from
+     grabmode on each mode you mention (especially if that mode doesn't
+     work).
+   - If you suspect that SVGATextMode doesn't interpret the TextConfig
+     correctly, prove it with the output from "SVGATextMode -d" (or part of
+     it; don't send the output of SVGATextMode -d for EVERY text mode in the
+     Config file. Just show your point with maybe a few modes).
+   - any other information you consider relevant (like your sister's age ;-).
+     
+I know not everyone can understand the black magic of video cards, monitor
+timings, and kisses that turn frogs into princes, but reading some
+documentation, and using common sense can help a lot.
+
+
+
+
+
+  2. SVGATextMode causes problems together with SVGALIB.
+  ------------------------------------------------------
+
+Yes, this is a major problem. Depending on the type of card you have,
+Svgalib can do sereral things wrong. In most cases, svgalib is the real
+culprit (because SVGATextMode does SO VERY LITTLE compared to SVGAlib).
+
+The most common problemn is SVGAlib starting up with the wrong pixel clock
+programmed. The result is a non-syncing monitor, or the display divided into
+4 parts with each part showing the same original screen, or a very flickery
+screen, or anything else a monitor can come up with...
+
+If you suspect this is the case, you can check the clock used by that SVGAlib
+mode using the clockprobe. When the screen does not sync, you can do that
+from a remote terminal, or if you don't have one, start it with a delay:
+
+    (sleep 5 ; ./clockprobe > probe.out) &
+
+and then quickly start your SVGAlib application. After you get back to a
+readable text mode, check the probe.out file to see what happened. 
+
+I am of course unable to do much testing on this, since I don't own any
+VGA card with those problems (just luck, I guess).
+
+But the only real possibility would be that SVGAlib doesn't reprogram ALL
+necessary registers to get to that specific graphics mode, and leaves some
+of them untouched. The most obvious ones are the clock programming
+registers/bits. And in that case, SVGAlib needs to be adapted to reprogram
+ALL clock selection bits.
+
+Since SVGATextMode uses approximately the same clock selection method as the
+XFREE server (and will come closer and closer to it in the future), it is
+likely that you encounter the same problem when using SVGAlib together with
+X (e.g. switching from SVGAlib to X and vice versa).
+
+Wouldn't the future be much brighter if SVGAlib, XFREE and SVGATextMode used
+the SAME VGA programming library, so they cooperate instead of fight?
+
+At least ET4000's and Trident cards have been known to show this problem.
+
+
+  2.1. ET4000
+
+[ the following little theory MIGHT be wrong, but I didn't want to spend too
+  much time browsing through the SVGAlib source code. I'm a little lazy :-(
+  Many SVGATextMode users reported a similar phenomenon, and provided enough
+  feedback to justify this. It seems to be mainly an ET4000 problem ]
+
+
+SVGAlib has two different sets of modes: the standard VGA modes, and the chipset
+specific ones. The most common standard mode is 320x200x256. Others,
+commonly known as "VGA tweaked modes" are also available.
+
+The standard modes use the standard clock selection machanism used in all
+VGA cards: programming the clock to 25 or 28 MHz. ANd they DON'T program any
+chipset-specific clock registers.
+
+In order to use the ET4000 with SVGAlib, the authors included a program to
+run from DOS, that gets you all the necessary data to complete the svgalib
+config file. All the modes extracted in that way DO use all ET4000 clock
+registers. In addition to the ones grabbed from DOS, SVGAlib also adds a
+few "standard" modes of its own, independent of the chip set.
+
+The problem creeps up when you run SVGAlib from an extended (non-standard)
+SVGATextMode mode, with a non-standard clock (not 25 or 28 MHz). SVGATextMode
+has changed the ET4000 extended clock selection bits to get the special
+(mostly higher) clock needed for that text mode. But when you select a
+standard SVGAlib mode (like 320x200x256), it only changes the standard clock
+bits, and leaves the extended ones as they were. 
+
+The result is obvious: you get a different pixel clock than was intended.
+Many ET4000 cards will run at 50 MHz when in fact they had to run at 25 MHz
+for that graphics mode (you can test that with the clockprobe). A real
+problem for all those DOOM fans around!
+
+When using a non-standard graphics mode (which came from the BIOS, using
+that special program for example), the problem does not show, since then ALL
+clock selection bits are programmed.
+
+
+
+
+
+  3. SVGATextMode causes problems together with the XFree86 X-server
+  ------------------------------------------------------------------
+
+  3.1. ET4000
+
+Most problems are caused by a missing "hibit_..." option in the TextConfig
+file or the XF86Config file or both. The option must be present in both
+files, and must be the same in BOTH files, otherwise either one will not
+work properly, especially when switching vt's.
+
+  3.2 Switching between X and text mode
+
+Take heed when switching back to textmodes from X! The XFREE server samples
+all SVGA registers for their text mode contents BEFORE moving on to graphics
+mode. IT NEVER SAMPLES THEM AGAIN, until it's restarted!
+
+When switching back to text mode (either with CTRL-ALT-Fxx or by exiting X),
+the X-server just pumps all sampled text mode registers back into the VGA
+chip, and switches to the requested console.
+
+If you would have changed text modes AFTER having started X, something
+wonderfull will happen!
+
+Example: You start X, find a neat little text mode utility called
+SVGATextMode on your hyper-super-user-friendly-Internet-unfriendly WWW
+Browser, decide to give it a try, switch to text mode, and start fooling
+around with it. You set up a completely new, big, nice text mode, decide to
+stick with it for a while, switch back to X and start your Mail program to
+tell all your friends what great tool you just found. You suddenly decide to
+swicth back to text mode... and BANZAI! the screen is a complete mess. You
+decide NOT to advise all your friends to use SVGATextMode! BIG mistake (of
+course...).
+
+At this moment, your text mode is back to the mode it was in BEFORE you
+started X (e.g. back to 80x25, instead of the 100x37 SVGATextMode provided),
+but something's wrong. Text is writtn in the wrong place, the prompt wraps
+around the screen (i.e. jumps 20 chars to the left on each new line, instead
+of sticking to the left side), and dissapears below your monitor.
+
+What the X-server did, is restore text mode registers from when IT started
+(= before SVGATextMode). This should be no real problem, where it not that
+the KERNEL parameters are still at 100x37, and it writes characters to the
+VGA memory supposing the mode is still 100x37. A nice big screwup!
+
+This is a 'problem' with the X-server, not with SVGATextMode. If it would
+sample text mode registers EVREY time it switched from text mode to X, this
+would not happen. 
+
+  3.3 A special case: Programmable clock chips
+
+In addition to the problem described above, there's an extra problem for
+owners of a VGA card with a programmable clock chip (mostly S3 cards). Some
+of those clock chips are WRITE-ONLY! That means there is NO WAY to re-read
+the programmed clock values from the chip. This is a major problem for the
+X-server, because it CANNOT know what clock to restore when switching back
+to text mode. 
+
+So with those chips (e.g. ICD2061a) the X-server needs to be TOLD what clock
+your text mode used, in order to be able to restore it properly. In XFREE
+3.x, clockchips can be supported through the "ClockProg" option. And in
+addition to the clock frequency you needed to specify for that clockprog
+(first argument) there was also a SECOND argument: the clock index to use
+for returning to text mode.
+
+[from XFREE 3.1 docs:]
+
+       ClockProg "command" [textclock]
+
+               [...]
+               The optional textclock value is used to tell the server that
+               command must be run to restore the textmode clock at server
+               exit (or when VT switching). textclock must match one of
+               the values in the Clocks entry. This parameter is required
+               when the clock used for text mode is a programmable clock.
+
+For SVGATextMode, you will ALWAYS use the programmable clock (mostly the
+only non-programmable clocks on such chips are the VGA-standard 25 and 28
+MHz).
+
+I have no idea how this works when defining a "ClockChip" in the XF86Config
+file. If you have a programmable clockchip card, and text modes are NOT
+restored properly, your first bet will be to use grabmode or clockprobe to
+see how the clock got programmed.
+
+In most cases it will be back at 25 or 28 MHz, or the same clock as from X
+will be used. In that last case this means the X-server didn't change the
+clock when switching to text mode.
+
+I don't know how to solve that, other than to advise you to use the SAME
+pixel clock in text mode as in X. That way when X doesn't restore the clock,
+and it remains where it was, it will be where it has to be (are you still
+following?). Theree's another advantage to this: If you pick the EXACT same
+timings in X as in text mode, your monitor will NOT need the extra few
+seconds to sync up to the new frequency. This way switching  between text
+modes and X is lightning fast, no delays!
+
+
+
+
+
+  4. SVGATextMode causes problems together with Accelerated-X
+  -----------------------------------------------------------
+
+Commercial software is always better, isn't it? No way.
+
+Xig ignored the whole mode-switching problem by simply assuming (and
+requiring) that you are running a standard VGA text mode (= 80x25) at all
+times.
+
+The upshot being that Accelerated-X will ALWAYS restore a 80x25 text mode
+when it goes back to textmode. It will NOT restore your custom text mode.
+
+This would not be a big ol' problem, were it not that those plonkers were so
+high with their xbench scores that they forgot to tell the kernel that they
+just changed the textmode size.
+
+The kernel still thinks you're running your previous text mode (e.g. 100x37)
+and will happily render characters in the video memory as if it were still
+that mode. Of course, since we're now actually looking at 80x25, the screen
+looks pretty much messed up.
+
+No, there is nothing that can be done about that on the SVGATextMode side.
+Even if I wanted to (which I don't).
+
+Throw away that piece of junk, and get yourself XFree86.
+
+
+
+
+
+  5. SVGATextMode causes problems together with DOSEMU
+  ----------------------------------------------------
+
+[ note: this applies to any DOSEMU version before 0.60. Newer versions may
+  or may not behave similarly ]
+
+DOSEMU, the Linux DOS emulator, can be made to run in "native" VGA mode,
+where it is allowed to take control of the VGA chip so you can even do VGA
+graphics under the DOS emulator. This is enabled when a line similar to
+
+   video { vga  console  graphics }
+   
+is enabled in the /etc/dosemu.conf file. A chipset definition can be used
+for some cards to get even better support.
+
+In order to still allow console switching, DOSEMU will "remember" the VGA
+registers before it allows the DOS BIOS to start changing the whole lot. 
+
+And that's where the problems start. DOSEMU has no VGA card detection
+built-in, so if you use the line above, i.e. without specifying the chipset,
+DOSEMU will only remember the standard VGA registers. And it will only
+restore those when you do either a VT-switch (ALT-Fx) or exit the DOS
+emulator.
+
+Let's first consider the case when you are NOT using SVGATextMode...
+
+If your Linux console is in standard VGA text mode (80x25 or any other
+80-wide text mode), then there is no problem since this IS a standard VGA
+mode.
+
+BUT if you are using a "VGA" 132x25 or 132x43 mode (for example) from the
+lilo or loadlin config file, then you are using a 40 or 45 MHz pixel clock,
+and chances are that this clock is NOT one of the standard 4 first VGA
+clocks on your SVGA card. If you don't specify the chipset, the DOSEMU will
+not be able to restore this extra (SVGA) clock register, and thus chances
+are you return from DOSEMU with an out-of-sync screen.
+
+If you are using SVGATextMode, things get even worse.
+
+SVGATextMode uses all possible extended VGA clock setting registers, so you
+can get more exotic and better looking modes. But this comes at a price.
+Since DOSEMU doesn't know about so many chipsets (and in the case of S3,
+about all sorts of clockchips), it will NOT remember all those special
+registers when it starts, and it'll also not restore them when you switch
+away from it (or exit it).
+
+The DOSEMU people are focussing on getting the DOS emulation as good as
+possible, and not on super-clean VT-restoration. That's a good thing for all
+of us, because this way we get a better DOSEMU faster. For as far as I know,
+there has been not much change in the VGA support of DOSEMU in the last
+year, and it doesn't look like they are going to do this quickly. With
+reason. I suggest you bug me enough so I could at least provide support for
+all SVGATextMode chipsets/clockchips in the DOSEMU code. 
+
+Better even, if DOSEMU would use svgalib (or GGI) for its VGA save/restore
+code, then nobody would have to do any superfluous coding. If svgalib
+improves, so will DOSEMU's VGA support. Downside: you would need svgalib
+when using DOSEMU.
+
+The bottom line: if you are using SVGATextMode together with DOSEMU, and you
+either don't let DOSEMU know what chipset you have, or DOSEMU doesn't
+support it, you are bound to get in trouble some day.
+
+The solution (so far) is to either use DOSEMU in console mode (no VGA
+graphics), or re-run SVGATextMode each time you leave the DOS emulator, or
+use savetextmode/restoretextmode from svgalib.
+
+
+
+
+
+  6. SVGATextMode causes problems together with GPM
+  -------------------------------------------------
+
+Some people have reported that GPM sometimes causes garbage characters to be
+pasted when doing a cut-and-paste operation. Sometimes characters are lost
+in the pasted data, or characters get corrupted (becoming other characters
+or semigraphic characters).
+
+On some systems, this happens independently of SVGATextMode. On others,
+high-pixelclock modes cause this to happen more often. On most of these
+systems, a Logitech serial mouse is used (the Microsoft compatible types,
+not the old ones using the Logitech protocol).
+
+This is NOT a problem with SVGATextMode. It seems to be a problem with gpm,
+because "selection" (another program doing a similar thing as gpm) does not
+have these problems.
+
+
+
+
+
+
+
+  7. Why are text mode clock limits are mostly LOWER than graphics mode
+     clocks
+ -----------------------------------------------------------------------
+
+
+   7.1. The VGA chip designer at work.
+
+This in an often misunderstood aspect of SVGATextMode. Imagine yourself in
+the place of the poor dude that designed the SVGA chip you're about to fry. 
+
+His boss wants it to be the FASTEST and CHEAPEST chip on the market. So what
+do you do? You look at what users really USE in a (S)VGA chip. 
+
+Ah! They want fast Windows performance? Good, let's accelerate JUST those
+things that make the Windows performance increase. You've just invented the
+so-called "Windows accelerator".
+
+And of course, everybody wants high resolution modes, so they can throw a
+zillion open windows onto the desktop without cluttering it. OK. High pixel
+clocks are needed here. We need to zap a LOT more pixels to the modern VGA
+screen than we used to do in the good old CGA-days...
+
+Oh, and don't forget: the new buzzword is "VESA modes". Damn, we'll need
+high screen refresh rates. That means even higher pixel clocks. Well, let's
+spend some money so the GRAPHICS part is fast, 'cause that's the part that
+needs the high resolutions at high refresh rates (and thus the high pixel
+clock): a white background with a few darker parts in it (=Windows!) is MUCH
+more prone to screen flicker than the opposite (=most text modes).
+Obviously, a BLACK screen cannot flicker (unless you read Terry Pratchett's
+DiscWorld books)!
+
+So, that's it. Most VGA chips can run AT LEAST at 85 MHz in graphics mode.
+If you want to spend a little more money, you'll be able to get a minimum of
+135 MHz nowadays. 170 MHz is commonplace, and really expensive things can
+even go as high as 250 MHz. Some workstation boards can churn out pixels at
+an amazing 500 (five hundred!) Million 24-bit pixels per second. But you'll
+need to spend some more money on those.
+
+
+And text mode? Uh... Oh... what? Oh well, Almost nobody uses it anymore, now
+that windowed systems are taking over. Only some die-hard programmers
+consider text modes to be superior to windows stuff (for programming). Funny
+isn't it? Many of the people that actually MAKE those windowed environments
+seem to prefer text modes for programming?!
+
+So let's make sure they can do a 132x43 screen, or even 132x60. That'll shut
+them up. We won't lose customers on that, since all other VGA card
+manufacturers do the same. There's no real money in that.
+
+
+End of story. The bottom line: graphics chip/card makers cry out loud that
+their thing can run at xxx MHz, and shut up about text modes. With a good
+reason: they're not running at that same speed as graphics modes. They
+didn't spend money on getting text mode performance up to speed, making the
+chip a cent more expensive than the other brand.
+
+The result is that all common SVGA cards are never used at clocks above 45
+MHz in text modes, since that's all that VGA card makers put in their video
+BIOS'ses. So why design them to be able to run at 90 MHz? Nobody will
+notice!
+
+If you would be able to browse the data sheets on some cards, you'd see the
+difference. Most data sheets ONLY mention the maximum GRAPHICS pixel clock,
+and never even mention text mode maximum clock. S3 and Cirrus Logic are
+examples of this (don't shoot me if I overlooked it). The only positive
+exception is the ET4000W32i/p data book. And it says the maximum graphics
+clock is 86 MHz, and the max. text mode clock is (just) 56 MHz (as with many
+"maximum safe limits" in data books, this is highly underestimated in most
+cases).
+
+
+And this immediately shows my point: don't expect text mode clocks to work
+as high as graphics clocks! They're almost NEVER designed to do that.
+
+But also keep in mind you might get lucky. The ET4000W32i/p for example, being
+the only one I know of explicitly stating a maximum text mode clock, can be
+used WAY beyond that maximum: although the data book says 56 is the maximum,
+it runs well upto even 90 MHz.
+
+The opposite example is the Trident 8900 series: although its pixel clocks
+can be over 90 MHz, most cards go bananas at any speed over 45 MHz in text
+mode. 
+
+
+  7.2. How can you see the text mode clock is too high?  
+
+Depending on how out-of-spec your text mode clock is, you'll get the
+following phenomena (this is a bit tough to describe. If anyone comes up
+with a better description, I'd like to hear about it):
+
+- when just a tidbit too high, some characters will be "unstable". They will
+"crawl" on the spot. It's like they're morphing between two different
+characters. It's like there are two letters on the same place, switching
+between the one and the other at about Mach-2 :-) It has also been described
+as a sort of local interlacing effect on some characters.
+
+In most cases, this happens on certain places only. On some cards, it's just
+near the left or right edge. On other cards it's only every 4 characters. On
+others it's only in places where LOTS of characters are closely together
+(like in a hexdump, or a dense text file). On my card (S3 805), this starts
+at about 70 MHz.
+
+- When things get worse (clock a bit more above MAX), more and more
+characters will start showing that effect. Some letters will be stable, but
+simply the wrong letter, making it hard to read the text (it's like it's
+been scrambled). Sometimes it's the correct character, but shifted one pixel
+line down. I get this at 85-90 MHz. Not very useful.
+
+- A bit further down the line of bad text is when text starts to show a
+"duplication" effect: some parts of the text are duplicated on the same line
+of text, more to the right. You could also witness random characters all
+over the screen, where none should be.
+
+- And when things get really out of hand, it's like the monitor won't sync,
+the screen is a complete mess, You can not distinguish ANY characters,...
+Your screen looks more like an intro for a cheap science-fiction show.
+
+The worst card of all (Trident), works perfectly up to 45 MHz, and at 50 MHz
+it's already in "phase 3" (the science fiction intro). That should give you
+an idea of what to expect.
+
+
+  7.3. The new era is coming: Synchronous video memories!
+  
+With the advent of all sorts of cards with synchronous (=clocked) video
+memories (WRAM, SGRAM, MDRAM, SDRAM, RDRAM, ...), many more cards
+with surprisingly low textmode clocks will appear. The Matrox boards are one
+such example. In Graphics mode, the Millenium can do up to 250 MHz pixel
+clocks, but already starts to show problems at a mere 60 MHz in text mode.
+
+The reason is quite simple: textmodes require lots of "random" memory
+accesses, because each character on each pixel line requires the VGA
+controller to fetch at least three bytes from three entirely different
+places in memory (character, attribute and font data). Synchronous RAM is
+very fast and performant when it is allowed to BURST data from/to
+consecutive places in memory, but sucks pyramid dust when it needs to jump
+around in memory too much (large latencies compared to standard DRAM/VRAM).
+
+Cards that are known to use synchronous RAM are: ET6000 (MDRAM), Matrox
+Millenium (WRAM) and Mystique (SGRAM), S3 Virge/SX (SDRAM) and GX (SGRAM),
+Cirrus Logic Laguna (RDRAM), ... Judging from the general trends, most new
+cards will employ some kind of synchronous RAM. We're heading towards
+textmode's days of doom.
+
+
+  7.4. Character bandwidth
+  
+All the stuff above suggests there is a maximum allowable text-mode pixel
+clock that can be defined for each card (in most cases through
+experimentation, since manufacturers tend to neglect mentionning them).
+
+That is true... to a certain extent.
+
+The REAL speed-limiting factor in text mode is the "character bandwidth" of
+the VGA card, which is the speed at which the VGA card can fetch characters
+(and font data) from the card RAM (DRAM or VRAM). 
+
+And that is NOT necessarily the same! As an example, compare the (peak)
+speed at which characters are sent out to the screen for two different text
+modes using the SAME pixel clock, but a DIFFERENT character width:
+
+"v132x48"  75  1056 1096 1248 1336  768 783 784 800  font 8x16
+"v116x48"  75   928  976 1112 1192  768 783 784 800  font 9x16
+
+On my S3 card, the first mode (132x48) works, but it's just a little too
+fast: some characters are wrong, some are shifted one pixel down, some are
+morphing rapidly between two or three different ones, some are missing, etc.
+In short: the first mode is just not good. I can't use it for real work.
+
+The SECOND mode (116x48) uses the SAME pixel clock, and is PERFECT! Both
+modes use the SAME pixel clock, although the first is rubbish, and the
+second is OK.
+
+The reason: the second mode is "slower" than the first. The first needs to send
+
+    (75000000 / 8) = 9.375 MILLION   characters per second to the screen
+    
+For each character the VGA card needs to read 2 bytes of character data (1
+byte for the character, one for the attribute byte) PLUS one byte of font
+data. For each new line of the same row of characters (16 of them for a
+16-pixel high font), it re-reads the character bytes, but uses a different
+line from the font memory (which is also in the same VGA card memory, but in
+a different place).
+
+The VGA chip reads those characters 16 times (in this case) because it
+doesn't "remember" (or "cache") them so it won't have to re-fetch them for
+the next line of the same character row.
+
+The second mode line only transfers (75000000 / 9) = 8.333 M chars per second.
+
+So my VGA card can transfer a maximum of somewhere in between 8 and 9
+million characters per second to the screen, without errors.
+
+NOTE: to avoid comments from some nitty-pitty hardware guru's: I know the
+      CHARACTER rate is actually 1/16th of that in this case, since
+      characters are 16 pixels high. But the VGA chip needs to READ those
+      characters at the rate mentionned above.
+      
+
+The point of all this meaningless babbling is the following: The actual
+maximum clock speed of the text modes is not only determined by the actual
+pixel clock, but also by the number of pixels a character occupies: in 8-bit
+wide mode, you have to access a new character every 8 clock beats, while in
+9-pixel wide mode, the VGA card is given one extra clock period to fetch the
+next character.
+
+SO if you have a mode with 8-pixel wide chars at 75 MHz that doesn't work
+completely, chances are that switching to a 9-bit wide mode might do the
+trick (you get a little less characters per line in that case, of course).
+
+OR: if 65 MHz is your card's maximum speed with 8-bit chars, then (65 * 9/8
+= 73) 73 MHz is the maximum speed with 9-bit chars.
+
+Confusing, isn't it?
+
+  7.5. What to do when the textmode clock is too high
+
+The easiest thing to do is to pick a mode with a lower clock, but I guess
+that's obvious.
+
+Buying an ET4000W32i or W32p card with 2MB of DRAM is probably the cheapest
+solution to endless textmode pleasure. They're "simply the best", enabling
+modes at up to 90 MHz dotclock. This does NOT include the ET6000, which
+peaks at only 60 MHz (see the remark about synchronous video memories
+above). The W32p cards (with 2MB DRAM), being quite old already, are still
+very good performers when it comes to graphics as well.
+
+Other than that, there isn't much you _can_ do. 
+
+* Some cards support changing the memory clock from inside SVGATextMode
+  using the "MClk" statement in the TextConfig file. The higher the memory
+  clock, the higher the maximum textmode clock will become. This does _not_
+  automatically raise the built-in maximum clock limit, so you'll have to
+  manually change that using "DacSpeed" as well.
+  
+  WARNING: changing the memory clock is DANGEROUS. Setting it WAY to high
+  may even destroy your video card. Setting it too low may crash your
+  machine. As a rule of thumb, never change the memory clock by over 15% in
+  both directions if you want to stay out of serious trouble.
+
+* For S3, the option "S3_HSText" will seriously increase the maximum
+  textmode clock. But read the TextConfig manual first, because there is a
+  catch.
+
+* On some S3 Trio cards (and maybe others), are sensitive to the hsync
+  position in the modeline. You may be able to get a higher (or lower)
+  max/min textmode clock by changing the HSYNC position or the HSYNC width.
+  As an example, Massimiliano Ghilardi reported:
+
+     P.S. My S3 Trio64V+ does not like low res modes very much.
+     For example, this mode works perfectly
+     "40x25"   14.16   320 344 384 400   400 412 414 449   -Hsync +Vsync  font 9x16
+     While this
+     "40x25"   14.16   320 360 384 400   400 412 414 449   -Hsync +Vsync  font 9x16
+     gives a lot of noise: some chars rapidly flicker between two different contents
+     some other ones are moved one pixel down...
+
+
+
+
+
+  8. SVGATextMode produces a Completely Blank Screen!
+  ---------------------------------------------------
+
+There are 738 possible reasons for this. I'll just cover a few of them ...
+
+- First of all, when the screen goes blank, although you think all settings
+are correct, and it SHOULD work, it's time for some debugging! Use grabmode
+to see if all parameters are correctly set. Do that either blindly, or
+create a script that contains several pairs of SVGATextMode / grabmode, and
+redirect all the output to a file:
+
+    #!/bin/sh
+    # 
+    # This script sets some SVGATextMode modes automatically, and performs a
+    # grabmode immediately after that. This is used to check the correct
+    # workings of SVGATextMode, even when the screen is blank or unreadable
+    #
+    # The ouput is put the the file "STM_test_output" in the currect
+    # directory. Once the script is done (listen to the beep!), restore the
+    # screen (using "textmode" or an SVGATextMode mode that works), and
+    # check the output file!
+    #
+    
+    SVGATextMode -r -f 80x25x9 >>STM_test_output 2>&1
+    grabmode >>STM_test_output
+
+    SVGATextMode -r -f 132x43x8 >>STM_test_output 2>&1
+    grabmode >>STM_test_output
+
+    SVGATextMode -r -f 100x37_VGA >>STM_test_output 2>&1
+    grabmode >>STM_test_output
+
+    SVGATextMode -r -f 100x37 >>STM_test_output 2>&1
+    grabmode >>STM_test_output
+
+    SVGATextMode -r -f 50x15_VGA >>STM_test_output 2>&1
+    grabmode >>STM_test_output
+
+    SVGATextMode -r -f v132x70 >>STM_test_output 2>&1
+    grabmode >>STM_test_output
+
+    SVGATextMode -r -f 160x60x9 >>STM_test_output 2>&1
+    grabmode >>STM_test_output
+
+    SVGATextMode -r -f 132x43_16 >>STM_test_output 2>&1
+    grabmode >>STM_test_output
+
+    SVGATextMode -r -f 80x25x8 >>STM_test_output 2>&1
+    grabmode >>STM_test_output
+    
+    echo -e '\a'
+
+    
+  
+Check the output of this script, and if all the modes that were possible
+(some will be rejected because of your monitor's limits, some will be
+rejected because the correct clock could not be found) compare favourably,
+then probably SVGATextMode did a good job (probably!).
+
+- If some perfectly valid modes don't show a useful screen (blank, shifted
+too much to the left/right/top/bottom, "folded over" on either left or right
+side, ...), the it's time to use vgaset and move the screen around a bit to
+see if your monitor likes it better.
+
+- also don't forget to try another monitor (as described in the "general
+advice" section), before blaming SVGATextMode or your video card. Monitors
+are often "overlooked" when it comes to video problems (especially when
+trying a new program)
+
+
+
+
+
+  9. The screen seems to sync up, but is completely unreadable
+  ------------------------------------------------------------
+
+The most common cause is a textmode clock limittaion. Read the question
+about text mode clock limits.
+
+On the other hand, it could happen that, after running SVGATextMode, your
+screen looks like it syncs up (it's stable, it's not scrolling like crazy,
+grabmode reports the mode is OK, you have been able to use the very same
+mode before...), but you cannot read a thing. It's like all characters are
+blocks, the font is completely messed up.
+
+I don't know the reason for this (yet), but some cards seem to get their
+font messed up sporadically when switching modes (I have seen this on Cirrus
+cards). I suspect this is either something I didn't do that I should do when
+switching modes, or a VGA card problem. 
+
+The simplest solution in that case is to enable automatic font loading. When
+switching modes, and the font gets messed up, the font loader will of course
+load a new font, effectively solving the problem (if this was the problem to
+begin with).
+
+
+
+
+
+ 10. When rebooting to DOS, the screen is black or not syncing.
+ --------------------------------------------------------------
+
+This is most often caused by the VGA BIOS not correctly resetting all VGA
+registers when a warm boot is performed (some don't even do it right upon a
+cold boot...)
+
+In most cases, this can be overcome by changing to a 80x25x9 textmode before
+rebooting the machine. On most Linux systems, adding an appropriate
+statement to the shutdown script (/etc/rc.d/rc.0 for example) will do the
+trick:
+
+	SVGATextMode -r 80x25x9 
+
+
+
+
+
+ 11. stm: ERROR: Could not get Millennium PCI info
+ -------------------------------------------------
+
+This is a bug in the STM PCI code. It can be fixed on some systems by
+running "scanpci" from the XFree86 tools, or just "cat /proc/pci" first.
+After that, STM suddenly sees your card.
+
+
+
+
+ 12. segfault when running SVGATextMode on newly compiled kernel
+ ---------------------------------------------------------------
+
+An optimisation bug in GCC 2.8.x causes a small part of the kernel to be
+wrong. That in turn causes SVGATextMode to crash with a segmantation fault
+(SIGSEGV) when it is running. The same happens to XFree86, by the way.
+
+The solution: use linux kernel 2.1.79 or higher, don't compile your kernel
+with GCC 2.8.x (use the 2.7.x series instead), or use a
+
+	linux/arch/i386/kernel/ioport.c
+
+file from a newer (>=2.1.79) kernel in your older kernels. That works even
+in 2.0.xx kernels. If you need to use GCC 2.8.x, then you can also compile
+everything else with 2.8.x, but just the ioport.c file with an older version
+(although replacing the file with the newer one is easier).
+
+
+
+
+ 13. problems with 2.1.xx kernels (VT_RESIZEZ failing)
+ -----------------------------------------------------
+
+Some people have reported problems when using SVGATextMode on the newer
+development kernels. There have been very little such reports, so it could
+have been a temporary glitch. If you have this problem, please report this
+(And please mention what kernel version it was).
+
+The easy solution of course is to stick with 2.0.xx kernels :-( The 2.1.xxx
+servies has undergone impressive changes in the console handling department
+(e.g. the framebuffer device console, which obsoletes SVGATextMode
+completely), and some of those changes make SVGATextMode's life pretty hard
+to impossible.
+
+
+
+
+ 14. How do I configure SVGATextMode for a laptop?
+ -------------------------------------------------
+
+Most laptops work very well when you specify them as "standard VGA" in the
+TextConfig file, and call STM with the "-cv" option so that it doesn't
+attempt to reprogram the clock or evaluate clock and sync limits.
+
+Instead of the "-v" option (and a little safer), you may also override the
+"DacSpeed" setting to any value that allows your mode to work (the clock
+isn't programmed anyway when using "-c", so there's no harm in specifying an
+out-of-bounds clock limit).
+
+This mode may work fine on a 1024x768 laptop:
+
+"112x48" 70  896 912 1040 1112  768 768 769 800 +Hsync +Vsync font 9x16 # 55.587kHz/69.48Hz
+
+the trick is to try and make sure the H and V active sizes match your LCD
+display size (and keep the 9/8 factor in mind when using a 9-pixel font). 
+
+In this case, the mode uses 896 * 9/8 = 1008 pixels horizontally and 768
+vertically. Since that fits in the LCD's 1024x768, it works nicely.
+
+As always, "grabmode" may be able to help you.
+
+
+Another option: the XF86_SVGA docs say that the first 4 clocks on C&T65520,
+65525 and 65530 are
+
+	Clocks  25.175 28.322 31.000 36.000
+
+So you may also want to use those clocks instead of the default ones for the
+standard VGA chip.
+
+
+

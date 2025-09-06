@@ -1,0 +1,38 @@
+
+spawn_login:
+
+       A small utility by Andries Brouwer (aeb@cwi.nl) (the author of the
+       VT_RESIZE kernel routine!), that can spawn login consoles by pressing
+       "ALT-<up_arrow>". Putting
+       
+               spawn_login &
+       
+       in your /etc/rc.local enabled it when linux boots. This allows you to
+       have only 2 VT's active at boot-up time (just an example), and create
+       new ones on the fly. They are automatically removed when logging out
+       from that console.
+
+       The real advantage of this is that VT_RESIZE will not get an "out of
+       memory" so soon, since there will not be that many ACTIVE VT's (all
+       non-spawned VT's are not active, and do not need resizing, and thus
+       don't require memory when resizing the screen).
+
+setcolor:
+
+	is a simple test/demo I wrote, to be adapted later into a
+        replacement for my current color-setting program. It speaks for
+        itself.
+
+        Note:
+        It needs at least an 1.3.x kernel for the PIO_CMAP call. It will not
+        compile, nor run on 1.2.13 or older kernels!
+
+gettext_settext_demo.c
+
+	demo program of Borland C derived gettext() and puttext() functions,
+	using the /dev/vcsa[] devices.
+	
+dscrn.c
+	
+	A screen capture program using /dev/vcs[] devices. 
+	

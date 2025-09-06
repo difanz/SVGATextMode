@@ -1,0 +1,462 @@
+
+This document describes how to create a completely new textmode from scratch
+
+
+related documents: - SVGATextMode/doc/monitor-timings.howto
+                   - The Hitchhiker's Guide to X386/XFree86 Video Timing
+                     <VideoModes.html> (included in the XFree86
+                     distribution)
+
+
+
+Many people have questions like the one below (extracted from a message sent
+to me by Gerhard Thomas):
+
+      I wish to get a Textmode for my Sony GDM-1950 fixed
+      frequency monitor. It works at 61kHz (horizontal frequency)
+      and 66Hz (vertical frequency) (+/-5%). My vga-card has a
+      trio64 chipset (70Mhz maximum pixelclock by default in text
+      mode). Do you have any ideas, where to get more information
+      about that configuration?
+
+
+
+OK. Let's see.
+
+61 kHz horizontal by 66 Hz vertical. This means you will have to have 
+
+	61000/66 = 924
+	
+total number of lines on the screen (this is including the black borders
+around the active image area). This can be understood easily: the monitor
+sweeps the beam 61000 times from left to right, and does a whole screen 66
+times per second. Thus, when the beam has scanned 924 lines at that speed,
+it will start all over again for another scan, 66 times per second.
+
+So we already have the following mode line:
+
+"[Modename]" ***   *** *** *** ***   *** *** *** 924 [options]
+
+If you allow the use of doublescan, you get two possibilities for this:
+
+"[Modename]" ***   *** *** *** ***   *** *** *** 924 [options]
+"[Modename]" ***   *** *** *** ***   *** *** *** 462 [options] DoubleScan
+
+(doublescan shows all lines twice, so there are only half as many "real" lines)
+
+
+A normal monitor needs about 25% of extra space around the active screen
+area horizontally, and about 5% vertically, which would mean that in our
+case the number of _active_ lines would be something like 
+
+	924*.95 = 878 lines
+	
+Most monitors work well when the sync starts right after the active area
+stopped, so we'll take that as the sync start. Vertical syncs need to be
+only a few (or even just one) line "wide". We then get:
+
+"[Modename]" ***   *** *** *** ***   878 878 882 924 [options]
+
+
+That was the easy part. Now comes the guesswork
+
+Knowing that you want 61kHz, you know that the total number of pixels per
+line (i.e. including the 20 % blank area around the active screen) should be
+as follows:
+
+	total_pixels_per_line = pixel_clock/61000
+	
+This lets you a lot of room for playing around, since the range of pixel
+clocks available on a programmable clockchip card like yours is virtually
+unlimited. All you have to know now is, knowing that the horizontal
+frequency is fixed, the more pixels you want on a line, the higher the pixel
+clock will have to be in order to comply with that fixed-frequency demand of
+your screen.
+
+But lets first fix some more numbers, so we can start defining the mode.
+
+A nice thing to start with is a font height of 16 pixels. This is the same
+font size used in the standard 80x25 mode, which will give you some initial
+advantages (e.g. no need to load a new font).
+
+With a font height of 16 pixels, you will get a total of 
+
+	878/16 = 54.875
+	
+text lines on the screen. Since this is not a whole number, we'll make that
+into 54 lines, and adjust the active total number of pixels so it is a
+multiple of 16 (actually, there is no need to do that: SVGATextMode will
+round it down for you -- but it's a little more clean). We'll also be moving
+the vertical sync together with the change in total number of pixels. That
+will give us the best chance that it will work right out of the box.
+
+Let's also assume a font width of 8 pixels (this is easier to work with --
+see below ) So we now have:
+
+"[Modename]" ***   *** *** *** ***   864 864 868 924 font 8x16
+
+
+Now let's pick a number of text characters per line. We'll start off with a
+wild guess that looks nice, and see where that gets us.
+
+Since we have 54 lines on screen, we'll need something appropriate. 80
+characters for example is ridiculous. Remember the old VGA 80x50 mode? All
+characters look flattened, and the width is not in proportion with the
+height. We'll start off with, for example, 140 characters (I deliberately
+avoided picking 132, because I want to show you that you are NOT restricted
+to the things DOS shows you).
+
+Ok. 140 chars per line. This means you'll need 
+
+	140*8 = 1120
+	
+pixels in the active screen.
+
+The downside is that this extra black pixel actually takes up a clock cycle
+from the VGA chip (and thus a "pixel"), although it doesn't take up space in
+the font. It's a bit more tricky to calculate timings this way. 
+
+Using the rule mentionned before that we need some 25% blanked space around
+the active video area, we will need something like
+
+	1120*1.25 = 1400
+	
+total number of pixels per line.
+
+ANd you already know you want a 61 khz horizontal sync, so now you can
+calculate the pixel clock needed! Like this:
+
+	pixel_clock = number_of_total_pixels * horizontal_frequency
+	
+	            = 1400 * 61000 
+	            
+	            = 85.4 MHz
+	            
+Until now, the mode line looks like:
+
+"[Modename]"  85.4   1120 *** *** 1400   864 864 868 924 font 8x16
+
+All we need to do, is add the horizontal syncs. Starting with the start of
+the Hsync around a microsecond after the last active pixel is a good start
+for most monitors (unless you have exact specs for these timings, in which
+case you'd better use those), so we'll use 1 microsecond for now (you will
+HAVE to adjust that using e.g. vgaset later, so it fits nicely in the middle
+of the screen).
+
+At 96 MHz, 1 usec is
+
+	96 * 1 = 96 pixels
+	
+(the "meg" of the pixel clock in MHz nicely cancels with the "micro" of
+that 1 microsecond timing -- that's why I just multiplied MHz with
+microseconds).
+
+Sync width? In most cases, 2 microseconds is more than enough for the
+higher-frequency monitors, while the really cheap ones need over 3
+Microseconds or more.
+
+Let's pick 2 micro's and see where that gets us:
+
+	2 * 96 = 192 pixels
+	
+This puts the start of the Hsync at 
+
+	1120 + 96 = 1216
+	
+and the end of the hsync at:
+
+	1216 + 192 = 1408
+	
+So now we get the complete mode line:
+
+"[Modename]"  85.4   1120 1216 1408 1400   864 864 868 924 font 8x16
+
+This will cause an error, since the sync ends AFTER the complete line image
+has ended, which means NEVER. We will have to adjust the numbers a bit (and
+this is where it gets really hairy).
+
+Since you have a high-speed monitor (high-frequency is also high speed),
+we'll assume that that 1 microsecond pause before the start of the sync was
+a bit overkill, so we'll reduce that from 96 to, say, 70 (just a guess).
+Also, the sync width of 2 microseconds will have been equally conservative
+in this case, so we'll reduce that to about 150 as well.
+
+Now we get:
+
+"Sony_140x54"  85.4   1120 1190 1340 1400   864 864 868 924 font 8x16
+
+This looks more like it.
+
+We'll do a final check to see we didn't screw up somewhere:
+
+	hor. sync = 85400000/1400 = 61000		(OK!)
+	vert sync = 61000/924 = 66			(OK!)
+	number of characters per line = 1120/8 = 140	(OK!)
+	number of text lines per screen = 864/16 =  54	(OK!)
+
+This looks all great! Would we try it? Sure!
+
+	stm Sony_140x54
+	
+Oops! We're in some trouble here: Most S3 cards cannot handle 96 MHz pixel
+clocks in text mode (they can in graphics mode, but NOT in text mode: see
+SVGATextMode/doc/FAQ in the chapter on character bandwidth).
+
+That's why SVGATextMode will report an error at this point, saying that the
+pixel clock is too high for this card. (70 MHz maximum, default).
+
+At this point you can either ignore the error, and take your chance by
+adding the "-v" option to avoid validation of the mode (overriding both
+pixel clock limits and monitor limits -- so be warned!), or you could decide
+to try and change the mode to use a lower pixel clock.
+
+
+Note that on an S3, using high-speed textmode, some S3 cards WILL be able to
+handle these high pixel clocks, although not the cheaper and older ones (S3
+801/805, 928, 924, 911 : forget it! 732 and 764 (Trio): maybe. 864/964:
+sometimes).
+
+
+
+So we'll need to get a lower pixel clock. How? By reducing the number of
+characters per line, which would reduce the number of pixels and thus also
+the pixel clock (for the same horizontal frequency).
+
+Let's work towards our goal from the other direction this time: We'll say we
+USE a 70 MHZ pixel clock.
+
+With a 70 MHz pixel clock, you would get a total of 
+
+	70000000/61000 = 1148
+	
+pixels per line, or, taking the active area rule into account:
+
+	1148 / 1.25 = 918 (or 920 when rounded to a multiple of 8)
+	
+active pixels.
+	
+With an 8-pixel font (see below for 9-pixel fonts), this would mean
+
+	920/8 = 115 characters per line
+	
+For the other parameters (Hsync in this case), scaling the numbers roughly
+with the ratio of the old and the new pixel clock (in this case "* 70 /
+85.4") will get you going for a first shot.
+
+"Sony_140x54"  70   920 980 1104 1148   864 864 868 924 font 8x16
+
+Just to be sure, let's check again:
+
+	hor. sync = 70000000/1148 = 60975		(OK!)
+	vert sync = 60975/924 = 65.99			(OK!)
+	number of characters per line = 920/8 = 115	(OK!)
+	number of text lines per screen = 864/16 =  54	(OK!)
+
+
+Try it!
+
+It could be that a fixed frequency monitor like this Sony needs specific
+sync polarities to work, so you might have to add "+hsync" or "-hsync" and
+"+vsync" or "-vsync" to the mode line to make this work. SVGATextMode picks
+the default normally used for VGA when nothing is defined, but since those
+workstation monitors are _not_ VGA almost by definition, they could be
+sensitive to sync polarities. Good designs don't depend on details like
+this...
+
+
+If it shows something, but not centered properly, try using vgaset on it,
+and adjust the timings so it's nicely centered.
+
+
+Now that we're that far, we can start fiddling with it. 
+
+First of all, 54 lines of text is a bit much when there are only 115
+characters per line (this is a personal oppinion, and you might prefer
+having 200 lines of text on screen, not in the least concerned how flat
+characters would look in such a mode).
+
+Using the exact same timings, you can build a lot of extra modes without
+having to go through the whole process again.
+
+Changing the font size for example will give you a whole bundle of new modes:
+
+Now we have 864/16 = 54 text lines on screen.
+
+The list below shows you some other options:
+
+	Font size	Number of text lines
+	
+	  16                    54
+	  14                    61
+	  12                    72
+	  8                    108
+	  20                    43
+	  32                    27
+
+This table uses some common font sizes to get more modes. _All_ font sizes
+between 1 and 32 pixels height are allowed, but most have no suitable font
+available. 20-pixel high fonts are really neat, but are not available for
+Linux by default. If you happen to own UltraVision for DOS, you can convert
+its 20-pixel fonts to Linux format, so you can use them there as well. There
+is a conversion program included in the contrib/Ultra2Linux directory.
+
+The mode lines for all the font sizes above would be:
+
+"Sony_115x54"  70   920 980 1104 1148   864 864 868 924 font 8x16
+"Sony_115x61"  70   920 980 1104 1148   864 864 868 924 font 8x14
+"Sony_115x72"  70   920 980 1104 1148   864 864 868 924 font 8x12
+"Sony_115x108" 70   920 980 1104 1148   864 864 868 924 font 8x8
+"Sony_115x43"  70   920 980 1104 1148   864 864 868 924 font 8x20
+"Sony_115x27"  70   920 980 1104 1148   864 864 868 924 font 8x32
+
+Note that I changed the mode labels as well, although they have no real
+meaning to SVGATextMode. The only thing that determines the _actual_ number
+of lines is the font size at the end of the mode line.
+
+
+This is the right spot to introduce DoubleScan into the picture: the
+32-pixel high font of the last mode is not normally available on Linux
+systems as well. But using DoubleScan, we can achieve the same with a
+16-pixel font. Rewriting that last mode using doublescan results in two
+modes that are exactly the same:
+
+"Sony_115x27"  70   920 980 1104 1148   432 432 434 462 font 8x16 DoubleScan
+"Sony_115x27"  70   920 980 1104 1148   864 864 868 924 font 8x32
+
+Note that in the DoubleScan mode the vertical timings are halved!
+
+The only difference is if you happen to have a REAL 32-pixel high font, the
+non-DoubeScan mode will have more detail (less "jaggies"). The 32-pixel font
+included with SVGATextMode is just a 16-pixel font that was artificially
+doubled in size by copying each line in the font. 
+
+
+Now is also the time to introduce 9-pixel wide fonts. SVGATextMode supports
+8- and 9-pixel wide fonts, but both use the _same_ font file.
+
+VGA cards use a strange trick to get a character cell of 9 pixels. It's
+actually a cell of just 8 characters, but with a 9th, empty (black) pixel
+appended to it.
+
+This exploits the fact that (almost) all fonts need character spacing
+between them, and thus all "normal" 8-pixel fonts used to have one or more
+black rows on the right side and below the characters anyway. Using this
+trick, you can fill the 8-pixel font definition a little more (=higher
+resolution), using the full 8-pixel resolution available in the 8-pixel
+cell, and let the VGA chip add the black space (or at least part of it)
+between characters.
+
+There's just one catch: the VGA chip must STILL be programmed as if it were
+doing a 8-pixel font ,even when using a 9-pixel cell width. This means that
+if you want the same number of characters per line, you need to enter the
+SAME parameters:
+
+"Sony_115x54"  70   920 980 1104 1148   864 864 868 924 font 9x16
+                                                            ^^^^^^
+
+Is this OK? NO! It's not _that_ simple. Using a 9-pixel wide font cell also
+requires 9 pixel clock periods to draw (only 8 pixels are actually drawn
+from the font information. The 9th is just black, but it must be drawn
+anyway).
+
+In other words, a mode line that says there are a total of 1148 pixels on
+one line (as in our mode) will _actually_ require
+
+	1148 * ( 9 / 8) = 1291
+	
+clocks to draw, and thus, with the same pixel clock, the horizontal
+frequency would drop from
+
+	70000000 / 1148 = 60.975 kHz
+	
+to
+	70000000 / 1148 * ( 8 / 9 ) = 54.2 khz
+
+Which is much too low for this screen.
+
+The solution is simple: multiply the pixel clock with the same factor (9/8)
+and you get the same mode again:
+
+	70 * 9 / 8 = 78.75 MHz
+
+"Sony_115x54x9"  78.75   920 980 1104 1148   864 864 868 924 font 9x16
+
+But, I hear you say, now the pixel clock is too high again!
+
+Well, yes and no. As explained in SVGATextMode/doc/FAQ, this is not so
+in most -if not all- cases. The real limit in VGA text modes (see also that
+.../FAQ file) is the number of character cells per second it has to
+draw, and with a 9-pixel cell at 78 MHz or an 8-pixel cell at 70 MHz, that
+number is the same (about 10 Million per second).
+
+
+TIP: In fact, a good rule is that any mode which will work with a certain
+     clock in 8-pixel wide mode (font width of 8), will also work in 9-pixel
+     mode with the clock multiplied by a factor 9/8.
+     
+     In other words, if you have a mode working with an 8-pixel font at a
+     certain pixel clock, just changing the font width from 8 to 9 AND (!)
+     the clock
+     
+     	from 	(x)
+     	
+     	to 	(x) * 9/8
+     	
+     will get you the EXACT same timings, and in almost all cases, the same
+     performance. The only difference will be the font spacing.
+     
+     In other words, if you want to crate a new mode, just take the easiest
+     way and desing an 8-pixel mode, so you can forget all about that
+     strange factor you have to use all the time, and once the mode is
+     tested and works fine, THEN switch it to a 9-pixel wide mode, as
+     described above.
+     
+
+Now, let's do some more tweaking.
+
+For starters, most fixed frequency monitors are only fixed in their
+_horizontal_ frequency, while the vertical frequency can, in most cases, be
+in a whole range. E.g. a 66 Hz monitor wwill almost always be able to handle
+60 to 75 Hz or more. The only thing that could happen is that the display
+becomes more and more distorted (especially pincushion, trapezoid and
+horizontal linearity) the further you get from that ideal 66 Hz.
+
+Going to e.g. 70 Hz with the same parameters, by reducing the number of
+active lines to:
+
+	61000/70 = 871
+
+instead of 924, and adjusting the other vertical parameters accordingly
+(e.g. by scaling them with the same 66/70 ratio), you'd get the following
+modes:
+
+"Sony_115x51"  70   920 980 1104 1148   814 814 818 871 font 8x16
+"Sony_115x58"  70   920 980 1104 1148   814 814 818 871 font 8x14
+"Sony_115x67"  70   920 980 1104 1148   814 814 818 871 font 8x12
+"Sony_115x101" 70   920 980 1104 1148   814 814 818 871 font 8x8
+"Sony_115x40"  70   920 980 1104 1148   814 814 818 871 font 8x20
+"Sony_115x25"  70   920 980 1104 1148   814 814 818 871 font 8x32
+
+
+This mode used the maximum pixel clock, and thus also the maximum amount of
+characters per line possible on your card (asasuming that 70 MHz actually
+_is_ the maximum -- you might want to experiment with that limit).
+
+Using lower pixel clocks, you would also achieve a lower number of
+characters per line. But since the vertical and horizontal frequencies are
+fixed, you will almost certainly need very high fonts (e.g. 32 pixels) to
+get a nice H/V ratio of the number of characters.
+
+Try for example to achieve 100 characters per line, and use a 16-pixel
+doublescanned font. I'm sure there is some mode possible for this:
+
+"Sony_100x27" 60.8  800 852 960 998   432 432 434 462 font 8x16 DoubleScan
+              ^^^^^^^^^^^^^^^^^^^^^
+For this mode, I basically scaled down all horizontal values plus the pixel
+clock (all the numbers with arrows underneath) by a factor 100/115, and
+copied the vertical parameters.
+
+You can go on and on like this, creating an endless amount of modes.
+
+
+Got it?

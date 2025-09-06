@@ -1,0 +1,215 @@
+
+Another from hmh@d.o, tested on GeForceFX 5700 (for NV31, NV34 cards).
+ref BTS #279744
+
+--- riva128_clock.c	2004-11-05 00:17:07.000000000 -0200
++++ riva128_clock.c	2004-11-05 00:02:20.000000000 -0200
+@@ -57,6 +57,51 @@
+ |*                                                                           *|
+  \***************************************************************************/
+ 
++/* This code has been updated with stuff from Debian's XFree86 4.3.0,
++ * version 4.3.0.dfsg.1-8.
++ *
++ * Here are the updated notices: */
++ /***************************************************************************\
++|*                                                                           *|
++|*       Copyright 1993-2003 NVIDIA, Corporation.  All rights reserved.      *|
++|*                                                                           *|
++|*     NOTICE TO USER:   The source code  is copyrighted under  U.S. and     *|
++|*     international laws.  Users and possessors of this source code are     *|
++|*     hereby granted a nonexclusive,  royalty-free copyright license to     *|
++|*     use this code in individual and commercial software.                  *|
++|*                                                                           *|
++|*     Any use of this source code must include,  in the user documenta-     *|
++|*     tion and  internal comments to the code,  notices to the end user     *|
++|*     as follows:                                                           *|
++|*                                                                           *|
++|*       Copyright 1993-2003 NVIDIA, Corporation.  All rights reserved.      *|
++|*                                                                           *|
++|*     NVIDIA, CORPORATION MAKES NO REPRESENTATION ABOUT THE SUITABILITY     *|
++|*     OF  THIS SOURCE  CODE  FOR ANY PURPOSE.  IT IS  PROVIDED  "AS IS"     *|
++|*     WITHOUT EXPRESS OR IMPLIED WARRANTY OF ANY KIND.  NVIDIA, CORPOR-     *|
++|*     ATION DISCLAIMS ALL WARRANTIES  WITH REGARD  TO THIS SOURCE CODE,     *|
++|*     INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY, NONINFRINGE-     *|
++|*     MENT,  AND FITNESS  FOR A PARTICULAR PURPOSE.   IN NO EVENT SHALL     *|
++|*     NVIDIA, CORPORATION  BE LIABLE FOR ANY SPECIAL,  INDIRECT,  INCI-     *|
++|*     DENTAL, OR CONSEQUENTIAL DAMAGES,  OR ANY DAMAGES  WHATSOEVER RE-     *|
++|*     SULTING FROM LOSS OF USE,  DATA OR PROFITS,  WHETHER IN AN ACTION     *|
++|*     OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,  ARISING OUT OF     *|
++|*     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOURCE CODE.     *|
++|*                                                                           *|
++|*     U.S. Government  End  Users.   This source code  is a "commercial     *|
++|*     item,"  as that  term is  defined at  48 C.F.R. 2.101 (OCT 1995),     *|
++|*     consisting  of "commercial  computer  software"  and  "commercial     *|
++|*     computer  software  documentation,"  as such  terms  are  used in     *|
++|*     48 C.F.R. 12.212 (SEPT 1995)  and is provided to the U.S. Govern-     *|
++|*     ment only as  a commercial end item.   Consistent with  48 C.F.R.     *|
++|*     12.212 and  48 C.F.R. 227.7202-1 through  227.7202-4 (JUNE 1995),     *|
++|*     all U.S. Government End Users  acquire the source code  with only     *|
++|*     those rights set forth herein.                                        *|
++|*                                                                           *|
++ \***************************************************************************/
++/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.4 2003/11/03 05:11:25 tsi Exp $ */
++
++
+ #include <unistd.h>
+ #include <sys/mman.h>
+ #include <stdio.h>
+@@ -192,13 +237,15 @@
+ #define PRAMDAC_BASE       0x00680000
+ #define PRAMDAC_PLL_COEFF  0x00000508
+ #define PRAMDAC_PLL_COEFF_SELECT   0x0000050C
++#define PRAMDAC_PLL2_COEFF 0x00000578
+ #define PEXTDEV_BASE	   0x00101000
+ 
+ #define NV3_MIN_CLOCK_IN_KHZ  25000    // Not sure about this, but it seems reasonable
+ #define NV3_MAX_CLOCK_IN_KHZ 230000
+ #define NV4_MAX_CLOCK_IN_KHZ 350000
++#define NV31_34_MAX_CLOCK_IN_KHZ 400000
+ 
+-static int max_clock, is_nv3, pll_coeff, CrystalFreqKHz;
++static int max_clock, is_nv3, pll_coeff, CrystalFreqKHz, twoStagePLL;
+  
+ #define M_MIN 7
+ #define M_MAX 13
+@@ -252,19 +299,68 @@
+         {
+             for (M = lowM; M <= highM; M++)
+             {
+-                N    = (VClk * M / /*chip->*/CrystalFreqKHz) << P;
+-                Freq = (/*chip->*/CrystalFreqKHz * N / M) >> P;
+-                if (Freq > VClk)
+-                    DeltaNew = Freq - VClk;
+-                else
+-                    DeltaNew = VClk - Freq;
+-                if (DeltaNew < DeltaOld)
+-                {
+-                    *mOut     = M;
+-                    *nOut     = N;
+-                    *pOut     = P;
+-                    *clockOut = Freq;
+-                    DeltaOld  = DeltaNew;
++		N    = ((VClk << P) * M) / /*chip->*/CrystalFreqKHz;
++		if (N <= 255) {
++		    Freq = ((/*chip->*/CrystalFreqKHz * N) / M) >> P;
++		    if (Freq > VClk)
++			DeltaNew = Freq - VClk;
++		    else
++			DeltaNew = VClk - Freq;
++		    if (DeltaNew < DeltaOld)
++		    {
++			*mOut     = M;
++			*nOut     = N;
++			*pOut     = P;
++			*clockOut = Freq;
++			DeltaOld  = DeltaNew;
++		    }
++		}
++            }
++        }
++    }
++    return (DeltaOld != 0xFFFFFFFF);
++}
++
++static int CalcVClock2Stage (
++    int           clockIn,
++    int           double_scan,
++    int          *clockOut,
++    int          *mOut,
++    int          *nOut,
++    int          *pOut,
++    unsigned	 *pllBOut
++)
++{
++    unsigned DeltaNew, DeltaOld;
++    unsigned VClk, Freq;
++    unsigned M, N, P;
++
++    DeltaOld = 0xFFFFFFFF;
++
++    *pllBOut = 0x80000401;  /* fixed at x4 for now */
++
++    VClk = (unsigned)clockIn;
++    if (double_scan)
++        VClk *= 2;
++
++    for (P = 0; P <= 6; P++) {
++        Freq = VClk << P;
++        if ((Freq >= 400000) && (Freq <= 1000000)) {
++            for (M = 1; M <= 13; M++) {
++                N = ((VClk << P) * M) / (CrystalFreqKHz << 2);
++                if((N >= 5) && (N <= 255)) {
++                    Freq = (((CrystalFreqKHz << 2) * N) / M) >> P;
++                    if (Freq > VClk)
++                        DeltaNew = Freq - VClk;
++                    else
++                        DeltaNew = VClk - Freq;
++                    if (DeltaNew < DeltaOld) {
++			*mOut     = M;
++			*nOut     = N;
++			*pOut     = P;
++                        *clockOut = Freq;
++                        DeltaOld  = DeltaNew;
++                    }
+                 }
+             }
+         }
+@@ -280,10 +376,11 @@
+   int *PEXTDEV;
+ 
+   int out;
+-  int m, n, p, value;
++  int m, n, p;
++  unsigned pll1, pll2;
+   int i = 0;
+   pciConfigPtr pcr = NULL;
+-  int implementation;
++  int implementation = 0;
+   int fd;
+ 
+   vgaPCIInfo = vgaGetPCIInfo();
+@@ -362,25 +459,34 @@
+ 	{
+ 	   if(PEXTDEV[0x0000/4] & (1 << 22)) CrystalFreqKHz = 27000;
+ 	}
+-  	max_clock = NV4_MAX_CLOCK_IN_KHZ;
++	twoStagePLL = (implementation == 0x310) ||
++		      (implementation == 0x340);
++
++  	max_clock = twoStagePLL ? NV31_34_MAX_CLOCK_IN_KHZ
++			        : NV4_MAX_CLOCK_IN_KHZ;
+   }
+ 
+   // Calculate the clock  
+-  CalcVClock ((float) clockspeed, 0, &out, &m, &n, &p);
+-
+-  value = (m) + (n<<8) + (p<<16);
++  if (twoStagePLL) {
++	CalcVClock2Stage ((float) clockspeed, 0, &out, &m, &n, &p, &pll2);
++  	pll1 = (m) + (n<<8) + (p<<16);
++  	PDEBUG(( "Wanted %dkHz, got %dkHz (m=%d, n=%d, p=%d, pll1=0x%08X, pll2=0x%08X)\n",
++	    clockspeed, (int)out, m, n, p, pll1, pll2 ));
++  } else {
++  	CalcVClock ((float) clockspeed, 0, &out, &m, &n, &p);
++  	pll1 = (m) + (n<<8) + (p<<16);
++  	PDEBUG(( "Wanted %dkHz, got %dkHz (m=%d, n=%d, p=%d, pll=0x%08X)\n",
++	    clockspeed, (int)out, m, n, p, pll1 ));
++  }
+   
+-  // But of debug info
+-  PDEBUG(( "Wanted %dkHz, got %dkHz (m=%d, n=%d, p=%d, value=0x%08X)\n",
+-    clockspeed, (int)out, m, n, p, value ));
+-    
+   // Default value is 0x00000100 (NV3)
+   // X uses 0x10010100 (NV3) or 0x10000700 (NV4/10/20/30)
+   // We use 0x00010100 (NV3) or 0x00000700 (NV4/10/20/30)
+   PRAMDAC0[PRAMDAC_PLL_COEFF_SELECT/4] = pll_coeff;  // could use |=
+ 
+   // Divide by 4 because we're dealing with integers
+-  PRAMDAC0[PRAMDAC_PLL_COEFF/4] = value;
++  PRAMDAC0[PRAMDAC_PLL_COEFF/4] = pll1;
++  if (twoStagePLL) PRAMDAC0[PRAMDAC_PLL2_COEFF/4] = pll2;
+   
+   // Unmap memory
+   munmap( PRAMDAC0, 0x1000 );

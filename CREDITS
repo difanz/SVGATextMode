@@ -1,0 +1,240 @@
+                                 Credits
+                                 =======
+                                 
+                                 
+The following people have influenced SVGATextMode in some way or another, or
+have contributed to it in a major way. Don't be offended if you're not in,
+just let me know if you think you've been wrongly omitted.
+
+
+The entire Linux Developers' community:
+    Without them, this program would be useless, since there would be no
+    Linux...      Hip! Hip! ... Hop
+
+Original idea: Wouter 'Zorro' Gadeyne, wrote the first hack for the Cirrus
+    Logic card, and it made me so jealous that I changed it to support S3 as
+    well. He is also responsible for many tips on how to make the code more
+    "C-like". And for constantly nagging about me not going to finish it up
+    into something distributable. So I REALLY wanted to prove him wrong.
+
+First Beta testers: (for ET4000 support and general features): Kris Coryn
+    and Lieven Gesquiere. Seeing it run on my S3 made THEM so jealous that
+    they wanted it for their ET4000 as well. They also allowed me to test it
+    on their machines, with all the accompanying system shutdowns, reboots,
+    filesystem checks, etc.).
+
+Hardware: Kris 'McCore' Coryn provided an amazing amount of video cards for
+    me to test. His continuous feedback has a big impact on the performance
+    of SVGATextMode. 
+
+More Hardware: John Seifarth <john@waw.be> donated a MACH64 RageII DVD
+    board. It's thanks to him there is MACH64 support at all. It's thanks to
+    him there was a new version (1.9) of SVGATextMode at last. 
+
+
+Authors of programs used directly or indirectly in this package:
+
+Greg Lehey, author of vgaset. He sent me a corrected version
+    of vgaset, and allowed me to include it here.
+    
+Eugene Crosser & Andries Brouwer, authors of "setfont".
+
+Andreas Beck, author of GGI, the "generic Graphics Interface", which should
+    ultimately replace all the chipset code and converge X, svgalib and
+    SVGATextMode, so they all use the SAME graphics drivers, with less
+    cooperation problems. See also http://synergy.foo.net/~ggi
+
+Kenneth Albanowski, author of Ultra2Linux.  Also author of TONS of good
+    suggestions, and many, many others. First Author of the DOS port of the
+    mode grabbers "grabmode" and "scanmode" and the
+    contrib/scripts/grepmodes script. And LONG, LONG mail conversations
+    about, amongst other things: ET4000 Wizardry and The Ultimate Text Mode
+    Chip.
+
+Stephen Lee, who provided most of the knowledge (and code) to make the DOS
+    port of SVGATextMode possible, and several other small topics. Not to
+    mention he finally made my S3-805 work properly in svgalib :-) He also
+    convinced me to use lex and yacc to parse the config file (he sent me
+    the code upon which this parser is based). I'll never forgive him ;-)
+
+The XFREE86 development team, from whom I used a lot of code and ideas for
+    pixel clock selection. The clockchip code was copied verbatim from their
+    sources.
+
+David Mosberger-Tang, Linux/Alpha version (I never even thought about this
+    possibility until he came up with patches...!). see doc/README.Alpha.
+
+Finn Thoegersen, Author of vgadoc4b (and previous versions): a must-have VGA
+    documentation library for all us VGA hackers.
+
+Massimiliano Ghilardi, who added Trident TGUI support (and cleaned up some
+    other junk), clockdiv2 support for the clockchips and the "hshift"
+    modeline parameter. He and Michele Maltoni drew some new fonts.
+
+Trey Boudreau, who did most of the Matrox Millennium/Mystique work
+
+Matthias Grimrath did the MACH64CT hacking.
+
+Andree Borrmann stepped in (starting from STM 1.6) to do the DOS (sup)port.
+
+Harald Koenig, some serious grabmode suggestions (especially about
+    alternative clock probing mechanisms for architectures without
+    microsecond counters, which is a conditio sine qua non for using
+    grabmode on non-Linux machines) This needs to be followed up some day.
+    MSWindows Grabmode executable.
+
+Frank Klemm contributed a large number of fonts, including those
+    hard-to-find big ones.
+
+Joachim Groh, patch to enable the setting of the consoletranslation with
+    setfont -u.
+
+Yung Hsu (MACH bugbix in 1.2)
+
+Marcus Crafter, IBM RGB RAMDAC testing and docs suggestions.
+
+Al Simcoe
+
+Joe Waters, S3 Trio problems.
+
+jkekoni@aurora.tky.hut.fi
+
+Benson L Chow
+
+Martin Scherbaum 
+
+G. B. Stott (Cirrus Laguna testing and debugging)
+
+Tuukka Toivonen <tuukkat@stekt.oulu.fi>, ISO_FONT9 patch.
+
+Giacomo COMES (SOG bug)
+
+Molnar Laszlo (DOS)
+
+Timo Giesselmann (S3 SOG code fix)
+
+Michael De La Rue (SYSV init)
+
+Pavel Machek (NeoMagic)
+
+
+And lots more good and useful suggestions from (in no significant order):
+
+- most of the above
+
+- Daniel Sills, patient and extensive Beta tester, beta site provider
+  (ansc.une.edu.au:/pub/SVGATextMode), IBM RGB RAMDAC testing, some other
+  VGA card testings,...)
+
+- Peter Chang, Diamond Stealth 32 ICD2061 clock code, testing, debugging,
+  Mystique testing, WWW-based beta site provider at
+  http://www.ccc.nottingham.ac.uk/~etzpc/stm.html
+
+- Bob McCracken, extensive interrogation on correct blanking programming,
+  and a lot of kernel and misc. information, and some of the programs in
+  contrib, lots of Linux kernel info
+
+- David M. Meyer
+
+- Kenneth J. Hendrickson
+
+- Piercarlo Grandi
+
+- Roland Meier, ET4000W32 wizardry, and valuable help with
+  doc/README.ET4000.AltClockSelect
+  
+- Warwick Allison, motivation!
+
+- Alessandro Rubini, lots of help on console/terminal stuff (VT_RESIZE!),
+  lots of good ideas, STM's first (surprise) public appearance in LJ, and
+  what more...
+  
+- Reuben Sumner, obscure ATI problem fix, automatic resizing of active VT's,
+  SUID terminal protection fix
+  
+- Jason Yanowitz, help in fixing the ICD2061 problem.
+  
+- Michael Chew
+
+- Jean-Louis DEBERT, very thorough problem reporting on ICD2061 problem, and
+  several other "features" (=bugs))
+  
+- Stefan Dalibor, W32p/ICS5341 testing
+  
+- Shawn McHorse, ATIMACH32 test/debug
+
+- Michael Shields, the make_ram_free() function, which should reduce "out of
+  memory" errors. Some more bug fixes)
+  
+- Ton Hospel, C-styling tips
+
+- Keith Owens, small patch to sync-range check
+
+- Ron Sommeling, many small improvements
+
+- Klaus Weber (CIP 92), Headland/Video7 help
+
+- Harm Hanemaaijer, Cirrus Logic clockchip problem
+
+- Brian Springstead, S3 911 high-speed text mode problem - should now work
+  from version 1.1
+
+- cshamis@erinet.com, pointed me to the "noblink" package
+
+- Diego Roversi, ALI (avance Logic) help
+
+- Paul David Walker, made me include my silly font editor ;-)
+
+- R.E. Wolff, more on STM memory problem
+
+- Marco Mariani, extensive OAK087 beta testing
+
+- Tom Verbeure, I borrowed his O'Reilly lex/yacc book, without which 
+  the transition to the new parser would probably not have been possible.
+  He also bought a 17" monitor because STM looked bad on a 12" ;-)
+
+- Jan Doornaert, for making me look for a solution for the ICD2061a clock
+  restoral problem, resulting in option "clockchip_x", and for testing it.
+
+- Noel Cragg
+
+
+
+More people have contributed code, and they are credited in the HISTORY
+file, next to the change that they submitted.
+
+
+These people contributed new textmodes for inclusion in the TextConfig file:
+
+- Andreas Beck
+- Russell Marks
+- Carsten Zimmermann
+- Alexander JOLK
+- Alessandro Rubini
+- Barak Pearlmutter
+- Shane Turner
+- Albert Cahalan
+- Robert Schouwenburg
+- Kris Coryn
+- Jean-Louis Debert
+- D.A.B. Niggemann
+- Ulrich Dessauer
+- John Bashaw
+- Delman Lee
+- Nicola Bernardelli
+- Stanislav Voronyi
+
+
+S3 Inc. sent me an S3-805 data book, and that really got me going. Thanks.
+
+Infomagic deserves a big thank you for distributing their "Linux developers'
+Resource" CDROM-set at a ridiculously affordable price. It is the best
+alternative for those poor bastards who don't have direct Internet-access
+(like me). They allow the "un-wired" part of the world to get their hands on
+Linux, too! The Infomagic CD's are like a pocket-size FTP site.
+
+Tseng Labs provided ET4000W32i/p and ET6000 data books and hardware.
+
+And of course: BARCO (I've heard they are my employer), for providing me
+with an invaluable E-mail account.
+

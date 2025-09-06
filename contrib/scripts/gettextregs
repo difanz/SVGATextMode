@@ -1,0 +1,78 @@
+#!/bin/sh
+#
+#
+# This is an example application of the getVGAreg tool
+#
+# This script grabs the standard VGA register contents from the current
+# current mode. It does about the same as "textmode" from svgalib
+#
+
+#BINDIR=.
+BINDIR=/usr/sbin
+
+$BINDIR/getVGAreg -x CRTC 0
+$BINDIR/getVGAreg -x CRTC 1
+$BINDIR/getVGAreg -x CRTC 2
+$BINDIR/getVGAreg -x CRTC 3
+$BINDIR/getVGAreg -x CRTC 4
+$BINDIR/getVGAreg -x CRTC 5
+$BINDIR/getVGAreg -x CRTC 6
+$BINDIR/getVGAreg -x CRTC 7
+$BINDIR/getVGAreg -x CRTC 8
+$BINDIR/getVGAreg -x CRTC 9
+$BINDIR/getVGAreg -x CRTC 10
+$BINDIR/getVGAreg -x CRTC 11
+$BINDIR/getVGAreg -x CRTC 12
+$BINDIR/getVGAreg -x CRTC 13
+$BINDIR/getVGAreg -x CRTC 14
+$BINDIR/getVGAreg -x CRTC 15
+$BINDIR/getVGAreg -x CRTC 16
+$BINDIR/getVGAreg -x CRTC 17
+$BINDIR/getVGAreg -x CRTC 18
+$BINDIR/getVGAreg -x CRTC 19
+$BINDIR/getVGAreg -x CRTC 20
+$BINDIR/getVGAreg -x CRTC 21
+$BINDIR/getVGAreg -x CRTC 22
+$BINDIR/getVGAreg -x CRTC 23
+$BINDIR/getVGAreg -x CRTC 24
+
+$BINDIR/getVGAreg -x ATRCTL 0
+$BINDIR/getVGAreg -x ATRCTL 1
+$BINDIR/getVGAreg -x ATRCTL 2
+$BINDIR/getVGAreg -x ATRCTL 3
+$BINDIR/getVGAreg -x ATRCTL 4
+$BINDIR/getVGAreg -x ATRCTL 5
+$BINDIR/getVGAreg -x ATRCTL 6
+$BINDIR/getVGAreg -x ATRCTL 7
+$BINDIR/getVGAreg -x ATRCTL 8
+$BINDIR/getVGAreg -x ATRCTL 9
+$BINDIR/getVGAreg -x ATRCTL 10
+$BINDIR/getVGAreg -x ATRCTL 11
+$BINDIR/getVGAreg -x ATRCTL 12
+$BINDIR/getVGAreg -x ATRCTL 13
+$BINDIR/getVGAreg -x ATRCTL 14
+$BINDIR/getVGAreg -x ATRCTL 15
+$BINDIR/getVGAreg -x ATRCTL 16
+$BINDIR/getVGAreg -x ATRCTL 17
+$BINDIR/getVGAreg -x ATRCTL 18
+$BINDIR/getVGAreg -x ATRCTL 19
+$BINDIR/getVGAreg -x ATRCTL 20
+
+$BINDIR/getVGAreg -x GRCTL 0
+$BINDIR/getVGAreg -x GRCTL 1
+$BINDIR/getVGAreg -x GRCTL 2
+$BINDIR/getVGAreg -x GRCTL 3
+$BINDIR/getVGAreg -x GRCTL 4
+$BINDIR/getVGAreg -x GRCTL 5
+$BINDIR/getVGAreg -x GRCTL 6
+$BINDIR/getVGAreg -x GRCTL 7
+$BINDIR/getVGAreg -x GRCTL 8
+
+$BINDIR/getVGAreg -x SEQ 0
+$BINDIR/getVGAreg -x SEQ 1
+$BINDIR/getVGAreg -x SEQ 2
+$BINDIR/getVGAreg -x SEQ 3
+$BINDIR/getVGAreg -x SEQ 4
+
+$BINDIR/getVGAreg -x MISC
+  

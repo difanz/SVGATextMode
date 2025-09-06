@@ -1,0 +1,363 @@
+
+
+Having problems with your ET4000W32 card under XFree86 and SVGATextMode
+because the clocks are either not selected correctly (use grabmode!) or
+because there seem to be no clocks higher than 65 or 75 MHz? 
+
+Can your card do only 1024x768 at 60 Hz in XFree86, but a lot more in
+MSWinslows?
+
+Then this file is for YOU!
+
+
+Some ET4000 (W32?) cards don't work correctly with the the normal X-Windows
+Server (XF86_SVGA), and hence also not with the default ET4000 clock
+selection code in SVGATextMode (it was based on the XFREE method, so it'll
+go wrong wherever XFREE goes wrong...).
+
+On those cards, you seem to be unable to use the higher pixel clocks,
+altough they ARE available from the MSWindows (alias WinTendo ;-) drivers. 
+
+It took me a long time to figure out what exactly caused this. Following is
+a rather technical discussion of the causes of this. If you're not all that
+technical, don't bother to read on. It's just here for the curious, and for
+the XFREE programmers...
+
+It should suffice to know that you CAN use the "ET4000_AltClockSel" option
+to use an alternative clock selection method, giving you access to all
+available clocks.
+
+The bottom line of all this is:
+
+Those unhappy few with a "bad" (*) ET4000 card (i.e. one that only works PARTLY
+under X-Windows) could get it to work a lot better in X-Windows (i.e. like
+the "good" ET4000 cards) by using an external clock program, which DOES
+select the clocks correctly. One such program was written by Roland Meier
+(meier@hp56.rbg.informatik.th-darmstadt.de). 
+
+Of xourse, you need to know the CORRECT clocks. And the "X -probeonly" trick
+will NOT work this time! Use the clocks reported by the DOS utility
+"dmode.exe" which is included with most ET4000 boards. It has a clock probe
+on board, much like the one in the XFREE code, but this time correct...
+
+(*) These cards are as good as the other ET4000's, they just don't work
+completely with the X-server. So in fact the X-server is "bad", and not the
+card!
+
+
+
+UPDATE!!!!
+----------
+
+As of XFree86-3.1.2C, and thus also version 3.2, this problem is now
+officially solved: just restart the new X-server, and let it probe for the
+clocks again (remove the old "clocks" lines in your XF86Config file!).
+
+This time it will return 32 clocks instead of just 16, and you will see the
+higher clocks you missed earlier.
+
+Using these 32 clocks in SVGATextMode with the default
+(non-"ALtClockSelect") ET4000 driver will make SVGATextMode use the same
+clocks as well.
+
+
+
+==============================================================================
+If you're interested in technical details, read on. Otherwise, ... well, don't
+==============================================================================
+
+I've been able to test such a card extensively, and it seems the XFREE code
+gets some things wrong in addition to the clock selection code. If you want
+a better (less buggy) server, look for XF86_W32_gendac.tar.gz on
+sunsite.unc.edu.
+
+"X -probeonly" (with an XF86Config file WITHOUT Clocks line, and WITHOUT
+chipset line in it), reports the following:
+
+
+   XFree86 Version 3.1 / X Window System
+
+   [...]
+
+   (--) SVGA: chipset:  et4000w32p
+   (--) SVGA: videoram: 1024k
+   (--) SVGA: clocks:  25.44  28.32  31.59  37.34  40.26  45.05  50.12  65.28
+   (--) SVGA: clocks:  12.85  14.17  15.80  18.07  20.05  23.04  25.04  32.65
+   (**) SVGA: Option "hibit_low"
+
+
+This was executed from a 80x60 text mode (this is important. the current
+pixel clock determines the result!), which uses the same standard VGA clock
+of 25 or 28 MHz, as in 80x25 or any other standard 80x.. mode.
+
+
+The accelerated W32 server reports the following:
+
+   XFree86 Version 3.1 / X Window System
+   (protocol Version 11, revision 0, vendor release 6000)
+   Operating System: Linux
+   Configured drivers:
+     ET4000W32: accelerated server for ET4000W32 graphics adaptors (Patchlevel
+   0):
+         et4000w32, et4000w32i, et4000w32p_rev_a, et4000w32i_rev_b,
+         et4000w32i_rev_c, et4000w32p_rev_b, et4000w32p_rev_c,
+         et4000w32p_rev_d
+
+   [...]
+   (--) ET4000W32: chipset:  et4000w32i_rev_b
+   (--) ET4000W32: videoram: 1023k
+   (--) ET4000W32: clocks:  25.37  28.32  31.58  38.21  41.79  45.23  50.10
+   65.32
+   (--) ET4000W32: clocks:  12.66  14.16  16.00  18.08  20.07  22.54  26.25
+   33.68
+
+Both seem to use the same pixel clock selection, and both are getting it
+wrong...
+
+Because I happen to know that the REAL pixel clocks are:
+
+  25.1 28.3 32.5 36 40 44.9 50 65 50 56.6 65 72 80 90 63 75
+
+This can be evidenced from two different sources.
+
+First of all, SVGATextMode, when givven these clocks, and the option
+"ET4000_AltClockSel", can use ALL above clocks, and produces the right
+display (I should know, since my monitor will only take 32 and 56 kHz. Any
+other frequency and it won't lock...). Clockprobe also reports that the REAL
+clock corresponds with the one in the Clocks line. 
+
+And secondly, a DOS tool that came with the card (dmode.exe) also has some
+kind of clock probing function on board. It reports the SAME 16 possible
+pixel clocks (although in a different order: the upper 8 are swapped with
+the lower 8).
+
+---------------------------------------------------------------------------
+
+Tseng Labs has been so kind as to send me an ET4000W32i data book. I looked
+up some things. Together with a lenghty E-mail discussion with Roland Meier
+(meier@hp56.rbg.informatik.th-darmstadt.de), I came up with the following
+theory (it has been confirmed by my own experiences, and the ones from
+Roland Meier, the author of the clock program for the "bad" Et4000's).
+
+First of all: the ET4000 chip has 5 dedicated clock selection bits in its
+coniguration registers (CS0..CS4) which can be used to drive an external
+clock synthesizer chip. In addition to that, it also has a bit to divide the
+clock by 2 (MCLK/2) and one to divide it by 4 (MCLK/4).
+
+Most ET4000 cards (i.e. the ones that work 100% with the XFREE code) use the
+three lowest clock selection bits, in combination with the "divide-by-two"
+bit as the fourth clock selection bit. This mean they use the following 4
+bits to select clocks:
+
+       CS0  CS1  CS2  MCLK/2   (from lowest to most significant bit)
+
+  bit:  0    1    2     3
+
+The number of the clock you ask for (from 0 to 15) is put in these 4 bits.
+
+You might also have noted the "hibit_high" or "hibit_low" option. This
+option tells the XFREE code (and also SVGATextMode) what the status of the
+4th bit (MCLK/2 in this case) is when you select one of the 8 first clocks
+from the clocks line. These mostly are the lowest available clocks.
+
+"hibit_low" means MCLK/2 must be low for the lower 8 clocks. "Hibit_high"
+the opposite: MCLK/2 must be high for the lower 4 clocks.
+
+But since MCLK/2 is in fact a programmable "divide-the-pixelclock-by-2" bit,
+this means that you are IN FACT only using 8 "real" clocks, and the other 8
+are just the same clocks divided by 2! You can check that in the "normal"
+clocks line for a standard ET4000 card (this time split into 2 lines to
+make things more clear):
+
+   Clocks  25.1 28.3   32.5 36   40   44.9 31.5 37.6
+   Clocks  50   56.6   65   72   80   90   63   75
+
+The second clocks line contains each time the double clock as the one above
+it (the first clock line).
+
+Remember we are still talking about the "normal" ET4000 cards.
+
+But what are they then doing with those upper 2 (real) clock selection bits
+CS3 and CS4? The answer: NOTHING! They are not used in the XFREE code. 
+
+Now there are two possibilities: either the clock chip used in many ET4000's
+can only generate 8 clocks (high clocks, as in the second clocks line
+above), and you then have to use the MCLK/2 bit to get the lower clocks
+(like the VGA standard 25 and 28 MHz clocks). Or you have a clock chip that
+can generate 16 clocks, but XFREE only uses 8, because of the way they do
+clock selection.
+
+In the second case, you only use half of the available clocks! Which would
+mean that using e.g. CS3 would give you ANOTHER bank of 8 clocks. Remember
+XFREE doesn't use this bit.
+
+Now take a look into the output from X -probeonly above for the "bad" ET4000
+card. The FIRST row of clocks is a normal sequence starting with 25 and 28
+MHz. But the SECOND row are HALF of the clocks above:
+
+   (--) SVGA: clocks:  25.44  28.32  31.59  37.34  40.26  45.05  50.12  65.28
+   (--) SVGA: clocks:  12.85  14.17  15.80  18.07  20.05  23.04  25.04  32.65
+
+So here you see the effect of the MCLK/2 bit used as clock selection bit 3
+again, but this time with the effect that the second row are HALF the clocks
+of the one above, instead of DOUBLE. The bottom row of clocks is completely
+useless for all "normal" graphics modes, since you need HIGH clocks, not LOW
+ones. So you can only really use the upper row of 8 clocks.
+
+This means your ET4000 card WILL work with XFREE, but only at 800x600 @ 70
+Hz and 1024x768 @ 60 Hz (Max clock = 65 MHz).
+
+That is a waste of hardware, since an ET4000 can easily handle 86 MHz (and
+above) to give you the best possible refresh rates - if your monitor can
+handle them.
+
+Note that the 8 lower clocks from X -probeonly are exactly the same as the 8
+lower clocks in the CORRECT clocks line:
+
+  25.1 28.3 32.5 36 40 44.9 50 65 50 56.6 65 72 80 90 63 75
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Which again proves that XFREE uses a divide-by-2 feature to get the "upper"
+8 clocks. And thus never gets access to the REAL upper 8 clocks that this
+"bad" card needs!
+
+So, what would X -probeonly tell us when the REAL 4th clock select bit is
+changed? If I am correct, it should now give us the other 8 clocks from my
+CORRECT clocks line:
+
+  25.1 28.3 32.5 36 40 44.9 50 65 50 56.6 65 72 80 90 63 75
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+                                  
+And the other 8 would then be those 8 divided by 2.
+
+Using setVGAreg from SVGATextMode, I set the REAL CS3 bit, and do X
+-probeonly to let the X-server probe the clocks. Since X doesn't touch this
+bit, I can easily change it, and then run X -probeonly again to see if it
+comes up with anything else. If nothing changes, that would mean the
+hardware does not use that CS3 bit, and that there are only 8 clocks
+available to this ET4000. And that would be the end of it...
+
+
+Let's see:
+(we do all this from the standard VGA 80x25 mode)
+
+   > ./getVGAreg CRTC 0x31
+   VGA 'CRTC' register, index 49 (=0x31) contains 64 (=0x40)
+
+bits 7 and 6 are CS4 and CS3 resp., which means clock select bit 3 (CS3) is
+ON!!! This means this bit must be ON for the LOWER 8 clocks to be selected.
+So we'll now put it OFF, and see what the X clock probe thinks:
+
+   > ./setVGAreg CRTC 0x31 0x00
+   VGA 'CRTC' register, index 49 (=0x31) contains 0 (=0x00)
+
+(at this time we should be running with clock 9 instead of clock 1 (i.e.
+56.6 MHz). The monitor goes out of sync. clockprobe confirms that we ARE at
+56 MHz)
+
+   > X -probeonly
+   (--) ET4000W32: clocks:  25.28  28.32  32.68  36.42  40.18  45.22  31.63  37.81
+   (--) ET4000W32: clocks:  12.63  14.18  16.33  18.11  20.10  22.58  15.79  18.90
+
+These ARE different from our first probe attempt (without CS3 changed). So
+it REALLY does something, although X doesn't use it!
+   
+These are the second block of 8 clocks, but already divided by 2, and
+then divided by 2 again to get the second row from the probe...
+
+The reason for this is explained below in the "very important note" on the
+XFREE clock probe. The XFREE probe always assumes clock #1 is 28 MHz, and
+scales the others accordingly. In this case, this is wrong: clock #1 is
+actually 56 MHz, and thus we need to scale all the others back up: 
+
+   (--) ET4000W32: clocks:  50.56  56.64  65.36  72.84  80.36  90.44  63.26  75.62
+   (--) ET4000W32: clocks:  25.28  28.32  32.68  36.42  40.18  45.22  31.63  37.81
+
+And This shows that indeed changing CS3 DOES give us another pack of 8
+clocks, and this time up to 90 MHz (like almost all ET4000's).
+
+---------------------------------------------------------------------------------
+
+
+CONCLUSION:
+-----------
+
+The XFREE code should change its clock selection to ALWAYS use CS0, CS1, CS2
+AND (!) CS3 (and maybe even CS4) for ALL Et4000 boards, and output all the
+clocks it can get from THAT clock selection method. It could then go on to
+suggest all clocks divided by 2 as 16 MORE clocks (resulting in 32 clocks
+for most ET4000 owners).
+
+UPDATE: As of XFree86 version 3.1.2C and up, this is now incorporated.
+
+
+=================================================================================
+
+VERY IMPORTANT NOTE: The XFREE clock probe is WRONG (on some occasions)!!!
+---------------------------------------------------------------------------
+
+The xfree clock probe works as follows: it first disables all interrupts,
+then selects all clocks one by one and runs a counter for a certain number
+of vertical retraces. It stores the counter value for each pixel clock.
+
+At the end, the RELATIVE ratio between the 16 counter values are used to
+calculate the pixel clock rate.
+
+But in order to be able to do that, you need to have a reference: if you
+know that clock 1 ran to 1000000 counts during 5 vertical retraces, and
+clock 5 needed just 200000, you know clock 5 is 5 times faster than clock 1.
+But how fast is that? This method only gives you RELATIVE measurements, and
+not absolute!'
+
+In order to solve that problem, the XFREE programmers made the mistake
+(IMHO) to ASSUME clock number 1 is ALWAYS 28 MHz (it should, for a standard
+VGA card: clock0 0 = 25 and clock 1 = 28 MHz).
+
+This is all allright, IF AND ONLY IF the clock selection mechanism is
+correct. Because any VGA card must indeed have 28 MHz as clock 1. But what
+if the clock selection code is WRONG (as in the case of this ET4000 card)?
+
+Then you get the results scaled wrong: if the clock selected as #1 by the
+XFREE code is e.g. 56 MHz, XFREE will assume it is 28 MHz, and all other
+clocks will be scaled accordingly. i.e. they will all be half (since 56 is
+twice 28 in our example) their actual value.
+
+You can in fact observe this behaviour on ANY ET4000 card, even the ones
+that work correctly for XFREE. Suppose the correct clocks (as reported with
+X -probeonly) were:
+
+   Clocks  25.1 28.3   32.5 36   40   44.9 31.5 37.6
+   Clocks  50   56.6   65   72   80   90   63   75
+
+Since changing the polarity of the "hibit_..." option swaps the meaning of
+what is used as the highest clock selection bit, you'd expect the following
+when changing "hibit_...":
+
+   Clocks  50   56.6   65   72   80   90   63   75
+   Clocks  25.1 28.3   32.5 36   40   44.9 31.5 37.6
+
+
+i.e. just swapped the two rows of clocks. BUT XREE ASSUMES clock #1 is 28
+MHz, and it now is 56.6 MHz (the REAL, ACTUAL frequency. which
+SVGATextMode's clockprobe could show you). So all other clocks will be
+scaled down, and X -probeonly will give you:
+
+   Clocks  25   28.3  32.5   36   40   45   31.5  37.5
+   Clocks  12.6 14.2  16.3   18   20   22.5 15.7  18.7
+
+
+Which is wrong, of course!
+
+
+The XFREE clock probe uses a pixel clock as the reference to measure .. the
+pixel clock! This is correct in ALMOST al cases...
+
+It would be MUCH better to use an EXTERNAL reference to do an absolute
+measurement on at least ONE pixel clock. One can then always use the
+"relative" tehnique to derive all other pixel clocks. 
+
+The clockprobe in SVGATextMode uses a system timer to derive the pixel clock
+speed, which is a far better (but slower) method (it has its own problems,
+though...).
+
+

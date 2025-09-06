@@ -1,0 +1,558 @@
+.TH grabmode 8 "October 1998" "Version 1.9"
+
+.SH NAME
+.nf
+grabmode \- a Textmode/XWindows mode grabber
+clockprobe \- a Textmode/XWindows pixel clock probe
+.fi
+
+.SH SYNOPSIS
+.B grabmode
+[ -ndrhXTbcpv ] [ -x <width> ] [ -y <height> ]
+
+.PP
+.B clockprobe
+[ -ndrhv ] [ -x <width> ] [ -y <height> ]
+
+.SH DESCRIPTION
+\fBclockprobe\fP tries to measure the pixel clock which is currently used
+for the display that is visible while the probe is running, be it a textmode
+display or a graphical one. Its default behaviour is to display the pixel
+clock value in MegaHerz, together with the horizontal and vertical refresh
+frequencies.
+
+\fBGrabmode\fP basically does the same, but also grabs the entire state of
+the VGA controller, and shows it on the screen in a format compatible with
+the \fBXF86Config\fP file, the XFree86 X-server configuration file, or
+alternatively in the \fBTextConfig\fP file format, which is the config file
+format used by SVGATextMode.
+
+Both programs are in fact the same, but depending on the name with which it
+is called, it does a clockprobe or a grabmode (clockprobe is a link to
+grabmode).
+
+It does not change anything to the mode currently being probed. VGA
+registers are read only. This means it does NOT actually change pixel clocks
+like the X-server does when it probes for the clocks. This also implies that
+it should work on ANY VGA card, even if it is unsupported by either XFree86
+or SVGATextMode. This is because it only uses standard VGA registers. No
+extended registers are used.
+
+That also uncovers the biggest problem with grabmode: since it does not know
+about extended registers, it doesn't know about special chipset-dependent
+modes like 16/24/32-bit mode, or interlaced modes. See the \fBBUGS\fP
+section for more details. The mode grabber tries to be as clever as possible
+about interpreting the data retrieved from the VGA card, but it doesn't
+always get it right. Using grabmode requires some common sense from the user
+to interpret the data.
+
+.SS Applications
+Grabbing a standard VGA graphics mode (from svgalib or dosemu, or even from
+DOS itself, using \fBgrabmode.exe\fP ) for inclusion in your own TextConfig
+(or XF86Config) file is probably the most attractive one. "vgaset", included
+in most X-distributions, can give you that, but it does NOT tell you the
+pixel clock currently used, neither does it tell you about doublescan modes,
+sync polarities, etc. The output of grabmode can be pasted right into your
+XF86Config file (if it's correct...).
+
+Of course, you could also grab the default Linux (and/or DOS) text modes to
+include them in your TextConfig file. So you can show your friends how the
+old modes looked, and how the SVGATextMode-"enhanced" modes look in contrast ;-)
+
+Debugging XFree86 or SVGATextMode setups is another one. E.g. if
+SVGATextMode or XFree86 fails to show you the kind of screen you'd expect,
+and/or your monitor doesn't seem to like what you send it, then the most
+common reason for that is that the pixel clock is not programmed correctly,
+or not at all. Clockprobe or grabmode (even when typed blindly, redirected
+to a file for later viewing) should be able to tell you what clock you are
+ACTUALLY using. It's not because your "clocks" line says "50 MHz" for some
+clock, that that clock index actually IS 50 MHz. You could be using the
+wrong clocks line, or there could be a bug in the clock setting code. In
+either case, the clockprobe can tell you the ACTUAL clock.
+
+.SH OPTIONS
+The first group of options are valid for both grabmode and clockprobe.
+
+.TP
+.B -n
+don't touch VGA registers, not even to read them. Of course, nothing useful
+will be done either. This option is more for completeness, and for debugging.
+
+.TP
+.B -d
+debugging mode. grabmode/clockprobe will output lots of debugging
+information about all the things it attempts to do. This is mostly for
+"internal purposes" only, but it could help you discover why grabmode
+doesn't react as you expect it to. This could also be useful when reporting
+a problem.
+
+.TP
+.B -h
+prints out a short help and the version number.
+
+.TP
+.B -r
+"raw" mode. All smartwork will be skipped. The program will not attempt to
+be smart about displaying the mode line and/or the clock calue. Grabmode
+prints values as they are in the VGA registers, clockprobe shows the actual
+clock used inside the VGA, not the per-pixel clock. See the \fPSMART BOMB\fP
+section below for more information on how smart/stupid grabmode can be.
+
+.TP
+.B -v
+verbose mode. Report all special mode flags. Only useful to VGA gurus.
+
+.TP
+.B -x <\fIwidth\fP>
+.B -y <\fIheight\fP>
+Specify width of the screen mode to be grabbed. In most cases, the screen
+width and height are known to you in advance. E.g. you know you'll be
+grabbing a 1024x768 mode, and all you want are the exact timings.
+
+Specifying the width and/or height for the mode grabber or the clock probe
+will bypass all the guessing (see "bugs" and "smart bombs" section) it would
+normally have to do in order to detect special modes (15/16/24 BPP,
+interlace, ...). This will result in a much more reliable mode line and/or
+clock frequency report.
+
+.PP
+This option is for the clockprobe only:
+
+.TP
+.B -p
+print only the clock value (in MHz), without ANY further comment. This is
+probably useful in scripts and pipes.
+
+.PP
+These options are for grabmode only:
+
+.TP
+.B -X
+grabmode normally checks to see if you are grabbing a text mode or a
+graphics mode. It then adapts its output so it complies with a TextConfig
+mode line (for text modes) or with an XF86Config mode line (for graphics
+modes). This option forces it to output an XF86Config compatible mode line.
+
+.TP
+.B -T
+The opposite of the -X option above: output a TextConfig mode line, even if
+you're grabbing a graphics mode.
+
+Since graphical screens have nothing to do with hardware assisted font
+rendering (as from VGA text mode - let's forget about accelerators for a
+while), they set the "character height" to 1 pixel (in fact they have to,
+otherwise each line gets repeated 16 times, if they leave the "16" from the
+9x16 character mode in there!). So font size given will of course be wrong.
+In most cases you will be presented with am 8x1 font (8x2 in some DoubleScan
+modes), and with a mode label equally distorted. grabbing a graphical
+1024x768 mode this way would result in a mode line labelled "128x768" with a
+font size of 8x1. You'll have to change the font size (and the label) if you
+want to turn that into a useful text mode.
+
+This could be used to create a text mode completely compatible with an
+X-Windows mode you already have. switching from one to the other would be
+much faster, since the monitor wouldn't have to re-synchronize.
+
+.TP
+.B -b
+show video blanking information in addition to the normal mode line timing
+information. Not very useful, unless you want to know everything about a VGA
+mode. XF86Config nor TextConfig allow you to specify the blanking. Both
+automatically program a suitable (though different) blanking. If you are
+using the VGA overscan color for some reason, then this option will tell you
+how far the overscan color will reach.
+
+.TP
+.B -c
+Do not probe for the pixel clock, just print the mode line with the clock
+replaced by "***". Not probing for the pixel clock makes grabmode a lot
+faster.
+
+.SH SAMPLE OUTPUT
+.SS clockprobe
+.nf
+clockprobe: Estimated vertical scanrate = 69.754 Hz.
+clockprobe: Estimated horizontal scanrate = 55.803 kHz.
+clockprobe: Estimated pixel clock = 74.83 MHz
+.fi
+
+Note that the clockprobe (both in clockprobe and grabmode) only measures the
+vertical refresh rate. The rest is calculated from the VGA register contents
+and the vertical refresh. Extended and special modes which could cause
+grabmode to mis-detect a mode, will also cause the horizontal frequency
+and/or the pixel clock to be wrong.
+
+.SS grabmode
+
+(the output comes on one line)
+
+.IP
+"116x48"   74.832   928 968 1104 1192   768 775 776 800   +Hsync +Vsync  font 9x16   # 55.803kHz/69.75Hz
+
+.SS grabmode -v
+adds one more line to that:
+
+.IP
+#   Active special VGA register flags: WORDMODE
+
+.SH SMART BOMBS
+Grabmode, and to a lesser extent, clockprobe, have some intelligence
+built-in, so they can cope with non-standard VGA configurations. As said
+before, both programs use standard VGA registers only to get their
+information. Only, nobody has a standard VGA card nowadays.
+
+To remain chipset-independent, grabmode and clockprobe try to guess from
+what they can read in the standard VGA registers what mode you could
+actually be using.
+
+A program can only be as intelligent as its creator (except by mistake).
+Well, grabmode is extremely stupid on some occasions. Because of that, it
+will report all non-trivial changes that it made to the original timings (as
+read from the VGA) before printing it out, and also WHY it did that.
+
+That's why this section is called "smart bombs": When one of those gets
+confused...
+
+The built-in smart (hah!) features are:
+
+.SS DoubleScan detection.
+This is a rather trivial feature, and is (for as far as I know) reliable
+enough to go without warning. Doublescan is a way to display modes with very
+few lines on a screen that was made to display many more. The most common
+application is the CGA-emulation mode 320x200. Displaying only 200 lines on
+a VGA screen would look awful (you'd see large black lines in between the
+200 video lines).
+
+Doublescan displays each line twice, so there are actually 400 lines on
+screen, but only 200 different ones. In this mode, the VGA is programmed for
+400 lines, but with Doublescan enabled, the ACTUAL line count is half that.
+Grabmode will thus divide all vertical timings by 2 before displaying them.
+
+.SS vertical timing wrap detection
+The standard VGA register set only allows for a maximum of 2048 pixels
+horizontally and 1024 lines vertically (this is the FULL size, including
+sync and blanking, so the actual visible size is even smaller). Modern SVGA
+cards can do modes with 1024 active lines and more, requiring more than 1024
+lines in total. A 1280x1024 mode for example needs 1024 active lines. Add
+sync and blanking time to that, and the grand total is over 1024 lines.
+
+Although standard VGA has a "vertical double" mode bit, which multiplies all
+vertical values by 2, most SVGA drivers prefer to use extended (chipset
+dependent) registers to accomplish that. Grabmode cannot read these extended
+registers (we want to keep it chipset-independent, remember?), so it will
+show wrapped-around timings for those modes with around 1024 lines.
+
+example:
+
+.IP
+Depending on how exactly a mode is implemented on your specific VGA card, a
+1280x1024 mode at 60 Hz, which should be detected as:
+.IP
+.nf
+"1280x1024"  110.34  1280 1328 1512 1712  1024 1025 1028 1054
+.fi
+.IP
+will be detected (in "raw" mode) as:
+.IP
+.nf
+"1280x1024"  3.131  1280 1328 1512 1712  1024 1 4 30
+.fi
+
+.PP
+Grabmode will see that the sequence of vertical timings is wrong, and will
+assume that this was an extended mode, using extended registers. It will
+correct the sequence to make it look like the correct one.
+
+This feature only works when the vertical timings happen to cross over the
+10-bit standard VGA limit, which means it will only work for 1280x1024
+modes. Far from perfect, but better than not at all...
+
+.SS Golden ratio assumption
+The "golden ratio" rule suggests that most displays have a physical aspect
+ratio of 4x3 (width/height = 4/3). Most applications assume pixels are
+square (same width and height), so the normal case would be to use the same
+ratio in programming the VGA card.
+
+640x480 modes have an aspect ratio of 640/480 = 1.333 (=4/3). 800x600,
+1024x768, 1280x1024, 1600x1200: all those modes use an aspect ratio of 4/3
+(or a close match) (anyone have a 16/9 computer display -- they exist) ?
+
+If grabmode detects a mode that looks like double or triple that ratio, it
+assumes this is a special mode (see below), and divides the horizontal
+timings by 2 or 3. In most common cases, this is the correct result. An
+appropriate warning is given.
+
+The golden ratio assumption is then used by the CGA emulation detector, the
+Hi-TrueColor mode detector and the interlace detector to adjust the mode
+timings.
+
+Grabmode (and clockprobe) report the _actual_ pixel clock used at which data
+is being transferred from the VGA chip to the RAMDAC. This means that any
+special data transfer scheme will mislead the clock probe, causing a faulty
+report.
+
+.SS Hi/TrueColor detection
+HighColor and TrueColor modes on most cheap cards are one such example: the
+VGA registers for e.g. a 640x480x16M mode on a normal VGA card with a
+standard 8-bit RAMDAC (like most cheap VGA cards, e.g. using the S3 GenDAC
+or ATT20C490/1/2) are set up as if the mode was actually 2x (16 bpp) or 3x
+(24 bpp) or 4x (32 bpp) the actual horizontal width, and the pixel clock is
+multiplied by the same value. So in that case a 24-bit 640x480 mode at 25
+MHz pixel clock is programmed in the VGA chip as a 1920x480 mode at 75 MHz!
+For this mode, the RAMDAC is programmed to assemble three consecutive bytes
+into one giant 24-bit color pixel.
+
+This ramdac programming is very RAMDAC-dependent, so it is impossible to
+detect what is going on without knowing the RAMDAC type. RAMDAC's with
+16-bit interfaces (like the S3 SDAC) use this scheme for 24/32-bit modes:
+they transfer one 24-bit pixel in 2 clock periods, or, worse even, for
+24-bit packed pixel modes, in 3/2 clock periods...
+
+To make things even worse, grabmode will not even correctly report simple
+256-color (8-bit) modes on some cards. Especially high-end cards (like #9,
+Diamond, ...) using special VGA DAC's (Bt485,...) with pixel multiplexing.
+They will report completely wrong clocks and refresh frequencies things on
+higher (>67.5 MHz, for example) pixel clocks. Such RAMDAC's can transfer 2
+or more entire pixels in one clock period, the opposite of simple RAMDAC's
+in 16/24/32-bit modes.
+
+.SS Interlace detection
+On many (if not all) VGA cards, interlaced modes can be used to allow a high
+resolution mode to be displayed on a low-end display (= with a low maximum
+horizontal scan rate) without having to resort to ridiculously low vertical
+refresh rates.
+
+In order to do this, they program the VGA chip with HALF the amount of
+actual lines on the screen, and set a special bit that tells the chip this
+is an interlaced mode.
+
+This "interlace-bit" is, again, in the extended (non-standard) VGA
+registers, and can thus not be detected by the mode grabber. What _can_ be
+detected is that the amount of lines programmed in the VGA registers is only
+half of the height of the screen. This would be easy if there was a way to
+know how much lines the screen actually has...
+
+But since there isn't, grabmode must resort to some assumptions: assuming that
+most graphics modes use one the standard screen sizes below:
+
+.IP
+.nf
+640x480
+800x600
+1024x768
+1152x900
+1152x910
+1280x1024
+1600x1200
+.fi
+
+.P
+the mode grabber can then check if the current mode has exactly HALF the
+amount of lines of one of these modes: 240, 300, ..., 600 lines. If so, it
+ASSUMES (!) that this is an interlaced mode, and changes the timings
+accoringly before displaying them.
+
+This immediately shows that the mode grabber will not be able to detect
+non-standard interlaced modes.
+
+.SS CGA emulation detection
+A very popular graphics mode is the 320x200 mode with 256 colors. This is
+CGA resolution, but with 256 colors (BIOS mode 13h): the only standard VGA
+256 color mode. In this mode, the VGA reads 4 bits per pixel clock,
+assembles each 2 groups of 4 bits into one 8-bit pixel and sends this to the
+VGA. The actual VGA registers are thus programmed for a 640x400 mode: 400
+lines with DoubleScan is 200 real lines, and 640 pixels with each 2 pixels
+output as one is 320 real pixels. Why make it easy?
+
+This pixel joining scheme is enabled by a certain bit in the VGA registers,
+which is detected by grabmode to trigger it to transform the mode into a
+"CGA" emulated mode. Easy.
+
+BUT. Extended VGA modes use extended VGA registers, and those have priority
+over the standard VGA registers. Hence, even if this special CGA-emulation
+bit is set ON, it doesn't necessarily mean pixels are being combined.
+
+All in all, even if this special mode is set in the standard VGA registers,
+the extended registers could override that. Detecting this mode is thus not
+trivial. This is why the "golden ratio" detection is used for this: after
+doublescan has been accounted for, the mode timings come out as 640x200,
+which triggers the golden ratio detector to transform this into 320x200,
+with an appropriate warning.
+
+.SS Vertical retrace timeout detection
+The clock probe measures the average time between two vertical retraces
+(busy-waiting. Yuck!). This means it will wait forever when there is no
+vertical retrace signal. This can be caused either by a program actually
+wrecking the current video mode (SVGATextMode has been known to do that :-)
+or when the display system is in power-saving mode. 
+
+When there is no vertical retrace detected within a few seconds, the probe
+assumes it will never get one, and bail out with a message to that extent.
+This avoids that the probe hangs forever.
+
+.SH grabmode.exe & scanmode.exe (DOS port of grabmode)
+There is a DOS port of grabmode in the SVGATextMode distribution, which
+allows grabbing modes from dos.
+
+There's one caveat to this. Previous versions of the DOS grabmode were
+compiled using a commercial DOS C compiler, and required a lot of special
+code. The latest version was compiled using DJGPP version 2.0, the GNU C
+compiler for DOS. This required almost no special code, and thus it is a
+cleaner port. BUT... It needs DPMI (DOS Proteced Mode Interface). A DMPI
+environment can be found in MS-Windows (DOS boxes), OS/2, Windows-NT, qdpmi,
+386max, etc. A free DMPI program is included in the distribution (The DJGPP
+DPMI program CWSDPMI).
+
+Scanmode.exe scans all VGA modes from the DOS BIOS, including the VESA
+modes, and outputs two files in the currect directory: tconfig and xconfig.
+The text modes are stored in the tconfig file, and the graphics modes are
+stored in xconfig.
+
+.TP
+\fBIMPORTANT NOTE\fP:
+The DOS port of all SVGATextMode programs is UNSUPPORTED. This means I am
+mostly unable and, together with the people who helped me with this, rather
+unwilling to put much effort in improving the DOS side of these tools.
+Consider the DOS port a proof-of-concept. It was just plain fun to see the
+DOS GCC compiler was so incredibly compatible with it's UNIX parent.
+
+.SH BUGS
+Is there an entry in the Guinness book of Records for
+amount-of-bugs/code-size ratio? This program would come in second (just
+behind MicroSoft).
+
+.SS clock probing accuracy
+The clock probe (used by clockprobe and grabmode) works best when the system
+is not severely loaded. Especially disk access seems to have a bad
+influence. DOSEMU is even worse. Very slow machines (i386) might run out of
+steam while measuring. On 486 machines, the probe works fine.
+
+However, even busy machines should give a reasonable result, unlike the X
+clock probe. Even heavily loaded (swapping!) machines should give a rather
+close estimate (maybe a few MHz off, but that should be all). System loads
+to up to 3 or 4 will probably still yield results which are only a few MHz
+wrong.
+
+The clockprobe first performs 100 measurements of the time between two
+vertical retraces, then calculates a histogram of those measurements. If the
+histogram does not have a nice peak (mostly due to heavy system load,
+causing many measurements to be wrong), the measurement is done all over
+again. After three failures, the clock probe will stop retrying, using the
+last measurement, but also warning you about the unreliability of the result.
+
+In most cases, the clock probe will measure a value slightly higher or
+slightly lower than you expected. It might be for example that you
+programmed a mode line that specified a 70.000 MHz pixel clock, but the
+clock probe insists that it is 75.175 MHz. This is due to the fact that any
+clock generator cannot produce just _any_ clock you ask for, but must pick
+the closest available one, either from a list (the \`Clocks\' line in
+SVGATextMode or XFree86), or from the possible settings on a programmable
+clock chip.
+
+If the clockprobe insists on the same value over and over, it means that
+that is the actual clock. If it insists on something far from the one you
+expected, then it's either a bug in the probe, or a misconception on your
+side.
+
+Some special modes like CGA emulation, HiCilor, TrueColor, pixel
+multiplexing, ..., will cause grabmode to fail to detect the correct number
+of pixels per line. And because the horizontal sync and clock speed are all
+calculated from the H and V timings, they too are wrong. The vertical sync
+speed is ALWAYS correct, since it is MEASURED, independantly from ANY timing
+register.
+
+.SS grabmode.exe limitations
+The DOS grabmode/clockprobe programs will report heavy system load when they
+are ran from a Windows DOS box. Even when you are not running any other
+program. This is typical Windows behaviour: wasting time while doing
+nothing...
+
+When executed in an MSWindows DOS box, you will ALWAYS probe the VGA
+parameters from the full-screen DOS version, even when you are running the
+DOS box in a window and not full-screen. This is because MSWindows hides its
+VGA registers from normal programs (probably through the MMU address
+mapping), so the mode grabber gets fooled into believing this is still a
+text mode box.
+
+For the same reason, doing a grabmode in a DOS window will even lie about
+the font size. Windows will give you an "appropriate" font size, which
+doesn't have to be the real one.
+
+A Full-screen DOS box WILL give a correct probe, although there could be a
+warning about serious system-load and the resulting timing-inaccuracy.
+
+Clock probing is a DOS window is a hoax. You will get extremely high clock
+rates, or even floating point overflows. Use the "-c" option (don't probe
+clock rate) to avoid this.
+
+Conclusion: Probing a DOS window is TOTALLY USELESS. You get the wrong VGA
+register contents (those from the text mode, not those from the Windows
+mode), and the wrong pixel clock.
+
+.SS grabmode caveats
+Too many to count. Or even more...
+
+Most bugs not yet mentionned above result from the various assumptions the
+mode grabber has to make along the way, which in turn is caused by the
+wealth of different methods VGA chip makers come up with to make special
+mode programming non-standard.
+
+As mentionned above, the following special modes could cause grabmode and/or
+clockprobe to get it all wrong:
+
+.IP
+.nf
+Interlaced modes
+Hicolor modes
+TrueColor modes
+Pixel multiplexed modes
+Extended VGA modes ( > 1280x1024)
+.fi
+
+.PP
+The reasons for this are explained in one of the sections above.
+
+If you don't trust the result, use the "-r" (raw probing), and add some
+common sense. Then determine what the real mode parameters should be. In
+most cases, you know what the actual mode is (e.g. 1024x768), so you can use
+that knowledge to interpret the raw timing report.
+
+Some IBM 8514 compatible cards (like ATI Mach) use a completely different
+set of registers than the normal VGA set when they are in graphics mode.
+Because of the chipset-independance of grabmode, grabmode will not notice
+this, and report the values which are in the now unused VGA register set. In
+most cases, this is the text mode from which the graphics program (XFree86,
+for example) was started.
+
+The main reason for all these problems are the author's stubbornness
+(combined with a fair amount of lazyness) to keep grabmode
+chipset-independent.
+
+.SS Summary
+Grabmode is only reliable when used to grab a pure text mode, or when the
+mode sizes are given on the command line. I just HATE "intelligent"
+software, don't you?
+
+.SH FILES
+clockprobe nor grabmode require any external files. They do NOT use the
+TextConfig file.
+
+.SH AUTHOR
+Koen Gadeyne <koen.gadeyne@barco.com> (original Linux version)
+
+.PP
+See the \fBCREDITS\fP file in the distribution for a full list of all those
+who helped.
+
+.SH SEE ALSO
+.nf
+SVGATextMode(8) \- Textmode manipulation/enhancement tool
+TextConfig(5) \- Configuration file for SVGATextMode
+XF86Config(5) \- Configuration file for XFree86
+.fi
+
+The `doc' directory in the SVGATextMode distribution contains a lot of
+miscellaneous documentation on a range of topics related to configuring and
+using SVGATextMode. The monitor timing tuturial in the SVGATextMode
+distribution could be a handy reference for understanding mode timings.
+ 

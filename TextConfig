@@ -1,0 +1,1054 @@
+#############################################################
+#                                                           #
+#   Configuration file for the "SVGATextMode" program       #
+#                                                           #
+#############################################################
+#
+# Created by: Koen Gadeyne
+#
+# DISCLAIMER: <include standard disclaimer here>
+#  in short: USE AT YOUR OWN RISK!!!
+#
+# READ THE MANUAL PAGE for a verbose explanation of the syntax of this file!
+#
+# NOTES:
+#
+# 0. Just for safety: use "savetextmode" to save your current textmode
+#    before trying anything of this stuff! If you get it wrong, you can
+#    always restore your screen with "textmode" (prepare to type that 
+#    "blindly": you might need to!). And to be even safer: do your first
+#    tests from the standard 80x25 mode, and do your "savetextmode" in
+#    that mode. It is not al all a sure thing that savetextmode will
+#    enable you to return your screen to its original condition.
+#
+#    Another option would be to start the X-Windows system before running
+#    SVGATextMode. X ALSO saves your text mode, and so when your text mode
+#    is screwed up, switching to X and back might restore the screen again
+#    (except for the screen SIZE...)
+#
+# 1. You can use "vgaset" to tune timing parameters, just as in X-Windows.
+#
+# 2. WARNING!!!!!!!!!!!
+#    Be absolutely sure that the CHIPSET is specified correctly! The code
+#    does ABSOLUTELY NO PROBING AT ALL, and will joyfully program your ET4000
+#    as an S3 chipset, and even pretend everything went OK. Don't ask me what
+#    horrific effects THAT can have...
+#    In case of doubt: use SuperProbe, or, better even: look at the XFree86
+#    confige file (/etc/XF86Config), or look at the VGA chip!
+#
+# 3. In case of trouble: read the doc/FAQ file in the distribution. It tells 
+#    you what to do or try in case something doesn't work. Also _please_ don't
+#    forget to read the manuals. They contain lots of hints and background
+#    information, and most questions you were just about to ask me by E-mail are
+#    answered in there.
+#
+# ---
+# [Leave the lines below in here: it is used to detect the TextConfig file version]
+#@stm_version_number@.1.9
+#
+#
+#
+#############################################################
+#                                                           #
+#   WARNING: Do NOT blindly copy clock values in this file. #
+#            They are only an example! Use the REAL ones    #
+#            from YOUR video card!                          #
+#                                                           #
+#############################################################
+
+
+# This is for a "generic" VGA card. It should work on ANY VGA card, but can
+# only use the first 4 clocks
+
+Chipset "VGA"
+Clocks  25.175 28.322
+
+# On many VGA cards, using this clocks line works as well:
+# Clocks 25.175 28.3 0 36
+
+echo "The SVGATextMode config file is configured as `standard VGA' by default."
+echo "This is highly sub-optimal on modern VGA cards."
+echo "Edit the TextConfig file for your VGA card to enable the many extra features."
+echo "(and then you can also get rid of this message...)."
+echo ""
+
+
+#############################################################
+#
+# Now come the SVGA chipsets
+
+#ChipSet	"S3"
+
+#Clocks   25.175  28.322  40.00   0.00   50.00  77.00  36.00  44.90
+#Clocks   130.00  120.00  80.00  31.50  110.00  65.00  75.00  94.50
+
+# For some S3 cards: pick one of the following clock chips (or RAMDAC's with
+# integrated clock chip).
+#ClockChip "icd2061a"
+#ClockChip "ics9161a"
+#ClockChip "dcs2834"
+#ClockChip "sc11412"
+#ClockChip "s3gendac"
+#ClockChip "s3_sdac"
+#ClockChip "S3Trio"
+#ClockChip "S3Virge"
+#ClockChip "ti3025"
+#ClockChip "ics2595"
+#ClockChip "ics5300"
+#ClockChip "ics5342"
+#ClockChip "ch8391"
+#ClockChip "stg1703"
+#ClockChip "ti3026"
+#ClockChip "ibm_rgb5xx"
+
+#Option "Legend"           # Some S3-based Legend cards without clockchip need this 
+#Option "SPEA_Mercury"     # ONLY for S3-964-based SPEA Mercury P64
+#Option "clockchip_x"      # icd2061a/ics9161 X/textmode fix -- see manual!
+
+# One of these options might allow an even higher text mode pixel clock on
+# your S3 card. The "faster" you set it, the better things will get.
+
+#Option "SLOW_DRAM"
+#Option "MED_DRAM"
+#Option "FAST_DRAM"
+#Option "XFAST_DRAM"
+
+# This option enables S3 high-speed text modes for pixel clocks > 36 MHz.
+# USE WITH CAUTION! This needs a different font format in VGA memory. Read
+# the manual before using this! It will only be allowed when font loading is
+# enabled!
+# All S3 cards can use it to increase the maximum allowable pixel clock
+# before strange effects appear. Older S3 cards (911, 924, 928, ...) need
+# this option for modes with >36 MHz pixel clocks
+
+#Option "S3_HSText"
+
+# IBM RGB RAMDAC's absolutely _need_ this. You will have to copy this value
+# from the output of the XFree86 server startup messages. MAKE SURE THIS
+# VALUE IS CORRECT, OR _ALL_ MODES WILL BE WRONG!!! (see the manual for
+# details) ALSO DON'T FORGET TO ADD THE SAME OPTION TO YOUR XF86CONFIG FILE.
+# Letting the X-server probe for it will FAIL when doing so from a
+# non-standard text mode.
+
+#RefClk 14.31818   # common values are: 14.31818, 16.0 , 24.0 and 50.0 MHz
+#RefClk 28         # Suggested by Stanislav Voronyi for S3 Trio3D2X (YMMV)
+
+#ChipSet	"ET4000"
+#Option "hibit_high"         # This option MUST be in your XF86Config file, too!!!
+
+#Option ET4000_AltClockSel   # some VERY rare ET4000's need this for correct
+                             # clock selection. See the appropriate README!
+                             # OBSOLETED when you use XFree86 3.1.2C or newer!
+
+#Option "Legend"             # Sigma Legend ET4000 boards need this.
+
+#Clocks 25.2  28.3  32.5  36  40  44.9  31.5  37.6
+#Clocks 50    56.6  65    72  80  90    63    75 
+
+#ClockChip "ics5341"         # some ET4000 W32p cards use this GenDAC
+#ClockChip "icd2061a"        # Diamond Stealth 32 cards use this chip
+
+
+#Chipset	"TVGA8900"
+#Clocks 25.175 28.3 45 36 58 65 50 40     
+
+#Chipset	"TVGA8900"    # this is for a 8900CL card, it has 16 clocks.
+#Clocks 25.175 28.3 45 36 57 64 50 40 75 108 110 107 72 61 79 74
+
+
+
+#Chipset	"WDC90C3x"
+#Clocks 25.175 28.3 65 36 40 50 32 45 31.5 35.5 74.5 72 30 77 86 80 60
+
+#Option swap_hibit  # Some WDC's need this, but most don't. This inverts
+                    # clock selection bit 2 (=the third bit)
+
+#Chipset	"WDC90C0x"
+#clocks  25.19  28.32  22.63  22.69  25.16  28.31  22.64  23.59  44.93
+
+
+
+#Chipset	"ATI"
+
+# It seems that the ATI clock lines from svgalib should work in SVGATextMode
+# as well. The following 8 lines are for ATI 28800-5 with 1Mb RAM, and ATI
+# 68830 15/16-bit HiColor DAC (according to SuperProbe)
+
+#Clocks  30.27  31.91 109.96  79.82  42.73  48.72  91.97  37.81
+#Clocks  39.70  44.66  75.00  64.93  50.27  56.37   0.00  44.66
+#Clocks  15.13  15.96  54.95  32.78  21.37  24.30  46.09  17.99
+#Clocks  19.87  22.33  37.49  32.45  25.14  28.18   0.00  22.35
+#Clocks  10.08  10.71  36.69  26.59  14.25  16.38  32.17  12.30
+#Clocks  13.25  15.07  24.99  21.63  16.77  18.78   0.00  14.90
+#Clocks   7.60   7.98  27.47  19.96  10.77  12.15  22.99   9.05
+#Clocks   9.93  11.17  18.74  16.22  12.57  14.10   0.00  11.17
+
+#Chipset	"ATIMACH32"       #  also used for some MACH64 cards
+#Clocks  100.00 126.00  92.40  36.00  50.35  56.64   0.00  44.90
+#Clocks  135.00  32.00 110.00  80.00  39.91  44.90  75.00  65.00
+#Clocks  50.00   63.00  46.20  18.00  25.17  28.32   0.00  22.45
+#Clocks  67.50   16.00  55.00  40.00  19.96  22.45  37.50  32.50
+
+# Some testing is done to check if you really have this card
+# installed.
+#Chipset	"ATIMACH64"       #  currently only for MACH64CT
+#ClockChip "mach64"		# internal clockchips on MACH64 boards
+
+ 
+#Chipset	"Cirrus"
+# NO clocks line required for Cirrus Chips.
+#Option "SLOW_DRAM"    # use one of these options to set Cirrus DRAM speed.
+#Option "MED_DRAM"     # The faster the better, but the more dangerous...
+#Option "FAST_DRAM"    # These options are OPTIONS: they are not required,
+#Option "XFAST_DRAM"   # and may in fact only make things worse.
+#ClockChip "Cirrus"
+#ClockChip "Laguna"    # for CLGD546x chips (the "Laguna" family)
+
+
+
+#Chipset	"Video7"    # HeadLand technologies chips only. NOT Video7
+                            # S3, Cirrus or C&T based cards
+
+#Clocks   25.175 28.322 30.000 32.514 34.000 36.000 38.000 40.000
+
+
+
+#Chipset	"ALI"    # Generic Avance Logic. It was tested only on AL2201
+#Clocks        25.15  28.32  22.26  36.06  37.40  32.51  31.17  40.00
+#clocks        50.31  56.58  44.51  72.25  74.84  65.08  62.40  79.31
+
+#Chipset "AL2101"
+#clocks (no example known to me ; consult the XFree86 clocks line for your card)
+
+
+
+#ChipSet "OTI67"
+#clocks (no example known to me ; consult the XFree86 clocks line for your card)
+
+#ChipSet "OTI77"
+#clocks (no example known to me ; consult the XFree86 clocks line for your card)
+
+#ChipSet "OTI87"
+#clocks  25.21  28.32  65.08  44.87  28.32  36.11  40.09  36.11
+#clocks  25.19  28.32  78.06  67.82  63.31  72.32  40.08  50.10
+
+
+#Chipset "SiS"
+#clocks (no example known to me ; consult the XFree86 clocks line for your card)
+
+
+#Chipset "RealTek"
+#clocks 25.175 28.3  22.5  36   37   32.5  42.5  40
+#clocks 50.3   56.6  45    72   74   65    85    80
+
+
+#Chipset "ARK"
+#clocks (no example known to me ; consult the XFree86 clocks line for your card)
+
+#ClockChip "ics5342"   # some ARK chipsets (only ARK2000) use this clockchip
+
+
+#ChipSet "NCR77C22E"    # only NCR77C22E(+) will benefit from this. The NCR77C22
+                        # and 77C21 (without "E" suffix) will work just as well with the
+                        # generic VGA driver
+#clocks  25.175 28.332 36.00  65.00 44.90  50.00  80.00  75.00
+#clocks  56.644 63.00  72.00 130.00 90.00 100.00 110.00 120.00
+                 
+
+#ChipSet "NCR77C32"
+#clocks (no example known to me ; consult the XFree86 clocks line for your card)
+
+
+#ChipSet "GVGA"        # only for Genoa GVGA 6000 series (6100, 6200, 6300, ...)
+                       # The 5000 series is ET3000-based (use the ET4000 chipset)
+                       # the 7000 series is ET4000 based (use the ET4000 chipset)
+#clocks (no example known to me ; consult the XFree86 clocks line for your card)
+
+
+#ChipSet "MX"
+#clocks  25.175  28.322  40  44.9  14.3  16.3  36  65 
+
+
+#Chipset "et6000"
+
+#  without a clockchip defined, the ET6000 could have the following clocks:
+#Clocks 25.175  28.322  31.5  75  40  45  50  65
+
+#  of course, this is better:
+#clockchip "et6000"
+
+
+# For all Trident accelerator chips, designated TGUI9320LCD and up:
+# (use TVGA8900 or TVGA9000 for all Trident chips with a number below 9320)
+
+#ChipSet "tgui"
+
+# without a clockchip defined, the TGUI chips need a clocks line.
+# for example, these are for a TGUI9440AGi:
+#Clocks 25.175 28.322 0 36
+
+# some of the TGUI chips also have a programmable clockchip:
+#clockchip "tgui9320"  # For the TGUI9320LCD
+#clockchip "tgui9440"  # For the TGUI9440AGi, TGUI9660XGi, TGUI9680
+#clockchip "cyber938x" # For the CYBER938x
+
+
+# Now what would this be...
+#
+
+#Chipset "matrox"
+#clockchip "ti3026"	# for the Millennium
+#clockchip "mystique"	# for the Mystique
+#clockchip "mgag200"	# for the G100 and G200 (only tested on last)
+
+
+#
+# Note that neomagic is nearly unsupported: everything is guesswork
+# and we probably can not use most of its features. This is because
+# they too anal to give us programmers any docs. See also
+# http://www.mnsinc.com/js/Neomagic.html.
+
+#Chipset "NeoMagic"
+#Clocks 25.175 28.3 0 36
+
+# If you want to shift picture to top left corner on neomagic
+# (neccessary for anything wider than 80 characters)
+#Option "topleft"
+
+
+# Suggested by Francesco Potorti to enable this card
+# no Clocks or ClockChip line seems required..
+#ChipSet "Riva128"
+
+
+# for the really unsupported cards, or others using a special clock chip
+# (but first try the "Clockchip" option !).
+
+#ClockProg "/usr/local/bin/ClockProg" 2
+
+
+
+         
+#############################################################################
+#
+# In addition to the clocks specified above, the same clocks divided by 2 are
+# ALSO available on some VGA cards. (for as far as I know, that is a standard
+# VGA feature...).
+# Enable this ONLY when your card works for the "normal" clocks, and if you
+# need it (e.g. for 50x15 modes). This is NOT guaranteed to work on all
+# cards, and is useless on cards with a programmable clock chip.
+# Cirrus cards seem not to like this feature!
+#
+#Option "ClockDiv2"
+
+#############################################################################
+#
+# The "SyncDisks" option syncs your disks (=flushes the disk cache) before
+# doing anything. This is safer in case of a system hang caused by SVGATextMode.
+# In case of a crash, you'll still have a filesystem check, but the chance for
+# real damage is reduced considerably. I hope this option is useless...
+#
+# Once you think SVGATextMode is no more danger to your machine, disable this
+# option, and the "echo" lines.
+#
+
+Option "SyncDisks"
+
+echo "SVGATextMode NOTE:"
+echo "You may remove the `SyncDisks' option from the TextConfig file"
+echo "once SVGATextMode proves to work reliably on your machine."
+echo "This will make SVGATextMode run much faster."
+echo ""
+
+#############################################################################
+#
+# The "UnderLine" line allows you to define your underline position yourself. 
+# The underline position is ALWAYS relative to a 32-high font: position 31
+# is the bottom-most line, which is also the default underline position
+# if the underline position is not defined.
+#
+# Examples: "15" will result in "strike-through" instead of underlining.
+#           "0"  will put a line on top of underlined text instead of below.
+#
+# When not defined, underlining is disabled.
+# 32-pixel high modes (font 8x32 and 9x32) will still be underlined.
+# (due to a VGA hardware limitation)
+#
+
+#UnderLine 31
+
+
+#############################################################################
+#
+# The "Terminals" line tells SVGATextMode which _terminals_ to resize together
+# with the screen. What its use is depends on the kernel version you are
+# running (represented here by `K'):
+#
+#   K < 1.1.54 : useless. terminal resizing doesn't work on those.
+#
+#   1.1.54 <= K < 1.3.3 : resizes all VT's (virtual terminals) when a
+#                         terminals line is defined, otherwise SVGATextMode
+#                         resizes all active VT's upto the 16th (i.e.
+#                         /dev/tty1 upto /dev/tty16).
+#
+#   1.3.3 <= K : useless: the kernel resizes all active VT's automatically
+#
+#Terminals "tty6" "tty5" "tty4" "tty3" "tty2" "tty1"
+
+
+#############################################################################
+#
+# The "ResetProg" line defines a program that will be called after
+# SVGATextMode has succesfully finished its job. The primary use would be 
+# to let some applications know what happened (i.e. send them an appropriate
+# signal, or bluntly restart them), if they don't resize automatically 
+# after SVGATextMode finishes. e.g. selection.
+#
+# It will be called with TWO arguments: the H and V size of the new text 
+# mode. Example: SVGATextMode 100x37 will call
+#
+#      /usr/sbin/STM_reset 100 37
+# Your reset program NEED not use those two arguments, but it could be useful
+# for some applications. 
+#
+# Debian package includes STM_reset script set up properly for use with gpm.
+# You should not change the line below unless you have your own reset script
+# in another location.
+
+ResetProg "/usr/sbin/STM_reset"
+
+
+#############################################################################
+#
+# The "16color" option changes the default text console from 8 colors plus
+# blinking to 16 colors (what used to be blinking is now highlighted)
+#
+
+#option "16color"
+
+
+#############################################################################
+#
+# When using 9-bit wide fonts, normally the 8th column is copied to 9th
+# column for fonts 0xC0 - 0xDF, but this makes some ISO-compatible fonts
+# look very ugly (ISO has not line graphics characters but normal fonts
+# in region 0xC0 - 0xDF). This option disables this feature so that the 9th
+# column will always be blank for all characters.
+#
+
+#option "iso_font9"
+
+
+#############################################################################
+#
+# The following lines are about automatic font loading:
+#  - 'Option LoadFont' enables the automatic font loading.
+#       If this line is commented out, no font loading will be done, 
+#       independent of the presence of "FontProg", "FontPath" or "FontSelect"
+#       lines.
+#  - 'FontProg ...' tells SVGATextMode where to find the font loading program
+#  - 'FontPath ...' will tell the font program where the fonts are located.
+#       the default is no path: setfont has a default font path built into it.
+#  - 'FontSelect ... ...' tells the font loading program what font to use
+#       for which font character cell sizes.
+#       I've pointed 4 different font sizes to the same font each time. This
+#       is not a requirement, but it's convenient (not much fonts for 9-pixel
+#       wide characters around, and the same goes for odd-sized font heights)
+#
+
+Option "LoadFont"
+#FontProg "/usr/bin/setfont"
+#FontPath "/usr/lib/kbd/consolefonts"
+#FontSelect "Cyr_a8x16"   8x16 9x16 8x15 9x15 
+#FontSelect "Cyr_a8x14"   8x14 9x14 8x13 9x13
+#FontSelect "8x12alt.psf" 8x12 9x12 8x11 9x11
+#FontSelect "Cyr_a8x8"    8x8  9x8  8x7  9x7
+#FontSelect "Cyr_a8x32"   8x32 9x32 8x31 9x31
+
+# Debian defaults for use with console-tools
+# use setfont as your FontProg if you have kbd installed
+FontProg "/usr/bin/consolechars -f"
+FontPath "/usr/share/consolefonts"
+FontSelect "lat1u-16"   8x16 9x16 8x15 9x15
+FontSelect "lat1u-14"   8x14 9x14 8x13 9x13
+FontSelect "lat1u-12"   8x12 9x12 8x11 9x11
+FontSelect "lat1u-10"   8x10 9x10 8x9  9x9
+FontSelect "lat1u-08"   8x8  9x8  8x7  9x7
+
+
+#
+# using the following FontProg line will avoid losing high-ascii characters
+# on newer Linux systems (kernels 1.3.x and up)
+# (mainly the IBM-style box-characters used in text-based menuing systems)
+
+#FontProg "/usr/bin/setfont -u def.uni"
+
+
+#############################################################################
+#
+# For those not sattisfied with the default cursor look: here's a way to change
+# it. syntax is 'Cursor <start>-<stop>'. Cursor size is always relative to a
+# 32-pixel high font! (see TextConfig.doc). So '0-31' will be scaled to '0-7'
+# when selecting an 8-pixel font size.
+
+#Cursor 0-31     # block cursor
+#Cursor 28-31     # underline cursor: the default.
+
+#############################################################################
+#
+# The lines shown here are the default built into SVGATextMode. Most monitors
+# are capable of a lot more than that. Enable and change these to use the full 
+# capabilities of your monitor.
+# The syntax is similar to the one used in XF86Config.
+#
+# Changing these BEYOND what your monitor can handle, COULD result in damage
+# to the monitor! See your monitor's user's manual for details.
+#
+
+#HorizSync 30-32
+#VertRefresh 50-80
+
+
+#############################################################################
+#
+# Optionally define the "default" mode, which will be called when SVGATextMode
+# is started _without_ a mode definition string.
+#
+
+DefaultMode "80x25"
+
+
+#############################################################################
+#
+# The Maximum allowable pixel clock for text mode.
+#
+# This is NOT the maximum pixel clock for graphics modes! it is MUCH lower.
+#
+# Each chipset has its own maximum, which had to be determined through 
+# experimentation (not many manufacturers care to mention them in their data
+# sheets). See the TextConfig manual file for details.
+#
+# This limit is taken as-is for 8-pixel wide fonts, but is increased by a factor
+# of 9/8 for 9-pixel fonts. This is due to the construction of VGA textmode
+# hardware.
+#
+
+#DacSpeed 45
+
+#############################################################################
+#
+# Set border color index (range: 0 to 255).
+# Completely useless. This will "draw" a colored border around the active
+# screen region. I did this because XFree86 can't ;-)
+#
+# You might use this to center the display when setting up SVGATextMode.
+#
+
+#BorderColor 0
+
+
+#############################################################################
+#############################################################################
+#
+# Standard 80x25 text mode: this should ALWAYS work (i.e. no timing problems
+# because of a too large pixel clock)
+# If this works, then at least PART of the program works fine... 
+#
+
+"80x25"          28.3    640  680  776  800    400  412  414  449 font  9x16
+
+# Below are a bunch of other possible modes for standard VGA chipsets. 
+#
+#############################################################################
+#                                                                           #
+# Read the TextConfig manual to find out about 8- and 9-pixel wide fonts.   #
+# You will never be able to create (or even understand) new modes without   #
+# that piece of knowledge.                                                  #
+#                                                                           #
+#############################################################################
+
+"80x25x8"          25.2   640  680  776  800    400  412  414  449 font  8x16
+"80x25x9"          28.3   640  680  776  800    400  412  414  449 font  9x16
+
+"80x28x8"          25.2   640  680  776  800    392  412  414  449 font  8x14
+"80x28x9"          28.3   640  680  776  800    392  412  414  449 font  9x14
+
+"80x29x8"          25.2   640  680  776  800    464  490  492  525 font  8x16
+"80x29x9"          28.3   640  680  776  800    464  490  492  525 font  9x16
+
+"80x30x8"          25.2   640  680  776  800    480  490  492  525 font  8x16
+"80x30x9"          28.3   640  680  776  800    480  490  492  525 font  9x16
+
+"80x32x8"          25.2   640  680  776  800    480  490  492  525 font  8x15
+"80x32x9"          28.3   640  680  776  800    480  490  492  525 font  9x15
+
+"80x33x8"          25.2   640  680  776  800    396  412  414  449 font  8x12
+"80x33x9"          28.3   640  680  776  800    396  412  414  449 font  9x12
+
+"80x34x8"          25.2   640  680  776  800    480  490  492  525 font  8x14
+"80x34x9"          28.3   640  680  776  800    480  490  492  525 font  9x14
+
+"80x40x8"          25.2   640  680  776  800    480  490  492  525 font  8x12
+"80x40x9"          28.3   640  680  776  800    480  490  492  525 font  9x12
+
+"80x43x8"          25.2   640  680  776  800    473  489  491  525 font  8x11
+"80x43x9"          28.3   640  680  776  800    473  489  491  525 font  9x11
+
+"80x43x8_small"    25.2   640  680  776  800    387  408  410  449 font   8x9
+"80x43x9_small"    28.3   640  680  776  800    387  408  410  449 font   9x9
+
+"80x50x8"          25.2   640  680  776  810    400  412  414  449 font   8x8
+"80x50x9"          28.3   640  680  776  800    400  412  414  449 font   9x8
+
+"80x60x8"          25.2   640  680  776  800    480  490  492  525 font   8x8
+"80x60x9"          28.3   640  680  776  800    480  490  492  525 font   9x8
+
+
+#
+# The other standard VGA modes (132-character wide).
+# This SHOULD work on any card... assuming you tell SVGATextMode where the
+# 40 and 45 MHz clocks can be found.
+# (It was grabbed from a Trident card)
+#
+
+"132x25x8"         40  1056 1072 1232 1280    400  412  414  449 font  8x16
+"132x25x9"         45  1056 1072 1232 1280    400  412  414  449 font  9x16
+
+"132x28x8"         40  1056 1072 1232 1280    392  412  414  449 font  8x14
+"132x28x9"         45  1056 1072 1232 1280    392  412  414  449 font  9x14
+
+"132x29x8"         40  1056 1072 1232 1280    464  490  492  525 font  8x16
+"132x29x9"         45  1056 1072 1232 1280    464  490  492  525 font  9x16
+
+"132x30x8"         40  1056 1072 1232 1280    480  490  492  525 font  8x16
+"132x30x9"         45  1056 1072 1232 1280    480  490  492  525 font  9x16
+
+"132x32x8"         40  1056 1072 1232 1280    480  490  492  525 font  8x15
+"132x32x9"         45  1056 1072 1232 1280    480  490  492  525 font  9x15
+"132x33x8"         40  1056 1072 1232 1280    396  412  414  449 font  8x12
+"132x33x9"         45  1056 1072 1232 1280    396  412  414  449 font  9x12
+
+"132x34x8"         40  1056 1072 1232 1280    480  490  492  525 font  8x14
+"132x34x9"         45  1056 1072 1232 1280    480  490  492  525 font  9x14
+
+"132x40x8"         40  1056 1072 1232 1280    480  490  492  525 font  8x12
+"132x40x9"         45  1056 1072 1232 1280    480  490  492  525 font  9x12
+
+"132x43x8"         40  1056 1072 1232 1280    480  490  492  525 font  8x11
+"132x43x9"         45  1056 1072 1232 1280    480  490  492  525 font  9x11
+
+"132x43x8_small"   40  1056 1072 1232 1280    387  408  410  449 font   8x9
+"132x43x9_small"   45  1056 1072 1232 1280    387  408  410  449 font   9x9
+
+"132x44x8"         40  1056 1072 1232 1280    352  387  389  449 font   8x8
+"132x44x9"         45  1056 1072 1232 1280    352  387  389  449 font   9x8
+
+"132x50x8"         40  1056 1072 1232 1280    400  412  414  449 font   8x8
+"132x50x9"         45  1056 1072 1232 1280    400  412  414  449 font   9x8
+
+"132x60x8"         40  1056 1072 1232 1280    480  490  492  525 font   8x8
+"132x60x9"         45  1056 1072 1232 1280    480  490  492  525 font   9x8
+
+
+#
+# Slightly improved versions of the above: 12-pixel font instead of
+# 11. Looks definitely better (when using a suitable font), and the
+# relatively low refresh rate (55 HZ) is no problem for white-on-black text
+# If you have a multisync monitor, you can increase the clock, resulting
+# in a higher refresh.
+#
+
+"132x43x8_12"      40  1056 1072 1232 1280    516  529  531  568 font  8x12
+"132x43x9_12"      45  1056 1072 1232 1280    516  529  531  568 font  9x12
+
+#
+# Improving upon the standard 132x... modes, these modes give a slightly less
+# crammed display, using only 116 chars per line instead of 132.
+# The 36 MHz clock is a little more exotic, but is almost always available.
+
+"116x25x8"         36   928  944 1088 1144    400  412  414  449 font  8x16
+"116x25x9"         40   928  944 1080 1128    400  412  414  449 font  9x16
+
+"116x28x8"         36   928  944 1088 1144    392  412  414  449 font  8x14
+"116x28x9"         40   928  944 1080 1128    392  412  414  449 font  9x14
+
+"116x29x8"         36   928  944 1088 1144    464  490  492  525 font  8x16
+"116x29x9"         40   928  944 1080 1128    464  490  492  525 font  9x16
+
+"116x30x8"         36   928  944 1088 1144    480  490  492  525 font  8x16
+"116x30x9"         40   928  944 1080 1128    480  490  492  525 font  9x16
+
+"116x32x8"         36   928  944 1088 1144    480  490  492  525 font  8x15
+"116x32x9"         40   928  944 1080 1128    480  490  492  525 font  9x15
+
+"116x33x8"         36   928  944 1088 1144    396  412  414  449 font  8x12
+"116x33x9"         40   928  944 1080 1128    396  412  414  449 font  9x12
+
+"116x34x8"         36   928  944 1088 1144    480  490  492  525 font  8x14
+"116x34x9"         40   928  944 1080 1128    480  490  492  525 font  9x14
+
+"116x40x8"         36   928  944 1088 1144    480  490  492  525 font  8x12
+"116x40x9"         40   928  944 1080 1128    480  490  492  525 font  9x12
+
+"116x43x8"         36   928  944 1088 1144    480  490  492  525 font  8x11
+"116x43x9"         40   928  944 1080 1128    480  490  492  525 font  9x11
+
+"116x50x8"         36   928  944 1088 1144    400  412  414  449 font   8x8
+"116x50x9"         40   928  944 1080 1128    400  412  414  449 font   9x8
+
+"116x60x8"         36   928  944 1088 1144    480  490  492  525 font   8x8
+"116x60x9"         40   928  944 1080 1128    480  490  492  525 font   9x8
+
+
+###############################################################################
+# It's time to try some more exotic (= non-standard) modes...
+#
+# A bit smaller than the IMMENSELY BIG characters at 80x25, but still very
+# readable. Most cards support 132x43 as a standard mode as well, but that is
+# rather "small print" then. All these modes need a 48 kHz/72 Hz monitor (VESA
+# 800x600 @ 72 Hz standard).
+#
+"100x37"           50   800  872  976 1040    600  632  638  670 font  8x16
+"100x37x9"         56   800  872  976 1040    600  632  638  670 font  9x16
+"100x40"           50   800  848  952 1040    640  672  678  700 font  8x16
+"100x40x9"         56   800  848  952 1040    640  672  678  700 font  9x16
+"112x40"           62   896  948 1052 1140    640  672  678  700 font  9x16
+  
+# If your monitor can take 70 kHz (!) and 110 Hz, this one could make for a
+# VERY stable, eye-friendly resolution.
+"100x37+"          72   800  848  952 1032    600  600  606  630 font  8x16
+
+#
+# If your monitor can't handle 48 kHz, try this: It's only 38 kHz/55 Hz,
+# but almost all VGA cards should work with this. And cheapo SVGA monitors too.
+#
+"100x37x8_SVGA"    40   800  864  968 1056    600  605  607  628 font  8x16
+"100x37x9_SVGA"    45   800  864  968 1056    600  605  607  628 font  9x16
+
+#
+# This has the same frequencies as a standard VGA text mode (31.5 kHz/60 Hz)
+# and uses such a low clock that all current VGA controllers can cope.
+#
+"100x37_VGA"       36   800  864  968 1016    518  522  525  545 font  9x14
+"100x30_VGA"       36   800  856  912 1016    480  490  495  522 font  9x16
+
+#
+# This is an enhancement to the standard 132x43 resolution. It uses a 16-pixel 
+# font height instead of just 8. In combination with an appropriate font -- and
+# maybe a good monitor -- this is NOT bad at all.
+# needs 48 kHz/70 Hz monitor
+#
+"132x43x8_16"      65  1056 1096 1216 1336    688  688  694  714  font  8x16
+"132x43x9_16"      73  1056 1096 1216 1336    688  688  694  714  font  9x16
+ 
+#
+# If you need BIG letters, try this one. This needs a 49kHz/96Hz monitor.
+
+"50x15"            25   400  424  488  512    240  241  242  256 font  8x16 DoubleScan
+
+#
+# If your monitor cannot handle that, use a 18 MHz clock. But that needs the
+# "divide-by-two" feature (which should work on all VGA cards), dividing the
+# (almost standard) 36 MHz clock down to 18 MHz, yielding 35kHz/68Hz, which
+# should work on almost any screen, even the cheapest.
+"50x15_low"        18   400  424  488  512    240  241  242  256 font  8x16 DoubleScan
+
+# These modes should work on ALL VGA monitors. 
+# They use standard VGA 31.25 kHz / 60 Hz timings
+"40x25"         14.15   320  340  388  400    400  412  414  449 font  9x16
+"50x15_VGA"        16   400  456  488  512    240  241  242  256 font  8x16 DoubleScan
+"40x15x8"      12.587   320  352  376  400    240  241  242  256 font  8x16 DoubleScan
+"40x15x9"       14.15   320  352  376  400    240  241  242  256 font  9x16 DoubleScan
+"40x12x8"      12.587   320  352  376  400    200  206  207  225 font  8x16 DoubleScan
+"40x12x9"       14.15   320  352  376  400    200  206  207  225 font  9x16 DoubleScan
+
+###############################################################################
+#
+# Some VESA compliant very-high resolution modes. Don't try this on Trident 
+# or Cirrus cards. S3's can handle it, although you might notice some garbage
+# while scrolling. This should be of no concern. I can live with that. ET4000's
+# REALLY show off on these. Expensive cards too, but that's what you paid for.
+# These modes have the same timings as a VESA 1024x768 mode at 70 Hz under
+# X-windows. If you happen to own a single frequency monitor at 56 kHz, this
+# is your ticket to paradise!
+#
+"v132x43"          75  1056 1096 1248 1336    774  783  784  800 font  8x18
+"v132x48"          75  1056 1096 1248 1336    768  783  784  800 font  8x16
+"v132x55"          75  1056 1096 1248 1336    770  783  784  800 font  8x14
+"v132x60"          75  1056 1096 1248 1336    780  783  784  800 font  8x13
+"v132x64"          75  1056 1096 1248 1336    768  783  784  800 font  8x12
+"v132x70"          75  1056 1096 1248 1336    770  783  784  800 font  8x11
+#
+# On cards that are JUST not fast enough for the modes above, try the
+# ones below. They use 9-pixel wide fonts, and the SAME clocks.
+# But they work BETTER (see doc/FAQ for a description of WHY:
+# the chapter on "character bandwidth").
+#
+"v116x43"          75   928  976 1112 1192    774  783  784  800 font  9x18
+"v116x48"          75   928  976 1112 1192    768  783  784  800 font  9x16
+"v116x55"          75   928  976 1112 1192    770  783  784  800 font  9x14
+"v116x60"          75   928  976 1112 1192    780  783  784  800 font  9x13
+"v116x64"          75   928  976 1112 1192    768  783  784  800 font  9x12
+"v116x70"          75   928  976 1112 1192    770  783  784  800 font  9x11
+#
+# Similar horizontal refresh frequencies (56 kHz) for some other common 
+# and not-so-common modes (I guess the "S" prefix stands for "super": try it!)
+#
+# Especially the 80x... modes are a real enhancement over the original one.
+#
+"S80x25"           55   640  704  800  872    400  405  410  417 font  9x16 DoubleScan
+"S80x12"           55   640  704  800  872    400  405  410  417 font  9x32 DoubleScan
+"S80x50"           55   640  704  800  872    800  810  820  835 font  9x16
+"S80x66"           55   640  704  800  872    800  810  820  835 font  9x12
+"S80x100"          55   640  704  800  872    800  810  820  835 font  9x8
+"S100x37"          65   800  832  936 1024    600  632  638  670 font  9x16
+"S100x40"          65   800  832  936 1024    640  672  678  700 font  9x16
+"S100x48"          65   800  832  936 1024    768  783  784  800 font  9x16
+"S50x15"           32.5 400  432  496  512    240  241  242  256 font  9x16 DoubleScan
+"S128x48"          85  1024 1096 1248 1344    768  768  769  800 font  9x16
+
+#
+# This one is completely nuts. You'll know why once you see this on a 20" screen...
+#
+"MEGA20x7"  15.12  160 200 224 240   240  241  242  256 font 9x32 doublescan
+ 
+###########################################################################
+# For as far as I know, of all the "cheap" cards, only ET4000 can handle clocks
+# this big... But WHAT A RESULT!!! Once you've seen this, you're hooked!
+# You will need at least a 17" screen for the 160 char wide modes!
+# (except if you have 20/10 vision...)
+#
+# Some S3 cards will also work with these, especially when the "S3_HSText" 
+# option is enabled (read the manual first!).
+#
+"ET132x66"         90  1056 1088 1240 1336    800  820  830  850 font  8x12
+"ET160x100"        90  1280 1312 1480 1560    800  820  830  850 font   8x8
+"ET160x66"         90  1280 1312 1480 1560    800  820  830  850 font  8x12
+"ET132x43"         90  1056 1096 1216 1336    688  688  694  714 font  8x16
+
+#
+# If you want to get a taste of a 160-wide mode, try this one. It runs on 
+# standard VGA frequencies, so any monitor should at least sync on it.
+#
+"160x60"           49  1280 1312 1480 1592    480  489  491  521 font   8x8
+"160x60x9"         56  1280 1312 1480 1592    480  489  491  521 font   9x8
+
+#
+# Who says exagerating isn't fun ? 
+#
+"80x25_160HZ"      56   640  680  776  800    400  412  414  449 font  8x16
+
+#
+# A little more moderate, but useful: high-refresh 80x25.
+#
+"80x25_100Hz"      36   640  680  776  800    400  412  414  449 font  8x16
+
+#
+# Bigger is better...
+#
+"180x80"           75  1440 1536 1636 1816    640  648  654  670 font   9x8
+
+#
+# For those really high-frequency fixed-frequency screens,
+# 
+# here's a few text modes that should run on 1280x1024 @ 70 Hz monitors:
+# (it's 74.4 kHz / 70 Hz)
+#
+# The trick here is to create modes that still use a reasonable pixel clock.
+# Creating a mode for such a monitor is as simple as taking the XFree86
+# mode line and adding a "font ..." statement. But then you'd also have to 
+# copy the pixel clock, and 110 MHz text mode clocks don't work on any card
+# I've seen so far.
+#
+"H100x30"          75   800  832  936 1008    480 500  508  532  font  8x16 DoubleScan
+"H80x30"           65   640  672  744  776    480 500  508  532  font  9x16 DoubleScan
+"H80x60"           65   640  672  744  776    960 1000 1016 1023 font  9x16
+
+
+###############################################################################
+#
+# Following are some user-contributed text modes.
+# If they don't work: complain to the respective authors, not me ;-)
+#
+# These modes need a multisync monitor. Most will NOT work on "standard" SVGA screens.
+# Use the "-n" option to see if your monitor supports them
+#
+# Carsten Zimmermann (zimmermann@zimnet.hanse.de)
+"132x43_hi"        50  1056 1104 1264 1320    344  387  389  449 font   8x8
+"132x43_semihi"    45  1056 1104 1264 1320    344  387  389  449 font   8x8
+"132x43_14"        50  1056 1096 1216 1336    688  688  694  714 font  8x14
+"Z160x60"          58  1280 1312 1432 1560    480  489  491  521 font   8x8
+#
+# Alexander JOLK (p6mqt001@cicrp.jussieu.fr)
+"100x30x8"         36   800  864  896 1016    480  481  483  500 font  8x16
+"100x30x9"         40   800  840  872 1016    480  481  483  500 font  9x16
+#
+# Andreas Beck (becka@hp817s.rz.uni-duesseldorf.de)
+"A55x41"           25   440  464  536  560    328  339  341  380 font   8x8
+"A55x33"           25   440  464  536  560    330  339  341  380 font  8x10
+"A55x27"           25   440  464  536  560    324  339  341  380 font  8x12
+"A55x23"           25   440  464  536  560    322  339  341  380 font  8x14
+"A55x20"           25   440  464  536  560    320  339  341  380 font  8x16
+#
+"A65x48"           25   520  544  616  640    384  399  401  440 font   8x8
+"A65x38"           25   520  544  616  640    380  399  401  440 font  8x10
+"A65x32"           25   520  544  616  640    384  399  401  440 font  8x12
+"A65x27"           25   520  544  616  640    378  399  401  440 font  8x14
+"A65x24"           25   520  544  616  640    384  399  401  440 font  8x16
+#
+"A80x60"           40   640  664  736  824    480  489  491  530 font   8x8
+"A80x48"           40   640  664  736  824    480  489  491  530 font  8x10
+"A80x40"           40   640  664  736  824    480  489  491  530 font  8x12
+"A80x34"           40   640  664  736  824    476  489  491  530 font  8x14
+"A80x30"           40   640  664  736  824    480  489  491  530 font  8x16
+#
+"A100x75"          70   800  856  936 1096    600  637  643  666 font   8x8
+"A100x60"          70   800  856  936 1096    600  637  643  666 font  8x10
+"A100x50"          70   800  856  936 1096    600  637  643  666 font  8x12
+"A100x43"          70   800  856  936 1096    602  637  643  666 font  8x14
+"A100x37"          70   800  856  936 1096    592  637  643  666 font  8x16
+#
+"A104x78"          70   832  888  968 1128    624  661  667  690 font   8x8
+"A104x62"          70   832  888  968 1128    620  661  667  690 font  8x10
+"A104x52"          70   832  888  968 1128    624  661  667  690 font  8x12
+"A104x44"          70   832  888  968 1128    616  661  667  690 font  8x14
+"A104x39"          70   832  888  968 1128    624  661  667  690 font  8x16
+#
+"A128x96"          70  1024 1072 1152 1360    768  784  787  810 font   8x8
+"A128x77"          70  1024 1072 1152 1360    770  784  787  810 font  8x10
+"A128x64"          70  1024 1072 1152 1360    768  784  787  810 font  8x12
+"A128x54"          70  1024 1072 1152 1360    756  784  787  810 font  8x14
+"A128x48"          70  1024 1072 1152 1360    768  784  787  810 font  8x16
+#
+"A144x109"         70  1152 1208 1280 1536    872  886  889  912 font   8x8
+"A144x87"          70  1152 1208 1280 1536    870  886  889  912 font  8x10
+"A144x72"          70  1152 1208 1280 1536    864  886  889  912 font  8x12
+"A144x62"          70  1152 1208 1280 1536    868  886  889  912 font  8x14
+"A144x54"          70  1152 1208 1280 1536    864  886  889  912 font  8x16
+#
+"A150x108"         70  1200 1248 1312 1560    864  916  919  942 font   8x8
+"A150x86"          70  1200 1248 1312 1560    860  916  919  942 font  8x10
+"A150x72"          70  1200 1248 1312 1560    864  916  919  942 font  8x12
+"A150x61"          70  1200 1248 1312 1560    854  916  919  942 font  8x14
+"A150x54"          70  1200 1248 1312 1560    864  916  919  942 font  8x16
+#
+"A150x89"          70  1200 1248 1312 1560    890  916  919  942 font  8x10
+"A150x74"          70  1200 1248 1312 1560    888  916  919  942 font  8x12
+"A150x63"          70  1200 1248 1312 1560    882  916  919  942 font  8x14
+"A150x55"          70  1200 1248 1312 1560    880  916  919  942 font  8x16
+#
+# Ulrich Dessauer (ud@nitmar.muc.de)
+"90x30"            40   720  790  840  930    420  425  433  455 font  8x14
+#
+# John Bashaw (paladin@netcom.com)
+"110x50_hi"        56   880  960 1160 1200    700  702  712  735 font  8x14
+#
+# Be carefull with these! They use EXTREMELY high clocks (for text mode)
+# Delman Lee (delman@mipg.upenn.edu)
+"160x60"          110  1280 1304 1480 1696    960  986  989 1023 font  8x16
+"160x30"          110  1280 1304 1480 1696    960  986  989 1023 font  8x32
+"108x60"           80   864  964 1104 1256    960  986  989 1023 font  8x16
+#
+# Some 120Hz / 82 KHz modes
+# Nicola Bernardelli <nbern@dns.protos.it>
+"106x40_120"       93   848  896 1000 1136    640  643  646  672 font  8x16
+"100x40_120"      87.9  800  848  936 1072    640  643  646  672 font  8x16
+
+#
+# These seem to work on a Cirrus CLGD5434
+# (Stanislav Voronyi <stas@use.kharkov.ua>)
+"s132x43x9_16"     55  1056 1096 1216 1336    688  688  694  714  font  9x16
+"s132x40x9_16"     55  1056 1096 1216 1336    640  672  678  700  font  9x16
+"s132x37x9_16"     55  1056 1096 1216 1336    600  632  638  670  font  9x16
+
+#
+# These modes were specially designed for my notebook with neomagic
+# chipset. (Pavel Machek)
+#
+"100x37magic"  36 800 856 1040 1056    600 600 616 618 font 8x16
+"100x40magic"  36 800 856 1040 1056    600 600 616 618 font 8x15
+"100x42magic"  36 800 856 1040 1056    600 600 616 618 font 8x14
+"100x46magic"  36 800 856 1040 1056    600 600 616 618 font 8x13
+"100x50magic"  36 800 856 1040 1056    600 600 616 618 font 8x12
+"100x54magic"  36 800 856 1040 1056    600 600 616 618 font 8x11
+"100x66magic"  36 800 856 1040 1056    600 600 616 618 font 8x9
+"100x75magic"  36 800 856 1040 1056    600 600 616 618 font 8x8
+
+
+
+#
+# Some more 56 kHz modes, which all use 20-pixel high fonts (as used 
+# in a commercial DOS program that does about the same as SVGATextMode)
+#
+# They work on any monitor that can do 1024x768 at 70 Hz (= 56kHz/70 Hz)
+#
+"B80x38"           53   640  678  762  838    768  768  769  800  font 9x20
+"B80x41"           53   640  678  762  838    820  820  830  850  font 9x20
+"B84x38"           55   672  712  800  880    768  768  769  800  font 9x20
+"B84x41"           55   672  712  800  880    820  820  830  850  font 9x20
+"B92x38"           60   736  776  872  952    768  768  769  800  font 9x20
+"B92x41"           60   736  776  872  952    820  820  830  850  font 9x20
+"B100x38"          65   800  840  944 1032    768  768  769  800  font 9x20
+"B100x41"          65   800  840  944 1032    820  820  830  850  font 9x20
+"B108x38"          70   864  904 1032 1112    768  768  769  800  font 9x20
+"B108x41"          70   864  904 1032 1112    820  820  830  850  font 9x20
+"B116x38"          75   928  968 1104 1192    768  768  769  800  font 9x20
+"B116x41"          75   928  968 1104 1192    820  820  830  850  font 9x20
+"B124x38"          80   992 1032 1176 1272    768  768  769  800  font 9x20
+"B124x41"          80   992 1032 1176 1272    820  820  830  850  font 9x20
+"B142x38"          95  1136 1208 1332 1496    768  768  769  800  font 9x20
+"B142x41"          95  1136 1208 1332 1496    820  820  830  850  font 9x20
+"B165x38"          110 1320 1404 1552 1744    768  768  769  800  font 9x20
+"B165x41"          110 1320 1404 1552 1744    820  820  830  850  font 9x20
+
+#
+# The same modes, but now using 16-pixel fonts (and thus more text lines)
+#
+"B80x48"           53   640  678  762  838    768  768  769  800  font 9x16
+"B80x51"           53   640  678  762  838    816  820  830  850  font 9x16
+"B84x48"           55   672  712  800  880    768  768  769  800  font 9x16
+"B84x51"           55   672  712  800  880    816  820  830  850  font 9x16
+"B92x48"           60   736  776  872  952    768  768  769  800  font 9x16
+"B92x51"           60   736  776  872  952    816  820  830  850  font 9x16
+"B100x48"          65   800  840  944 1032    768  768  769  800  font 9x16
+"B100x51"          65   800  840  944 1032    816  820  830  850  font 9x16
+"B108x48"          70   864  904 1032 1112    768  768  769  800  font 9x16
+"B108x51"          70   864  904 1032 1112    816  820  830  850  font 9x16
+"B116x48"          75   928  968 1104 1192    768  768  769  800  font 9x16
+"B116x51"          75   928  968 1104 1192    816  820  830  850  font 9x16
+"B124x48"          80   992 1032 1176 1272    768  768  769  800  font 9x16
+"B124x51"          80   992 1032 1176 1272    816  820  830  850  font 9x16
+"B142x48"          95  1136 1208 1332 1496    768  768  769  800  font 9x16
+"B142x51"          95  1136 1208 1332 1496    816  820  830  850  font 9x16
+"B165x48"          110 1320 1404 1552 1744    768  768  769  800  font 9x16
+"B165x51"          110 1320 1404 1552 1744    816  820  830  850  font 9x16
+
+#
+# Some more fantasy modes. All are 56 kHz Hsync frequency modes
+#
+"B160x60"         94.5  1280 1348 1432 1680    960  986  989 1023  font 8x16
+"B160x48"         94.5  1280 1348 1432 1680    768  770  774  800  font 8x16
+"B160x30"         94.5  1280 1348 1432 1680    960  986  989 1023  font 8x32
+"B160x100"        94.5  1280 1352 1472 1680    800  809  819  850  font 8x8
+
+#160x100 for Matrox cards
+"MGA160x100"  	   65   1280 1312 1420 1500    800  810  820  830  font 8x8
+
+#
+# A couple contributed to Debian by Keith <keith001@writeme.com> that he
+# thinks people will find pleasantly readable
+#
+"116x48x8_small"   36   928  944 1088 1144    480  490  492  525  font 8x10
+"116x48x9_small"   40   928  944 1080 1128    480  490  492  525  font 9x10
+
+
+###############################################################################
+# CUSTOM modes: put your own modes (new or adapted from above) here.
+#               You don't HAVE to rename them, since SVGATextMode will
+#               take the LAST line it finds with the same name.
+#
+# You can also put all your config options HERE instead of leaving them where
+# they are somewhere in between the rest of the junk. This way upgrading to a
+# newer TextConfig file is just a matter of cutting and pasting this bottom
+# part into your new TextConfig file.
+#

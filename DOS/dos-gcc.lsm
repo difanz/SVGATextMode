@@ -1,0 +1,22 @@
+Begin3
+Title:          dos-gcc.tgz  
+Version:        gcc-2.7.2, binutils-2.5.2, djgpp V2 Beta4
+Entered-date:   960114
+Description:    An cross-development environment to run under Linux and 
+                produce MSDOS-executables
+
+Keywords:       gcc, MSDOS, djgpp, binutils
+Author:         Many
+Maintained-by:  bon@ikp.physik.th-darmstadt.de
+Primary-site:   sunsite.unc.edu:/pub/Linux/GCC/dos-gcc.tgz
+Alternate-site: 
+Original-site:  Gnu-repositories
+		See	ftp://prep.ai.mit.edu/pub/gnu/GNUinfo/FTP
+		and DJGPP Beta Sites
+		See	ftp://ftp.delorie.com/pub/djgpp/beta/v2/beta4/info.ftp
+
+Platform:       Compiled for Linux a.out with gcc-2.7.2 and libc-4.5.26
+		A script to build and install the executables is provided as
+		/usr/local/djgpp/dos-gcc.make.sh
+Copying-policy: GPL and see /usr/local/djgpp/copying.dj
+End

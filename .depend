@@ -1,0 +1,64 @@
+ClockProg.o: ClockProg.c misc.h chipset.h cfg_structs.h vga_prg.h \
+ unlock_svga.h special_svga.h setclock.h file_ops.h string_ops.h \
+ messages.h validate.h run_extprog.h dump_cfgdata.h cfg_data.h
+SVGATextMode.o: SVGATextMode.c misc.h ttyresize.h chipset.h \
+ cfg_structs.h vga_prg.h unlock_svga.h special_svga.h setclock.h \
+ validate.h file_ops.h messages.h kversion.h run_extprog.h \
+ dump_cfgdata.h XFREE/xfree_compat.h cfg_data.h
+cfglex.o: cfglex.c cfg_structs.h misc.h chipset.h y.tab.h messages.h \
+ vga_prg.h
+clockchip.o: clockchip.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ std_clock.h clockchip.h XFREE/xfree_compat.h \
+ XFREE/common_hw/xf86_HWlib.h messages.h XFREE/common_hw/IBMRGB.h \
+ XFREE/common_hw/Ti302X.h XFREE/common_hw/S3gendac.h \
+ XFREE/mach64/mach64.h
+dump_cfgdata.o: dump_cfgdata.c misc.h chipset.h cfg_structs.h \
+ messages.h vga_prg.h
+file_ops.o: file_ops.c messages.h vga_prg.h misc.h chipset.h \
+ cfg_structs.h
+grabmode.o: grabmode.c misc.h messages.h vga_prg.h chipset.h \
+ cfg_structs.h modedata.h mode_msg.h string_ops.h cfg_data.h
+kversion.o: kversion.c messages.h vga_prg.h misc.h chipset.h \
+ cfg_structs.h kversion.h
+messages.o: messages.c misc.h messages.h vga_prg.h chipset.h \
+ cfg_structs.h
+misc.o: misc.c misc.h messages.h vga_prg.h chipset.h cfg_structs.h
+modedata.o: modedata.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ messages.h probe.h modedata.h
+probe.o: probe.c misc.h vga_prg.h chipset.h cfg_structs.h file_ops.h \
+ wait_vsync.h messages.h modedata.h
+probeclocks.o: probeclocks.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ setclock.h validate.h messages.h
+run_extprog.o: run_extprog.c misc.h run_extprog.h messages.h vga_prg.h \
+ chipset.h cfg_structs.h
+set80.o: set80.c misc.h ttyresize.h vga_prg.h chipset.h cfg_structs.h \
+ unlock_svga.h setclock.h std_clock.h messages.h kversion.h file_ops.h \
+ cfg_data.h
+setVGAreg.o: setVGAreg.c chipset.h cfg_structs.h misc.h vga_prg.h \
+ unlock_svga.h file_ops.h string_ops.h messages.h cfg_data.h
+setclock.o: setclock.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ wait_vsync.h setclock.h std_clock.h clockchip.h XFREE/xfree_compat.h \
+ XFREE/common_hw/xf86_HWlib.h messages.h run_extprog.h
+setpalette.o: setpalette.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ messages.h file_ops.h string_ops.h kversion.h cfg_data.h
+special_svga.o: special_svga.c misc.h vga_prg.h chipset.h \
+ cfg_structs.h messages.h XFREE/mach64/mach64.h
+std_clock.o: std_clock.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ std_clock.h clockchip.h XFREE/xfree_compat.h \
+ XFREE/common_hw/xf86_HWlib.h messages.h
+string_ops.o: string_ops.c messages.h vga_prg.h misc.h chipset.h \
+ cfg_structs.h
+ttyresize.o: ttyresize.c misc.h messages.h vga_prg.h chipset.h \
+ cfg_structs.h file_ops.h ttyresize.h kversion.h
+unlock_svga.o: unlock_svga.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ messages.h
+user_time.o: user_time.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ messages.h
+validate.o: validate.c misc.h validate.h cfg_structs.h chipset.h \
+ setclock.h messages.h vga_prg.h
+vga_prg.o: vga_prg.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ messages.h textregs.h
+wait_vsync.o: wait_vsync.c misc.h vga_prg.h chipset.h cfg_structs.h \
+ wait_vsync.h messages.h
+y.tab.o: y.tab.c cfg_structs.h misc.h chipset.h validate.h messages.h \
+ vga_prg.h

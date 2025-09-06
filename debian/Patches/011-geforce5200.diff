@@ -1,0 +1,377 @@
+
+Patch from hmh@d.o, tested on GeForceFX 5200 Ultra only.
+ref BTS #173590
+
+--- riva128_clock.c.orig-332	2003-12-21 15:16:13.000000000 -0200
++++ riva128_clock.c	2003-12-24 15:57:32.000000000 -0200
+@@ -67,72 +67,121 @@
+ #include "vga_prg.h"
+ 
+ #ifdef DOS
+-#include <dpmi.h>
++#error DOS NOT SUPPORTED FOR THIS DRIVER
+ #endif
+ 
+ /* PCI stuff -- copied largely from the MGAProbe() code */
+ #include "include/Xmd.h"
+ #include "vgaPCI.h"
+ 
+-#define PCI_VENDOR_NVIDIA_SGS   0x12d2
+-#define PCI_CHIP_RIVA128        0x0018
+-#define PCI_VENDOR_ID_NVIDIA    0x10de
+-
+-/* Straight from NVidia's X4.x driver README:
+-
+-  NVIDIA CHIP NAME               DEVICE PCI ID
+-
+-  o RIVA TNT                     0x0020
+-  o RIVA TNT2                    0x0028
+-  o RIVA TNT2 (Ultra)            0x0029
+-  o RIVA TNT2 (Vanta)            0x002C
+-  o RIVA TNT2 (M64)              0x002D
+-  o RIVA TNT2                    0x002E
+-  o RIVA TNT2                    0x002F
+-  o RIVA TNT2 (Integrated)       0x00A0
+-  o GeForce 256                  0x0100
+-  o GeForce DDR                  0x0101
+-  o Quadro                       0x0103
+-  o GeForce2 MX                  0x0110
+-  o GeForce2 MX 400              0x0110
+-  o GeForce2 MX 200              0x0111
+-  o GeForce2 MX 100              0x0111
+-  o GeForce2 Go                  0x0112
+-  o GeForce2 MXR                 0x0113
+-  o Quadro2 Go                   0x0113
+-  o GeForce2 Pro                 0x0150
+-  o GeForce2 GTS                 0x0150
+-  o GeForce2 GTS                 0x0151
+-  o GeForce2 Ultra               0x0152
+-  o Quadro2 Pro                  0x0153
+-  o Quadro2 Ex                   0x0153
+-  o GeForce3                     0x0200
+-  o Quadro DDC                   0x0203
+- */
+-unsigned short nvidia_pci_ids[] = {
+-	0x0020,  /* TNT                                */
+-	0x0028,  /* TNT2                               */
+-	0x0029,  /* Ultra TNT2                         */
+-	0x002C,  /* Vanta TNT2                         */
+-	0x002D,  /* M64 TNT2                           */
+-	0x002E,  /* TNT2 (?)                           */
+-	0x002F,  /* TNT2 (?)                           */
+-	0x00A0,  /* Integrated TNT2                    */
+-	0x0100,  /* GeForce 256                        */
+-	0x0101,  /* GeForce DDR                        */
+-	0x0103,  /* Quadro                             */
+-	0x0110,  /* GeForce2 MX, GeForce2 MX 400       */
+-	0x0111,  /* GeForce2 MX 100, GeForce2 MX 200   */
+-	0x0112,  /* GeForce2 Go                        */
+-	0x0113,  /* GeForce2 MXR, Quadro2 Go           */
+-	0x0150,  /* GeForce2 Pro, GeForce2 GTS         */
+-	0x0151,  /* GeForce2 GTS (?)                   */
+-	0x0152,  /* GeForce2 Ultra                     */
+-	0x0153,  /* Quadro2 Pro, Quadro2 Ex            */
+-	0x0200,  /* GeForce3                           */
+-	0x0201,  /* GeForce3 Ti 200                    */
+-	0x0202,  /* GeForce3 Ti 500 (unverified guess) */
+-	0x0203,  /* Quadro DDC                         */
++#define PCI_VENDOR_NVIDIA_SGS	0x12D2
++
++unsigned int nvidia_pci_ids[] = {
++	0x12D20018,	/*RIVA128*/
++	0x10DE0020,	/*RIVATNT*/
++	0x10DE0028,	/*RIVATNT2*/
++	0x10DE002A,	/*UnknownTNT2*/
++	0x10DE002C,	/*Vanta*/
++	0x10DE0029,	/*RIVATNT2Ultra*/
++	0x10DE002D,	/*RIVATNT2Model64*/
++	0x10DE00A0,	/*AladdinTNT2*/
++	0x10DE0100,	/*GeForce256*/
++	0x10DE0101,	/*GeForceDDR*/
++	0x10DE0103,	/*Quadro*/
++	0x10DE0110,	/*GeForce2MX/MX400*/
++	0x10DE0111,	/*GeForce2MX100/200*/
++	0x10DE0112,	/*GeForce2Go*/
++	0x10DE0113,	/*Quadro2MXR/EX/Go*/
++	0x10DE01A0,	/*GeForce2IntegratedGPU*/
++	0x10DE0150,	/*GeForce2GTS*/
++	0x10DE0151,	/*GeForce2Ti*/
++	0x10DE0152,	/*GeForce2Ultra*/
++	0x10DE0153,	/*Quadro2Pro*/
++	0x10DE0170,	/*GeForce4MX460*/
++	0x10DE0171,	/*GeForce4MX440*/
++	0x10DE0172,	/*GeForce4MX420*/
++	0x10DE0173,	/*GeForce4MX440-SE*/
++	0x10DE0174,	/*GeForce4440Go*/
++	0x10DE0175,	/*GeForce4420Go*/
++	0x10DE0176,	/*GeForce4420Go32M*/
++	0x10DE0177,	/*GeForce4460Go*/
++	0x10DE0179,	/*GeForce4440Go64M*/
++	0x10DE017D,	/*GeForce4410Go16M*/
++	0x10DE017C,	/*Quadro4500GoGL*/
++	0x10DE0178,	/*Quadro4550XGL*/
++	0x10DE017A,	/*Quadro4NVS*/
++	0x10DE0181,	/*GeForce4MX440withAGP8X*/
++	0x10DE0182,	/*GeForce4MX440SEwithAGP8X*/
++	0x10DE0183,	/*GeForce4MX420withAGP8X*/
++	0x10DE0186,	/*GeForce4448Go*/
++	0x10DE0187,	/*GeForce4488Go*/
++	0x10DE0188,	/*Quadro4580XGL*/
++	0x10DE0189,	/*GeForce4MXwithAGP8X(Mac)*/
++	0x10DE018A,	/*Quadro4280NVS*/
++	0x10DE018B,	/*Quadro4380XGL*/
++	0x10DE01F0,	/*GeForce4MXIntegratedGPU*/
++	0x10DE0200,	/*GeForce3*/
++	0x10DE0201,	/*GeForce3Ti200*/
++	0x10DE0202,	/*GeForce3Ti500*/
++	0x10DE0203,	/*QuadroDCC*/
++	0x10DE0250,	/*GeForce4Ti4600*/
++	0x10DE0251,	/*GeForce4Ti4400*/
++	0x10DE0252,	/*0x0252*/
++	0x10DE0253,	/*GeForce4Ti4200*/
++	0x10DE0258,	/*Quadro4900XGL*/
++	0x10DE0259,	/*Quadro4750XGL*/
++	0x10DE025B,	/*Quadro4700XGL*/
++	0x10DE0280,	/*GeForce4Ti4800*/
++	0x10DE0281,	/*GeForce4Ti4200withAGP8X*/
++	0x10DE0282,	/*GeForce4Ti4800SE*/
++	0x10DE0286,	/*GeForce44200Go*/
++	0x10DE028C,	/*Quadro4700GoGL*/
++	0x10DE0288,	/*Quadro4980XGL*/
++	0x10DE0289,	/*Quadro4780XGL*/
++	0x10DE0301,	/*GeForceFX5800Ultra*/
++	0x10DE0302,	/*GeForceFX5800*/
++	0x10DE0308,	/*QuadroFX2000*/
++	0x10DE0309,	/*QuadroFX1000*/
++	0x10DE0311,	/*GeForceFX5600Ultra*/
++	0x10DE0312,	/*GeForceFX5600*/
++	0x10DE0313,	/*0x0313*/
++	0x10DE0314,	/*GeForceFX5600SE*/
++	0x10DE0316,	/*0x0316*/
++	0x10DE0317,	/*0x0317*/
++	0x10DE031A,	/*GeForceFXGo5600*/
++	0x10DE031B,	/*GeForceFXGo5650*/
++	0x10DE031C,	/*QuadroFXGo700*/
++	0x10DE031D,	/*0x031D*/
++	0x10DE031E,	/*0x031E*/
++	0x10DE031F,	/*0x031F*/
++	0x10DE0321,	/*GeForceFX5200Ultra*/
++	0x10DE0322,	/*GeForceFX5200*/
++	0x10DE0323,	/*GeForceFX5200SE*/
++	0x10DE0324,	/*GeForceFXGo5200*/
++	0x10DE0325,	/*GeForceFXGo5250*/
++	0x10DE0328,	/*GeForceFXGo520032M/64M*/
++	0x10DE0329,	/*GeForceFX5200(Mac)*/
++	0x10DE032A,	/*QuadroNVS280PCI*/
++	0x10DE032B,	/*QuadroFX500*/
++	0x10DE032C,	/*GeForceFXGo5300*/
++	0x10DE032D,	/*GeForceFXGo5100*/
++	0x10DE032F,	/*0x032F*/
++	0x10DE0330,	/*GeForceFX5900Ultra*/
++	0x10DE0331,	/*GeForceFX5900*/
++	0x10DE0332,	/*GeForceFX5900XT*/
++	0x10DE0333,	/*GeForceFX5950Ultra*/
++	0x10DE0334,	/*0x0334*/
++	0x10DE0338,	/*QuadroFX3000*/
++	0x10DE0341,	/*GeForceFX5700Ultra*/
++	0x10DE0342,	/*GeForceFX5700*/
++	0x10DE0343,	/*0x0343*/
++	0x10DE0347,	/*0x0347*/
++	0x10DE0348,	/*0x0348*/
++	0x10DE0349,	/*0x0349*/
++	0x10DE034B,	/*0x034B*/
++	0x10DE034C,	/*0x034C*/
++	0x10DE034E,	/*QuadroFX1100*/
++	0x10DE034F,	/*0x034F*/
+ 	0        /* NULL terminator */
+ };
+ 
+@@ -143,15 +192,14 @@
+ #define PRAMDAC_BASE       0x00680000
+ #define PRAMDAC_PLL_COEFF  0x00000508
+ #define PRAMDAC_PLL_COEFF_SELECT   0x0000050C
++#define PEXTDEV_BASE	   0x00101000
+ 
+ #define NV3_MIN_CLOCK_IN_KHZ  25000    // Not sure about this, but it seems reasonable
+ #define NV3_MAX_CLOCK_IN_KHZ 230000
+ #define NV4_MAX_CLOCK_IN_KHZ 350000
+ 
+-static int max_clock, is_nv3, pll_coeff;
++static int max_clock, is_nv3, pll_coeff, CrystalFreqKHz;
+  
+-/* NTSC cards have approx 14.3Mhz. Need to detect, but leave for now*/
+-#define PLL_INPUT_FREQ 13500 
+ #define M_MIN 7
+ #define M_MAX 13
+ 
+@@ -185,7 +233,7 @@
+     if (double_scan)
+         VClk *= 2;
+     
+-    if (/*chip->CrystalFreqKHz*/PLL_INPUT_FREQ == 14318)
++    if (/*chip->*/CrystalFreqKHz == 14318)
+     {
+         lowM  = 8;
+         highM = 14 - (/*chip->Architecture == NV_ARCH_03*/is_nv3);
+@@ -204,8 +252,8 @@
+         {
+             for (M = lowM; M <= highM; M++)
+             {
+-                N    = (VClk * M / /*chip->CrystalFreqKHz*/PLL_INPUT_FREQ) << P;
+-                Freq = (/*chip->CrystalFreqKHz*/PLL_INPUT_FREQ * N / M) >> P;
++                N    = (VClk * M / /*chip->*/CrystalFreqKHz) << P;
++                Freq = (/*chip->*/CrystalFreqKHz * N / M) >> P;
+                 if (Freq > VClk)
+                     DeltaNew = Freq - VClk;
+                 else
+@@ -228,59 +276,46 @@
+ // Set the clock to the given speed (in KHz)
+ Bool RIVA128ClockSelect( int clockspeed )
+ {
+-  int *ptr;
++  int *PRAMDAC0;
++  int *PEXTDEV;
+ 
+   int out;
+   int m, n, p, value;
+   int i = 0;
+   pciConfigPtr pcr = NULL;
++  int implementation;
+   int fd;
+ 
+   vgaPCIInfo = vgaGetPCIInfo();
+ 
+   if (vgaPCIInfo && vgaPCIInfo->AllCards) {
+      	while ((pcr = vgaPCIInfo->AllCards[i++])) {
+-  		if (pcr->_vendor == PCI_VENDOR_NVIDIA_SGS)
+-  		{
+-  			if (pcr->_device == PCI_CHIP_RIVA128)
+-  			{
+-  				is_nv3 = 1;
+-  				pll_coeff = 0x00010100;
+-  				max_clock = NV3_MAX_CLOCK_IN_KHZ;
+-  				break;
+-  			}
+-  		}
+-  		if (pcr->_vendor == PCI_VENDOR_ID_NVIDIA)
+-  		{
+-			int i, supported = 0;
+-			for (i = 0; nvidia_pci_ids[i]; i++)
+-				if(nvidia_pci_ids[i] == pcr->_device)
+-					supported++;
+-			if (supported)
+-  			{
+-  				is_nv3 = 0;
+-  				pll_coeff = 0x00010700;
+-  				max_clock = NV4_MAX_CLOCK_IN_KHZ;
+-  				break;
+-			}
++		int i, supported = 0;
++		for (i = 0; nvidia_pci_ids[i]; i++)
++			if( nvidia_pci_ids[i] == (pcr->_device | (pcr->_vendor << 16)) )
++				supported++;
++				
++		if (supported) {
++			implementation = pcr->_device & 0x0ff0;
++			is_nv3 = (pcr->_vendor == PCI_VENDOR_NVIDIA_SGS) ? 1 : 0;
++			break;
+   		}
+   	}
+   }
+   else 
+   {
+-    PERROR(("No RIVA128/TNT/TNT2 chip found in PCI info!\n"));
++    PERROR(("No supported nVidia GPU found in PCI info!\n"));
+     return FALSE;
+   }
+ 
+   if ( !pcr )
+   {
+-    PERROR(("No RIVA128/TNT/TNT2 chip found in PCI info!\n"));
++    PERROR(("No supported nVidia GPU found in PCI info!\n"));
+     return FALSE;
+   }
+   
+   PDEBUG(("PCI BASE0 = 0x%x\n", pcr->_base0));
+ 
+-#ifndef DOS
+   // Uses memory mapped registers, so must map memory
+   fd = open( "/dev/mem", O_RDWR );
+   
+@@ -291,23 +326,44 @@
+   }
+     
+   // mmap the programmable RAMDAC into our address space
+-  ptr = (int*)mmap( 0, 0x1000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, (off_t)(pcr->_base0) + PRAMDAC_BASE );
++  PRAMDAC0 = (int*)mmap( 0, 0x1000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, (off_t)(pcr->_base0) + PRAMDAC_BASE );
+ 
+-  if( ptr == (int*)-1 )
++  if( PRAMDAC0 == (int*)-1 )
+   {
+     PERROR(( "Error mmap'ing /dev/mem" ));
+     return FALSE;
+   }
+     
++  // mmap the PEXTDEV into our address space
++  PEXTDEV = (int*)mmap( 0, 0x1000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, (off_t)(pcr->_base0) + PEXTDEV_BASE );
++
++  if( PEXTDEV == (int*)-1 )
++  {
++    PERROR(( "Error mmap'ing /dev/mem" ));
++    return FALSE;
++  }
++
+   close( fd );
+-#else
+-  ptr=(int*) malloc(0x4000);
+-  if (!ptr || __djgpp_map_physical_memory(ptr, 0x1000, (off_t)(pcr->_base0)))
++
++  // Get chip config
++  if (is_nv3) {
++	pll_coeff = 0x00010100;
++  	max_clock = NV3_MAX_CLOCK_IN_KHZ;
++	CrystalFreqKHz = (PEXTDEV[0x00000000/4] & 0x00000020) ? 14318 : 13500;
++  } 
++  else
+   {
+-      PERROR(("mmap() failed %d\n", ptr));
+-      return FALSE;
++	pll_coeff = 0x00000700;
++	CrystalFreqKHz = (PEXTDEV[0x0000/4] & (1 << 6)) ? 14318 : 13500;		
++	if((implementation == 0x0170) ||
++	   (implementation == 0x0180) ||
++	   (implementation == 0x01F0) ||
++	   (implementation >= 0x0250))
++	{
++	   if(PEXTDEV[0x0000/4] & (1 << 22)) CrystalFreqKHz = 27000;
++	}
++  	max_clock = NV4_MAX_CLOCK_IN_KHZ;
+   }
+-#endif
+ 
+   // Calculate the clock  
+   CalcVClock ((float) clockspeed, 0, &out, &m, &n, &p);
+@@ -319,17 +375,16 @@
+     clockspeed, (int)out, m, n, p, value ));
+     
+   // Default value is 0x00000100 (NV3)
+-  // X uses 0x10010100 (NV3) or 0x10000700 (NV4)
+-  // We use 0x00010100 (NV3) or 0x00010700 (NV4)
+-  ptr[PRAMDAC_PLL_COEFF_SELECT/4] = pll_coeff;  // could use |=
++  // X uses 0x10010100 (NV3) or 0x10000700 (NV4/10/20/30)
++  // We use 0x00010100 (NV3) or 0x00000700 (NV4/10/20/30)
++  PRAMDAC0[PRAMDAC_PLL_COEFF_SELECT/4] = pll_coeff;  // could use |=
+ 
+   // Divide by 4 because we're dealing with integers
+-  ptr[PRAMDAC_PLL_COEFF/4] = value;
++  PRAMDAC0[PRAMDAC_PLL_COEFF/4] = value;
+   
+-#ifndef DOS
+   // Unmap memory
+-  munmap( ptr, 0x1000 );
+-#endif
++  munmap( PRAMDAC0, 0x1000 );
++  munmap( PEXTDEV,  0x1000 );
+ 
+   // All done
+   return TRUE;

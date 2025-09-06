@@ -1,0 +1,83 @@
+         setpalette: palette set/get program
+         ===================================
+         
+Another quick hack.
+
+This allows you to set or get the current color palettes used in all
+RAMDAC's. That should allow you to change all 16 colors normally used for
+text mode display. A real necessity if you have a grayscale monitor.
+
+The program allows you to change all 256 palette entries, although text mode
+only uses 16. Just in case someone has a use for it.
+
+There are other similar utilities around (like the ones in svgalib), so this
+will be of little real use. But is was lying around somewhere picking up
+dust...
+
+The commands are used as follows:
+
+  setpalette: version 1.5. (c) 1995,1996,1997 Koen Gadeyne.
+   Usage: ../setpalette [options]  color_index  <R> <G> <B>
+
+       Options: -n  Don't program VGA hardware
+                -d  print debugging information
+                -x  input palette values in hex instead of decimal
+                -8  use 8-bit color definition (0..255) instead of 6-bit (0..63)
+                -s  load a standard VGA textmode palette.
+                     this is not necessarily the default system startup palette.
+                     (use `getpalette -s' to find out what palette this is
+                -k  do not tell kernel about color palette changes.
+                     Any post-1.3.2 kernel will then restore the old
+                     palette when switching consoles.
+                -h  print usage information
+
+       color_index: index number in the palette look-up table (0..255).
+                    or '-' to use standard input
+                      (Input format = '<index>: <R-value> <G-value> <B-value>')
+       R, G, B : color intensity for Red, Green or Blue (0..63).
+
+
+  getpalette: version 1.5. (c) 1995,1996,1997 Koen Gadeyne.
+   Usage: ../getpalette [options] <color_index>
+
+       Options: -n  Don't program VGA hardware
+                -d  print debugging information
+                -x  output palette values in hex instead of decimal
+                -8  use 8-bit color definition (0..255) instead of 6-bit (0..63)
+                -s  print the built-in standard VGA textmode palette.
+                     this is the palette that will be programmed when running `setpalette -s'
+                -h  print usage information
+
+       color_index: index number in the palette look-up table (0..255).
+                      or 'all' to show all 256 entries
+
+
+This should be clear enough. 
+
+
+SPECIAL FEATURE:
+----------------
+
+A special feature (if you can call that a feature) is the possibility to use
+the output of getpalette DIRECTLY as input of setpalette (with '-' as color
+index, using standard input).
+
+This opens new possibilities for power-users who want to use a script to
+dynamically and selectively change text colors. 
+
+It also allows you to redirect the output from getpalette to a file, and
+then manually edit it, using it as new input for setpalette, e.g. for
+setting custom colors when booting Linux. 
+
+Examples: 
+
+a simple "no-op" would be:
+
+> getpalette all | setpalette -
+
+This should change absolutely nothing (note the "should" ;-)
+
+You could insert any sort of fancy UNIX-style processing into that pipeline,
+if you like.
+
+

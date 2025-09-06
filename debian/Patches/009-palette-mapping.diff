@@ -1,0 +1,62 @@
+
+diff -Nur -x *~ -x *.[oaP] -x .#* -x .*swp -x CVS -x *.rej -x *.orig -x tags -x config.status -x config.log -x config.ca
+che -x Makefile -x ABOUT-NLS -x Makefile.in -x aclocal.m4 -x config.guess -x config.h -x config.h.in -x config.sub -x co
+nfigure -x install-sh svgatextmode-1.9-9/textregs.h svgatextmode-1.9/textregs.h
+--- svgatextmode-1.9-9/textregs.h       Sat Sep  5 07:19:07 1998
++++ svgatextmode-1.9/textregs.h Tue Jan  8 14:16:27 2002
+@@ -35,12 +35,14 @@
+      0xff
+ };
+
+-/* 21 ATRCTL registers */
++/* 21 ATRCTL registers
++ * Note that the first 16 entries map the 16 screen colors to the first 16 vga
++ * palette regs, as Linux vga console driver expects/requires. */
+
+ #define NUM_STD_ATRCTL_REGS  21
+ unsigned char TXT_ATRCTL_REGS[NUM_STD_ATRCTL_REGS] = {
+-     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, 0x38, 0x39, 0x3a, 0x3b,
+-     0x3c, 0x3d, 0x3e, 0x3f, 0x0c, 0x00, 0x0f, 0x08, 0x00
++     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
++     0x0c, 0x0d, 0x0e, 0x0f, 0x0c, 0x00, 0x0f, 0x08, 0x00
+ };
+
+ /* 9 GRCTL regs */
+@@ -72,14 +74,14 @@
+   { 0x2A, 0x00, 0x2A },
+   { 0x2A, 0x2A, 0x00 },
+   { 0x2A, 0x2A, 0x2A },
+-  { 0x00, 0x00, 0x15 },
+-  { 0x00, 0x00, 0x3F },
+-  { 0x00, 0x2A, 0x15 },
+-  { 0x00, 0x2A, 0x3F },
+-  { 0x2A, 0x00, 0x15 },
+-  { 0x2A, 0x00, 0x3F },
+-  { 0x2A, 0x2A, 0x15 },
+-  { 0x2A, 0x2A, 0x3F },
++  { 0x15, 0x15, 0x15 },
++  { 0x15, 0x15, 0x3F },
++  { 0x15, 0x3F, 0x15 },
++  { 0x15, 0x3F, 0x3F },
++  { 0x3F, 0x15, 0x15 },
++  { 0x3F, 0x15, 0x3F },
++  { 0x3F, 0x3F, 0x15 },
++  { 0x3F, 0x3F, 0x3F },
+   { 0x00, 0x15, 0x00 },
+   { 0x00, 0x15, 0x2A },
+   { 0x00, 0x3F, 0x00 },
+diff -Nur -x *~ -x *.[oaP] -x .#* -x .*swp -x CVS -x *.rej -x *.orig -x tags -x config.status -x config.log -x config.ca
+che -x Makefile -x ABOUT-NLS -x Makefile.in -x aclocal.m4 -x config.guess -x config.h -x config.h.in -x config.sub -x co
+nfigure -x install-sh svgatextmode-1.9-9/vga_prg.c svgatextmode-1.9/vga_prg.c
+--- svgatextmode-1.9-9/vga_prg.c        Tue Jan  8 13:51:52 2002
++++ svgatextmode-1.9/vga_prg.c  Tue Jan  8 14:16:27 2002   
+@@ -313,6 +313,7 @@
+   else
+   {
+     Outb_GR_CTL(6,Inb_GR_CTL(6) & 0xFE);
++    for (i=0 ; i<16; i++) Outb_ATR_CTL(i, TXT_ATRCTL_REGS[i]); /* ensure palette is mapped as Linux expects */
+     Outb_ATR_CTL(16,inb_ATR_CTL(16) & 0xFE);
+     Outb_GR_CTL(0x08,0xFF); /* pixel bit mask */
+   }
+
+

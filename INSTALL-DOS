@@ -1,0 +1,19 @@
+                Installing the SVGATextMode utility for DOS
+                -------------------------------------------
+
+... is simple.
+
+- Copy the STMText.cfg file to your PATH, and edit it according to your
+  configuration. Calling external programs is supported, too. 
+  
+- Copy the executables to any place you like, as long as you (or the PATH
+  variable) can find it back.
+
+Don't forget to read the documentation in the "doc" directory!
+
+If you get messages about a not-supported chipset or incomplete driver,
+please contact Wolfram Sang (ninja@the-dreams.de). In most cases, it 
+might be possible to add support - just testers are needed :)
+
+And in case you know a font-loading tool which can handle font-sizes
+besides 8x8/14/16, please contact Wolfram, too.

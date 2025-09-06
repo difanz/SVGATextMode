@@ -1,0 +1,144 @@
+
+This file describes the meaning and use of the files contained in
+the source-distribution of this package.
+-----------------------------------------------------------------
+
+[Source files are obviously _not_ available in the binary-only distribution]
+[Also, some hacking tools have been left out of the binary distribution]
+
+
+First, the "user servicable" files: the ones you need to use (change,
+execute, read,...) when trying to get SVGATextMode running.
+
+  In the main directory:
+
+    * SVGATextMode     Of course. This is it. This program uses a config
+                       file (/etc/TextConfig) to get some required
+                       information, and starts changing your text modes. The
+                       main program of the package.
+                       
+    * TextConfig       A sample config file for SVGATextMode. It must be in
+                       the /etc directory, so SVGATextMode can find it. This
+                       file contains information about the hardware you are
+                       using (VGA card, monitor, ...), and about the text
+                       modes you will be able to select. If this file does
+                       not reflect YOUR hardware setup, don't expect
+                       ANYTHING to work properly.
+                       
+    * HISTORY          Contains the changes from one version to another.
+                       When upgrading from an older version of SVGATextMode,
+                       READ THIS FIRST. Some things might have changed in a
+                       way that would suddenly cause SVGATextMode to fail.
+                       
+    * README.FIRST     A word of warning: SVGATextMode is "dangerous" to use.
+                       
+    * INSTALL          How to install SVGATextMode. And how to recompile it.
+                       Amongst other things, it tells you what must be
+                       changed to the config file for your setup.
+                       
+                     
+  In the doc directory: (which you should REALLY consult BEFORE trying this) 
+
+    * SVGATextMode.man
+      TextConfig.man
+      grabmode.man     The manual files. Please read them. Using SVGATextMode
+                       can be very frustrating if you don't know what you're
+                       doing.
+
+    * PROBLEMS         A VERY IMPORTANT FILE. Read this when you run into
+                       trouble. It provides some valuable troubleshooting
+                       hints.
+
+    * README.ET4000    If you own an ET4000, read this.
+
+    * README.ET4000.AltClockSelect    If you have one of those special
+                                      ET4000's, that has a problem with the
+                                      "normal" clock selection for ET4000's,
+                                      this is for you.
+
+    * SVGATextMode.lsm   Linux Software Map entry for SVGATextMode. 
+
+    * monitor-timings.howto   An attempt at demystifying the monitor-timing
+                              black magic. If you don't feel very
+                              comfortable with all those numbers, if you
+                              don't know what "kHz", "Mhz", Hz", "Horizontal
+                              Sync", "vertical Refresh", and many more of
+                              those cryptic secret passwords to a succesfull
+                              monitor setup mean, this is for you!
+
+    * setVGAreg.doc    docs for the hacher's tools "setVGAreg" and
+                       "getVGAreg". Not very useful, and in fact rather
+                       dangerous, if the blood in your head starts avoiding
+                       your brain when somebody mentions "VGA registers".
+
+    * setpalette.doc   Gues what...
+
+    * vgaset.note      A note about strange behaviour of some versions of
+                       vgaset.
+                       
+    * README.Alpha     is a small note for Linux/Alpha users who want to use
+                       SVGATextMode (they can!)
+
+    * screen-resizing.note    Some remarks on screen resizing, and the
+                              problems you could run into.
+
+    * set80.doc        Right.
+    
+    * creating_textmodes_from_scratch.HOWTO
+                       Despite the cumbersome name (I happen to like long
+                       filenames, Mr. Rubini ;-), this document could be
+                       _very_ interesting for people with specific textmode
+                       needs. The title says it all.
+
+
+                   
+                   
+  Utility programs:
+
+    * clockprobe       A neat little pixel clock probing program. It is
+                       REALLY useful when trying to find out what's going
+                       wrong. It measures the currently used pixel- or
+                       dot-clock for the currently visible screen.
+                       
+    * grabmode         An extension to clockprobe: even MORE useful. It
+                       grabs the complete text- or graphics mode you are
+                       using, and outputs a TextConfig-compatible (or
+                       XF86Config compatible) mode line. Also an EXTREMELY
+                       useful tool to debug a failing text mode.
+                       
+    * setpalette       
+      getpalette       Two little tools to change/get the 256 color palette entries.
+      
+    * set80            Re-programs the VGA card into 80x25 text mode.
+                     
+
+  in the "contrib" directory: see the "README" there for more information.
+  It contains programs from other sources, which could, or could not, be
+  used together with SVGATextMode.
+
+
+
+Other files. Not needed for "using" SVGATextMode.   
+
+  The sources, of course: *.c and *.h, and Makefile
+
+  in the XFREE directory: some code from the XFREE sources, which is used by
+  SVGATextMode, and some interface code between theirs and mine...
+
+
+  
+  
+Some misc. files. No vitally important information in here.
+Behind-the-scenes information, talkshow gossip, and more.
+               
+  * COPYING          Tells you what the conditions are for copying and/or
+                     changing SVGATextMode. This is the standard GNU General
+                     Public License file.
+                     
+  * CREDITS          All those who have contributed to the mess you have in
+                     front of you.
+                     
+  * TODO             Don't try to read this. Compare it to a pile of Post-It
+                     notes reminding me what to do when I run out of
+                     ideas...
+                   

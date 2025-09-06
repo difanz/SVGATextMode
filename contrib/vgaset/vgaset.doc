@@ -1,0 +1,93 @@
+NAME
+	vgaset: a quick and dirty program to help setup X11 screen geometry.
+
+SYNOPSIS
+	vgaset [-d<clock>] [-v] [-s settings]
+
+DESCRIPTION
+
+	vgaset runs in an xterm and displays the current screen geometry in a
+	form similar to that used in a mode line in Xconfig. With single-key
+	commands, the geometry can be modified in real time, thus enabling
+	quick feedback for setting up optimal values for the hardware in use.
+	Optionally, vgaset will set initial values from the command line.
+	
+	Command line options:
+	
+	-v will cause vgaset to print out verbose information, in particular
+	   the contents of the CRTC registers.
+	
+	-d<clock> tells vgaset the speed of the dot clock being used. This
+		  enables vgaset to print out timing information. <clock> may
+		  be specified either in Hertz or in Megahertz.
+	
+	-s<settings> gives the values of horizontal retrace start, horizontal
+		     retrace end and horizontal total, vertical retrace start,
+		     vertical retrace end and vertical total to set before
+		     entering the command loop. These values are used in a
+		     typical mode line:
+	
+	"640x480"  28	  640 680 728 776 480 480 482 494
+			      hrs hre ht      vrs vre vt
+	
+	Commands:
+	
+	l - decrease the left margin
+	L - increase the left margin
+	r - decrease the right margin
+	R - increase the right margin
+	h - decrease the horizontal sync pulse width
+	H - increase the horizontal sync pulse width
+	t - decrease the top margin
+	T - increase the top margin
+	b - decrease the bottom margin
+	B - increase the bottom margin
+	v - decrease the vertical sync pulse
+	V - increase the vertical sync pulse
+	i - turn interlace mode off (currently only Tseng 4000)
+	I - turn interlace mode on (currently only Tseng 4000)
+	? - reset initial values
+	= - modify register contents directly
+	CR - redisplay the settings. This can be useful after changing screen
+	     mode with ctrl/alt/+ or ctrl/alt/-
+	q - quit
+	EOT - quit
+	
+	After each command, vgaset will redisplay the current mode settings in
+	a form suitable for pasting into an Xconfig file - don't forget the
+	clock spec at the beginning of the line!
+
+	The `modify register' command prompts the user for the name of
+	a CRTC register and will then display the current value and
+	prompt for a new one. This can be used for more esoteric
+	modifications.
+
+BUGS
+	Doubtless many. In particular, it's not quite clear whether
+	the description of the VGA registers I have is even moderately
+	accurate.
+
+	The restore initial values command will work OK if you have
+	broken things with the standard interactive commands, but it
+	doesn't restore all the registers, so you can really mess
+	things up with the explicit register set command. If this
+	happens, and you have a different resolution (under
+	X386/XFree86 only) you can probably save the day by changing
+	to a different resolution and then back again.
+
+	Chip recognition code is broken. This version assumes a Tseng
+	4000 chip. This is only relevant with the interlace mode
+	command.
+
+	The program has only been tested on a Diamond SpeedStar with an
+	ET4000 chip under BSD/386, and with an ET4000 clone under
+	System V.4.2. Possibly significant mods will be needed to get
+	it to work in other environments.
+
+	It is not possible to change the number or arrangement of
+	pixels displayed on the screen, since this would seriously
+	confuse the server.
+
+AUTHOR
+	Greg Lehey, LEMIS, Schellnhausen 2, W-6324 Feldatal, Germany
+	Tel: +49-6637-1488, Fax: +49-6637-1489

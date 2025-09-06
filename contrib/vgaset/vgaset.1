@@ -1,0 +1,138 @@
+NAME
+    vgaset: a quick and dirty program to help setup X11 screen geometry.
+
+SYNOPSIS
+    vgaset [-d<clock> [-xfrequency_min] [-yfrequency_min]
+           [-Xfrequency_max] [-Yfrequency_max]] [-y] [-s settings]
+
+WARNING
+    "vgaset" has a number of safety features that will help prevent
+    you from damaging your monitor.  However, if you specify a frequency
+    range that is not supported by your monitor or the incorrect dot-
+    clock value, vgaset can cause permanent damage to your monitor. If
+    you don't know these values, you can still use vgaset with no options.
+    Do not leave your monitor scrambled for any length of time.  If all
+    else fails, turn your monitor off!  You are using "vgaset" at your
+    own risk!
+
+DESCRIPTION
+
+    "vgaset" runs in an xterm and displays the current screen geometry in a
+    form similar to that used in a mode line in Xconfig. With single-key
+    commands, the geometry can be modified in real time, thus enabling
+    quick feedback for setting up optimal values for the hardware in use.
+    Optionally, vgaset will set initial values from the command line.
+        
+    Command line options:
+        
+    -V will cause vgaset to print out verbose information, in particular
+       the contents of the CRTC registers.
+        
+    -d<clock> Tells vgaset the speed of the dot clock being used. This
+              enables vgaset to print out timing information, and use of
+              timing information for determine frequency ranges.  <clock>
+              may be specified either in Hertz, Kilohertz or in Megahertz.
+              Be sure you are specifying the actual clock speed being used.
+
+    -x<frequency> This specifies the minimum horizontal frequency supported
+                  by your monitor, specified in Hertz or Kilohertz.  The
+                  default is the current frequency. -x<frequency> is silently
+                  ignored without the -d<clock> option, except for -x0)
+
+    -X<frequency> This specifies the maximum horizontal frequency supported
+                  by your monitor, specified in Hertz or Kilohertz.  The
+                  default is the current frequency.  -X<frequency> is 
+                  silently ignored without the -d<clock> option)
+
+    -y<frequency> This is the minimum vertical frequency supported by your
+                  monitor.  The default is the current frequency. -y
+                  is silently ignored without the -d<clock> option,
+                  except -y0.
+
+    -Y<frequency> This is the maximum vertical frequency supported by your
+                  monitor.  The default is the current frequency. -Y<frequency>
+                  is silently ignored without the -d<clock> option.
+
+    -s<settings> gives the values of horizontal retrace start, horizontal
+                 retrace end and horizontal total, vertical retrace start,
+                 vertical retrace end and vertical total to set before
+                 entering the command loop. These values are used in a
+                 typical mode line:
+        
+                   "640x480"  28      640 680 728 776  480 480 482 494
+                                          hrs hre ht       vrs vre vt
+
+    -v<resolution> This gives the value of virtual resolution on your screen.
+                   Is to enable you to increase the resolution of your screen
+                   up to the virtual resolution.  These values should not 
+                   exceed the values from your Virtual line:
+
+                     Virtual   1152   910
+                               x-res  y-res
+
+    Example:
+
+      vgaset -d80 -x30 -X64 -y50 -Y100 -v 1152 910 
+         --> Corresponds to my Crystal Scan 1572 FS monitor at 80MHz.
+
+        Commands:
+        
+        l - decrease the left margin
+        L - increase the left margin
+        r - decrease the right margin
+        R - increase the right margin
+        h - decrease the horizontal sync pulse width
+        H - increase the horizontal sync pulse width
+        t - decrease the top margin
+        T - increase the top margin
+        b - decrease the bottom margin
+        B - increase the bottom margin
+        v - decrease the vertical sync pulse
+        V - increase the vertical sync pulse
+        x - decrease x-resolution
+        X - increase x-resolution
+        y - decrease y-resolution
+        Y - increase y-resolution 
+        ? - reset initial values
+        CR - redisplay the settings.
+        q - quit
+        EOT - quit
+        
+    After each command, vgaset will redisplay the current mode settings in
+    a form suitable for pasting into an Xconfig file - don't forget the
+    clock spec at the beginning of the line!
+
+BUGS
+    Doubtless many - this is an initial release. It's not quite
+    clear whether the description of the VGA registers I have is
+    even moderately accurate.
+
+    The program has only been tested on a Diamond SpeedStar with an
+    ET4000 chip under BSD/386 and an ATI Graphics Ultra Pro card under
+    linux 0.99pl6.  Possibly significant mods will be needed to get it
+    to work in a different environment.
+
+    The server is confused when you change the # of pixels on the screen.
+    If you decrease the number of pixels, the server will no-longer scroll
+    the full virtual screen.  If you increase the number of pixels, the
+    X server will not use the new pixels. However, this is still useful
+    for finding higher resolution values that won't scramble your screen.
+
+    There is currently no way to change the dot-clock rate while running
+    vgaset.
+
+AUTHOR
+     Greg Lehey, LEMIS, Schellnhausen 2, 36325 Feldatal, Germany
+     Tel: +49-6637-919123, Fax: +49-6637-919122
+
+MODIFIED BY
+    Bill C. Riemers (bcr@physics.purdue.edu), 26 March 93, 04 April 93..
+    Greg Lehey (grog@lemis.de), May 1994
+
+CHANGES
+    I've added a lot of safety features into this code.  However, I know
+    very little about the working of monitors and will not be held 
+    responsible for any damage caused to your monitor.  Please read the
+    warning at the top.  "vgaset" is safer than guessing MODE values...  
+    However, you are using this program at your own risk! (bcr)
+

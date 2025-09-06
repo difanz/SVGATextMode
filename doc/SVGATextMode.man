@@ -1,0 +1,727 @@
+.TH SVGATextMode 8 "October 1998" "Version 1.9"
+
+.SH NAME
+SVGATextMode \- Textmode manipulation/enhancement tool
+
+.SH SYNOPSIS
+\fBSVGATextMode\fP [ -ndhrfcvsam ] [ -t \fIConfigFile\fP ]
+[ \fITextmodeLabel\fP ]
+
+.SH DESCRIPTION
+\fBSVGATextMode\fP provides a means to seriously enhance the looks of your
+Linux text consoles, by re-programming the (S)VGA hardware. It uses a
+configuration file similar to the one the XFree86 X-windows server uses
+(Xconfig or XF86Config) to set up better looking textmodes. (=higher
+resolution, larger font size, higher display refresh...).
+
+It works independently of what text modes are allowed from the BIOS. In
+theory, any text mode size is possible, as long as your VGA card is up to
+the job. Whether it is or not, depends greatly on the chipset.
+
+SVGATextMode can resize the console screen on the fly, without rebooting, to
+any other size. The configuration file holds all the parameters needed for
+the new mode.
+
+It needs kernel version \fB1.1.54\fP or newer if screen resizing is to be
+possible.
+
+.SS Supported chipsets
+.TP
+.B VGA
+Generic VGA chips. This can also be used for unsupported VGA chips, but with
+very limited possibilities. Most portable VGA computers (Compaq LTE, ...)
+should work with this also: VGA LCD's can't use higher dot-clocks anyway.
+
+It is important to start from a standard VGA text mode (80x25...80x50) when
+using this "chipset" for unsupported chips. Otherwise the clock will not be
+programmed correctly.
+
+.TP
+.B ET6000
+
+.TP
+.B ET4000
+
+.TP
+.B ET3000
+
+.TP
+.B S3
+any S3-based card, including those from Diamond, Number 9 and SPEA/Video7.
+
+.TP
+.B CIRRUS
+Cirrus Logic chipsets. This works with CL-GD542x, CL-GD543x ("Alpine") and
+CL-GD546x ("Laguna") chipsets.
+
+.TP
+.B TVGA8900, TVGA9000
+The oldest Trident cards. NOT for the Trident accelerated cards like the
+9440 etc.
+
+.TP
+.B TGUI
+All accelerated Trident cards from TGUI9320LCD and up.
+
+.TP
+.B PVGA1, WDC90C0X, WDC90C1X, WDC90C2X, WDC90C3X
+All (?) Western Digital cards, from the plain old first Paradise card
+(PVGA1) to the more recent WDC90C33 accelerator (WDC90C3X).
+
+.TP
+.B ATI
+All ATI cards BEFORE the MACH32.
+
+.TP
+.B ATIMACH32
+ATI MACH32 and MACH64. Many MACH64 cards use special RAMDACs and clockchips
+that are not yet supported by SVGATextMode. Those will not work.
+
+.TP
+.B ATIMACH64
+Only MACH64 boards with internal clockchips are supported.
+
+.TP
+.B VIDEO7
+Headland Technologies based Video 7 boards only. Older V7 boards use C&T or
+Cirrus chips. Newer V7/SPEA cards use S3.
+
+.TP
+.B ALI, AL2101
+Avance Logic chipsets. It's not sure whether this will work on ALL Avance
+Logic cards.
+
+.TP
+.B OTI67, OTI77, OTI78
+Oak Technology chipsets.
+
+.TP
+.B SIS
+SiS chipsets. UNTESTED!
+
+.TP
+.B RealTek
+RealTek chipsets. UNTESTED!
+
+.TP
+.B ARK
+ARK1000 and ARK2000 chipsets. UNTESTED!
+
+.TP
+.B NCR77C22E, NCR77C32
+NCR chipsets. The NCR77C21 and NCR77C22 (without "E" suffix) will not
+benefit from this. They should work just as well with the generic VGA
+driver. UNTESTED!
+
+.TP
+.B GVGA
+Genoa 6000 series cards. The 5000 and 7000 series are based on resp. ET3000
+and ET4000 chips. Use the ET4000 driver for those. UNTESTED!
+
+.TP
+.B MX
+MX graphics chips. MX86000 and MX86010 chips should work. UNTESTED!
+
+.TP
+.B MATROX
+Matrox Millennium and Mystique are supported.
+
+.TP
+.B NEOMAGIC
+Those NeoMagic laptop controllers
+
+.TP
+.B RIVA128
+all RIVA128 derivatives (including RIVA128ZX and TNT).
+
+.PP
+SVGATextMode needs a configuration file with a similar syntax as
+\fBXconfig\fP or \fBXF86Config\fP, the configuration file for XFree86, the
+X-Windows server. The default config file is \fB/etc/TextConfig\fP.
+
+See the
+.B TextConfig(5)
+manual file for details on its syntax.
+
+When running SVGATextMode with a new textmode, it will output a single line,
+describing what the new mode is, and what are the screen refresh rates.
+
+.SS Example output:
+Chipset = 'S3', Textmode clock = 75.00 MHz, 116x48 chars, CharCell = 9x16.
+Refresh = 55.93kHz/69.9Hz.
+
+.SS OPTIONS
+The only required option is the \fBTextmodeLabel\fP, which tells
+SVGATextMode to which mode it must switch. A mode description line with the
+same name must be present in the config file. The parameters on that line
+will be used to program the new text mode.
+
+.TP
+.B -n
+don't program the new mode. This option will scan the config file for the
+requested mode, parse all parameters, and report what the new mode will look
+like. But it doesn't actually change anything. This is useful for seeing if
+a mode is correctly entered in the config file, and if your monitor will be
+able to handle it.
+
+.TP
+.B -d
+debugging mode. SVGATextMode will output lots of debugging information about
+all the things it attempts to do. This is mostly for "internal purposes"
+only, but it could help you discover why SVGATextMode doesn't react as you
+expect it to. This could also be useful when reporting a problem.
+
+A second "d" option will enable extended debugging, showing you all the data
+that was parsed from the config file, instead of just the most important
+things. More specifically, this will add all the mode lines and the font
+selection list to the debug output. 
+
+.TP
+.B -h
+prints out a short help and the version number. 
+
+.TP
+.B -r
+don't run the \fBResetProg\fP.
+
+When a ResetProg is defined (and thus enabled) from the config file,
+SVGATextMode, without "-r", will attempt to run it whenever it has changed
+the screen size.
+
+The reset program is normally used to signal or restart a program that
+depends on the current screen size, and that doesn't react to the
+\fBSIGWINCH\fP signal the kernel sends it upon a screen resize. Typical
+examples are gpm and selection; two very handy textmode-mouse handlers.
+
+Resizing the screen from 80x25 to e.g. 116x48 without telling gpm or
+selection about it, will cause the mouse cursor to get stuck in the upper
+left 80x25 characters of the screen.
+
+The "-r" option is useful when SVGATextMode is started from the system
+initialisation files (/etc/rc.d/...), because many of the programs that need
+to be reset through the \fBResetProg\fP have not yet been started, so trying
+to send them signals, or trying to kill them, would fail. And trying to
+restart them would cause two copies of the same program running when the
+rest of the rc-files start them up.
+
+.TP
+.B -f
+don't run the \fBFontProg.\fP When the font loader is enabled through the
+\fBLoadFont\fP option in the config file, SVGATextMode will not run it, even
+when the screen is resized. When this option is not enabled and the font
+loader is enabled, SVGATextMode will run an external program to load a
+suitable font.
+
+.TP
+.B -c
+don't program the pixel clock. More of a debugging option. If you suspect
+that SVGATextMode fails to program your VGA clock properly, then this option
+programs everything else \fBexcept\fP the pixel clock, which is left at its
+old value. Some laptops don't react to well when the pixel clock is
+reprogrammed, so this option can help there, too.
+
+.TP
+.B -v
+don't validate H/V frequencies. Normally SVGATextMode will check the
+horizontal frequency and the vertical refresh of the new mode against the
+ranges specified in the config file, and refuse to program a mode that
+doesn't fall within those limits. This option turns off that checking, and
+will program ANY mode, even if the config file says your monitor cannot
+handle them.
+
+.TP
+.B -s
+scan mode. SVGATextMode will scan the entire config file, and will dump a
+listing of all valid modes for your configuration, taking the limits for
+vertical refresh, horizontal scan rate, maximum text mode pixel clock and
+availability of the required clock frequency (if you don't have a
+programmable clock chip) for your VGA card / monitor configuration into
+account. When combined with the \fB-v\fP option, it will dump all modes,
+whether they are allowed or not.
+
+This is particularly useful to create input to a script or program that lets
+you (for example) select a text mode from a menu.
+
+.TP
+.B -m
+allow trying to resize screen via a 1x1 screen. This option is only useful
+when you get an \fBout of memory\fP error when resizing the screen. Normally
+SVGATextMode will just exit and tell you there was not enough memory. The
+best thing to do then is to free some memory. If that is impossible for some
+reason, this option will first resize the screen to a 1x1 size to free the
+memory already taken up by all the consoles, and then resize to the desired
+size.
+
+\fBWARNING\fP: see the \fBBUGS\fP section for more information on the
+potential dangers of this method. Do not use this option unless it is
+absolutely necessary.
+
+.TP
+.B -a
+always do a full resize. SVGATextMode will normally check with the old
+screen size to see if the new mode actually resizes the screen (it could
+just \fBenhance\fP the screen by moving to a larger font, but remain at the
+same width/height). It does that via the tty settings (those you get when
+typing "stty -a"). If it detects that the new mode is a different size than
+the old one, it will run all sorts of extra code to make various system
+components know about the resizing. But if it thinks no actual resizing has
+been done, it won't do that.
+
+Under certain circumstances (see the \fBBUGS\fP section), it is desirable to
+resize the screen, even if the tty settings say the screen already has that
+size. This option will force the resizing code to "fake" a resize, and run
+all necessary code (set the tty settings again, tell the kernel about the
+resizing, and run the optional \fBResetProg\fP).
+
+.TP
+.B -k
+Don't tell the kernel if the screen size has changed. If the horizontal
+screen size really has changed, the kernel will not know about it and render
+text in completely wrong places. Some people seem to want to use this to lie
+to the kernel about the amount of text lines on screen, and e.g. use the
+lower line for a status display (since the kernel doesn't know it's there,
+it doesn't render text in it).
+
+As a side effect, none of the programs running on the console will be sent a
+SIGWINCH from the kernel, so they too will not know about the change. The
+ResetProg is still ran (unless when prohibited by the "-r" option of
+course), so it could be used to send explicit resize messages to console
+applications that otherwise relied on the kernel SIGWINCH signal.
+
+.TP
+.B -x
+always run SVGATextMode, even if you are not running it from a normal VGA
+textmode console. This disables the "dumb-user protection" that was added to
+avoid people from messing up their XFree86 display when running SVGATextMode
+from there. This option is only useful if you know what you're doing. It
+could be used to try to restore a broken textmode using after the
+Xserver crashed (in combination with the "-o" option).
+
+.TP
+\fB-t\fP \fIConfigFile\fP
+This option tells SVGATextMode to use a different configuration file than
+the default one (\fB/etc/TextConfig\fP).
+
+.TP
+.B -o
+Force all standard VGA registers to a known textmode state. This is quite
+useful when some VGA-aware program (X-server, svgalib, ...) crashes or gets
+killed and leaves the screen in graphics mode.
+
+There's only one problem with this. Most of these types of crashes leave the
+keyboard in raw (scan-code) mode, and thus you won't be able to type the
+command to restore text mode... You will have to do a "kbd_mode -a" from a
+remote terminal first. Unless you add "kbd_mode -a" to the file defined in
+the "ResetProg" label in the TextConfig file, and have "stm -o" under a
+mousebutton combination with the GPM mouse package.
+
+Another fun-stopper is the extended VGA registers, which this option does
+_not_ reset, because they are chipset-dependent. This means that the "-o"
+option might not help at all, depending on how sophisticated your card is.
+SVGATextMode knows about a few cards and how to kick them back into "normal"
+mode, but not all (due to lack of documentation and cards to test -- hint,
+hint).
+
+.SS Example
+A small example of how SVGATextMode goes to work: suppose you started up in
+80x25 text mode, and wanted to change to a more respectable 116x48 mode with
+a fine 16-pixel high font (normal 132x43 modes from the BIOS are only 8 to
+11 pixels high, and the difference is incredible), and extra-wide spacing
+(using 9-pixel wide characters instead of 8).
+
+Now suppose you have a mode description line in the config file that looks
+like this:
+
+.IP
+"Super116x48"  75  928 968 1104 1192  768 775 776 800  font 9x16
+
+(the entire config line must be on a single line)
+
+.PP
+After correctly configuring the \fB/etc/TextConfig\fP file for your VGA
+card, typing
+
+.IP
+\fBSVGATextMode Super116x48\fP
+
+.PP
+will produce an output similar to the following:
+
+.IP
+Chipset = 'S3', Textmode clock = 75.00 MHz, 116x48 chars, CharCell = 9x16. Refresh = 55.93kHz/69.9Hz.
+
+Loading 8x16 font from file /usr/lib/kbd/consolefonts/Cyr_a8x16
+
+.PP
+Note the refresh timings at the end of the first output line: this mode
+would require an SVGA monitor capable of 56 kHz at 70 Hz (the same
+frequencies as a VESA 1024x768 @ 70 HZ mode).
+
+The second output line actually comes from \fBsetfont\fP, a program which
+SVGATextMode can be made to call automatically after resizing the screen, so
+the font is adjusted to the available space in the character cell.
+
+.SH SECURITY
+In order to be able to do anything, SVGATextMode must be run by the
+superuser, or it must be setuid root.
+
+Having SVGATextMode installed with the SETUID bits ON makes it run as root,
+even when a non-root user runs it. This is a potential security problem,
+since SVGATextMode can be made to execute external programs (font loader and
+ResetProg).
+
+The default distribution will NOT renounce superuser rights EVER, so it'll
+run any external program as root also (if the setuid bits on SVGATextMode
+are on, of course). If you are administering a critical system, don't set
+the SETUID bits on SVGATextMode (which will have the side effect that
+non-root users cannot use SVGATextMode), or if you do, make sure that all
+externally called programs are secure.
+
+If you want to have the SUID bits on, but don't trust the external program's
+security, then recompiling SVGATextMode with the compile-time option
+"RUN_SECURE" enabled will make SVGATextMode renounce superuser rights
+immediately after requesting rights to write to the VGA registers. Any
+program run thereafter will be run with the user ID of the one executing
+SVGATextMode.
+
+If the programs called by SVGATextMode are not setuid root, they might fail,
+because they want to change things only root is allowed to tamper with.
+
+.SH DOS VERSION
+There is a DOS version of all SVGATextMode tools (including SVGATextMode
+itself) included in the distribution.
+
+The stm.exe program will do the same, and require the same as SVGATextMode
+under Linux, with the following exceptions:
+
+.IP * 3
+The TextConfig file is in \\etc\\textconf. Note the lack of a drive letter.
+You have to execute stm.exe from the same drive the textconf file is on.
+Otherwise, use the -t option to specify a full textconf file path.
+
+.IP * 3
+No font loading (yet?). Do not enable the "loadfont" option in the textconf
+file. It will not work: there is no DOS font loader included in the
+SVGATextMode distribution. This basically means you are limited to modes
+that still work with the same font you started with. There are no doubt
+numerous font loaders available for DOS that could solve this problem.
+
+.IP * 3
+Stm.exe is really of limited use. DOS was not designed to have flexible
+screen sizes (DOS was not designed - period. DOS was patched). DOS programs
+follow the same route. Some DOS programs assume a certain screen size (like
+80x25). Many assume at least a constant screen width (80 chars). Only a few
+support all screen sizes without trouble. You can expect DOS versions of
+UNIX tools to be of the last kind (like the editor joe.exe).
+
+.IP * 3
+Running stm.exe in a Windows DOS box IS possible, although you must remain
+80 chars wide, or Windows will report that "due to the way this program uses
+the VGA, it must be run full-screen". If you run stm.exe to change from a
+80x25 screen to a 80x50 screen, the DOS box will auto-resize to the new
+height.
+
+.SH BUGS
+Probaby zillions of them. And for a program that must be run as root, and
+that changes hardware registers, this is not a good thing.
+
+.TP
+.B mode switching
+SVGATextMode's purpose is to \fBchange\fP the previous text mode into the
+new one. It only changes those VGA registers that determine the text mode
+size. Any other register is left untouched. This has the advantage that the
+special (tricky) registers that were set up by the BIOS when the machine
+booted remain unchanged, so SVGATextMode doesn't need to have the
+intelligence built-in to deal with all kinds of special settings.
+
+The downside of this is that it can only go from one text mode to another.
+In most cases, SVGATextMode cannot switch to text mode from a non-text
+screen (e.g. from graphics mode, or from a messed-up screen when some
+graphical application exits ungracefully).
+
+.TP
+.B chipset
+SVGATextMode does not even try to detect the VGA chipset you are using. This
+means that if you configure it for an S3 chip, but there's a Cirrus Logic
+under the bonnet, you'll get a similar effect as when you try to use diesel
+fuel in a petrol engine...
+
+.TP
+.B kernel version
+You need at least kernel version \fB1.1.54\fP to be able to resize the
+screen to some other X/Y dimension than is currently being used. The program
+will refuse to resize the screen when it detects an older kernel version.
+
+.TP
+.B out of memory
+When the system is under heavy load, screen resizing could bail out with an
+\`out of memory\' error. The reason for this is rather obscure, but it boils
+down to the fact that you need to have \fBat least\fP a certain amount of
+\fBfree, contiguous RAM\fP if you want to avoid this. The amount depends on the
+requested screen size. On most linux systems (which have a maximum possible
+amount of 64 virtual consoles), this is:
+
+		X * Y * 2 * 64
+
+bytes of memory, where X is the number of characters per line, and Y the
+number of text lines on the screen.
+
+When the kernel fails to resize the screen because of a lack of the right
+kind of memory, SVGATextMode tries to free some more by temporarily
+requesting a large block of memory and freeing it immediately again, forcing
+some disk buffers to be flushed to disk, and forcing some programs to be
+swapped out.
+
+If the resizing still fails, it tries to free twice that much memory, and if
+that fails, three times the amount. If you attempt to resize to a really big
+screen, this is resp. 2, 4 and 6 MB of memory that will be "freed" before
+trying to resize the screen. If all that fails, then SVGATextMode will
+finally give up, and announce this in a large, friendly error message.
+
+The \fB-m\fP option is a way around this, but it has its own problems. When
+it temporarily switches to a 1x1 screen in order to free some more memory,
+some other process might snatch memory away from under it before
+SVGATextMode can switch back to the new mode, causing the final resize to
+the new size to fail. This is very unlikely to happen, but when it does, you
+are left with a 1x1 screen, which is rather small. When that happens,
+blindly stopping some jobs, and blindly resizing to a 80x25 mode (either
+through \fBSVGATextMode\fP or \fBset80\fP) is the only solution.
+
+A much better option to avoid out-of-memory problems is to tell the kernel
+it needs to keep more memory free, by swapping a little sooner. This can be
+done only in Linux kernels from somewhere around the 1.3.60's and up, using
+/prov/sys/vm/freepages. The default contents of this configuration "file"
+are:
+
+32      48      64
+
+These numbers represent the amount of free pages (one page is 4096 bytes on
+an Intel platform) below which the kernel will begin to swap pages out or
+reduce buffer sizes aggressively, moderately and lightly, resp. All this
+means that in the default case, an unloaded machine will saturate towards 64
+free pages (256k) free memory. Changing these settings to higher values,
+e.g.
+
+cat 128 256 1024 >/proc/sys/vm/freepages
+
+will cause an unloaded machine to have 4M free memory after a while. This
+will reduce the risk of running out of memory for SVGATextMode resizing
+significantly.
+
+.TP
+.B Slow startup
+This is more a feature than a bug, but it could bother you at some time that
+SVGATextMode starts up extremely slow. This only happens when you are
+starting SVGATextMode from a non-working text mode (screen blank, monitor
+doesn't sync,...).
+
+While experimenting with mode timings, at some point you could end up with a
+mode that the VGA card cannot handle, and it just stops outputting anything
+at all: no video, no sync, nothing.
+
+SVGATextMode does its work in the vertical blanking interval, waiting for a
+vertical sync signal before starting to change VGA registers. But when there
+is no sync, it would wait forever. A timeout of one second prevents that,
+but shows up as a relatively long delay before the new mode becomes active.
+
+In addition to that, the default TextConfig file has the "SyncDisks" option
+active, which makes SVGATextMode execute a "sync" instruction to flush all
+remaining data in the disk cache to disk. Since there is no way to know when
+that has finished, SVGATextMode just waits a good while (a few seconds),
+hoping that all data is flushed by the time it starts.
+
+.TP
+.B Your worst nightmare: SVGATextMode bails out!
+SVGATextMode works its way through the VGA register programming
+sequentially, working its way through all the registers one at a time. When
+it encounters some kind of error in the middle, it will most probably bail
+out with an error message.
+
+But that message will not be of much use, since leaving those VGA registers
+halfway programmed will most probably result in no video at all. So the
+message is there, telling you in all detail what went wrong, but you will not
+be able to see it...
+
+The author has been made aware of this problem on various occasions, and
+future versions will not be as unforgiving.
+
+In the mean time, make sure nothing will go lost when you first experiment
+with SVGATextMode and you have to reboot to get back into a visible text
+mode. Preferably use `savetextmode' from svgalib to enable a future
+`textmode' restore command when something goes wrong. Also consider
+redirecting standard error to a file when you expect trouble. You can then
+inspect the result when (or "if" ;-) you get back your screen.
+
+.PP
+There are some nasty interactions with other programs that do VGA
+programming. Amongst them are: the \fBXFree86\fP XWindows server,
+\fBsvgalib\fP, \fBdosemu\fP and probably others. The most common effect is a
+distorted screen when such a program switches back to text mode. The real
+reason for this mostly lies with that program, because it doesn't restore
+all VGA chip registers as they were before that program started. They were
+all written a long time before SVGATextMode saw the light of day, so how
+could they know?
+
+SVGATextMode cannot really solve this problem, since it exits after setting
+the new mode, and so it doesn't stay active to restore the mode whenever
+another one screws it up.
+
+For a more in-depth discussion of these kinds of problems, read the
+doc/FAQ file in the SVGATextMode distribution.
+
+.TP
+.B XFree86
+Most problems with XFree86 happen when you change the text mode \fBafter\fP
+X has been started. The X-server remembers all VGA chip settings when it
+first starts up, and never seems to check them again. So when you start X,
+switch back to text mode while X is still running, then change the text mode
+to something else, switch back to X, and then back to text mode, you're in
+trouble.
+
+X has restored the VGA register contents of when \fPit\fP started, which are
+not the same that you programmed with SVGATextMode. But the kernel still
+thinks you are in the \fBnew\fP mode, since X didn't tell it about the
+restoration to the old values, and thus the kernel draws its characters in
+the wrong place in the video memory.
+
+Result: screen completely garbled. Solution: re-running SVGATextMode
+whenever you switch back from X to text mode, or exit X, and restart it
+\fBafter\fP re-programming the \fBnew\fP text mode.
+
+The former case will need the \fP-a\fP option to tell SVGATextMode to force
+a full resize. When X restores the VGA register contents, it \fPdoesn\'t\fP
+restore the tty settings, nor the kernel screen size parameters. Thus
+SVGATextMode is made to believe that the screen is not resized, and thus
+doesn't do all the resizing code, leaving the kernel parameters and tty
+settings as they were: wrong.
+
+A general rule of thumb to avoid interaction-problems with the X-server is
+to specify as much as possible, thus allowing the server as little guesswork
+as possible. This is recommended by the XFree86 manuals also, even without
+SVGATextMode. In practice this means you let the server guess for all
+hardware parameters just \fBonce\fP, i.e. when you first install it on a new
+VGA card, and preferably from a non-tweaked textmode (no SVGATextMode). You
+then copy as much parameters from the probe to the XF86Config file as
+possible. The reason for this is that some probing routines in the XFree86
+server work well only under a standard text mode (e.g. the S3 IBM RGB RAMDAC
+RefClk probe).
+
+.TP
+.B other X-servers
+If you thought XFree86 was evil for doing this, keep in mind that some
+commercial X-servers (e.g. Accelerated-X from Xinside) for Linux are even
+worse (don't shoot me guys! They are absolutely MARVELOUS X-servers, but
+their textmode support is not just bad, it's non-existent).
+
+They _assume_ you start from a 80x25 screen, and will \fBalways\fP return to
+a 80x25 screen when doing a VT-switch or when exiting the server. Since they
+don't tell the linux kernel what they've just done, the linux kernel, still
+thinking it's in some weirdo text mode, will draw its characters all over
+the place, except in the right one... A partial solution is to change the
+`startx' script to make it re-run SVGATextMode after the server exits. But
+this doesn't solve the VT-switching problem.
+
+.TP
+.B svgalib
+Svgalib will show the same type of problems as the X-server. Some cards will
+react differently than from XFree86, because they are more or less supported
+in svgalib.
+
+.TP
+.B DOSEMU
+Ditto. Only worse. Dosemu only "knows" about some basic VGA cards, but has
+no knowledgs whatsoever about clock chips and more modern VGA chips. Chances
+are DOSEMU gets you in text mode trouble.
+
+DOSEMU might not be clever enough to reset all your card's VGA registers
+(including the clock setting registers) when it starts up in VGA-mode. In
+that case, any non-standard SVGATextMode mode could produce a non-syncing
+DOS display. The only cure in this case is to reset to a standard VGA text
+mode like 80x25 before starting DOSEMU.
+
+A similar problem might pop up when exiting DOSEMU. If it doesn't restore
+all linux textmode registers, the linux console might get corrupted.
+
+Both problems can be resolved by embedding the DOSEMU call in a script,
+which does something like this:
+
+.nf
+	SVGATextMode 80x25x9
+	dos
+	SVGATextMode My_SuperMode
+.fi
+
+This will not solve the problem when switching to another virtual terminal
+while DOSEMU is still running.
+
+.TP
+.B DOS
+After rebooting to DOS (shame on you! There's a Doom for Linux also) or when
+starting DOSEMU, the text mode screen, or, more likely some graphics modes
+might produce a non-syncing display. This is more likely to happen on boards
+that use a clockchip (i.e. when the TextConfig file has a \`ClockChip' line
+enabled.
+
+The reason for this is that some card's BIOSses don't care to reset all
+clocks to their defaults when they get a reset signal (i.e. when rebooting).
+Some die-hard cards won't even do that when you hit the cold-reset switch,
+and will only revert to the default clock values when you power-cycle the
+machine.
+
+A simple solution to this is to put an SVGATextMode (or ClockProg) command
+in the system shutdown script. This is in most cases
+
+.nf
+	/etc/rc.d/rc.0
+.fi
+
+If the programmed clock is the correct default clock value, your DOS
+problems will be solved. The only tricky part here is to find out what that
+default clock is...
+
+Since SVGATextMode reprograms clock #2 (the third clock) on most clockchips,
+the default clock value depends on the clockchip type you're using.
+
+Only clocks #0 and #1 are the same for (almost) all VGA chips, and thus this
+method is only really simple for those clockchips where clock #0 (default =
+25.175 MHz) or #1 (28.3 MHz) is reprogrammed. This is currently only for the
+icd2061a (or the equivalent ics9161) clockchips when the "clockchip_x"
+option is used.
+
+.TP
+.B More Information
+Read doc/FAQ in the SVGATextMode distribution for more reading on this
+subject.
+
+.SH FILES
+.TP
+/etc/TextConfig
+The (default) configuration file for SVGATextMode
+
+.TP
+/usr/sbin/SVGATextMode
+The main text mode manipulation program described here
+
+.SH AUTHOR
+SVGATextMode was written by Koen Gadeyne <koen.gadeyne@barco.com>, with help
+from a lot of local and remote Linux fans.
+
+Much of the VGA code for SVGATextMode was borrowed (I will give it back :-)
+from the XFree86 3.1 server code (and also from newer versions). The S3
+clock chip code and Cirrus Logic clock code was copied (with some
+improvements added) from the original XFree86 code.
+
+See the \fBCREDITS\fP file in the distribution for a full list of all
+helping hands.
+
+.SH SEE ALSO
+TextConfig(5) \- Configuration file for SVGATextMode
+
+grabmode(8) \- A XFree86/SVGATextMode VGA mode grabber
+
+SVGATextMode-x.y/doc/FAQ \- description of problems you could encounter
+when using SVGATextMode, and some solutions.
+
+The 'doc' directory in the SVGATextMode distribution contains a lot of
+miscellaneous documentation on a range of topics related to configuring and
+using SVGATextMode.

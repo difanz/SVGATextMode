@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# This (minimalistic) script changes the VGA textmode.
+# This example is for a 100x37 character mode.
+#
+# If you put this in your /etc/rc.d/rc.font file, it will be started
+# automatically when Linux boots.
+#
+############
+# WARNING: # running "fontconfig" will overwrite the rc.font file!
+############
+
+echo "Changing to 100x37 character console"
+SVGATextMode -r 100x37_VGA
+

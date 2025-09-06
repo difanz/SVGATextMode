@@ -1,0 +1,139 @@
+This file documents the possible problems and pitfalls you could encounter
+when trying to RESIZE the screen. 
+
+
+Kernel compatibility
+--------------------
+
+SVGATextMode needs two features from the Linux kernel that are not available
+in all commomnly used kernel versions. 
+
+The VT_RESIZE system call (actually an 'ioctl') has been introduced into the
+kernel only since version 1.1.54 (released mid-october 1994). Since this
+funtion is absolutely crucial when the screen needs to be resized,
+SVGATextMode cannot properly resize the screen without it. 
+
+That is why it checks the kernel version before trying to resize the screen
+(if you select a mode that is different form the one that was used before).
+And if the kernel version is not "new" enough, it will refuse to continue.
+
+There is no other simple solution to this problem than to either use only
+non-resizing modes, or to update your kernel to one that's a bit more
+recent.
+
+
+"Out of memory" problems
+------------------------
+
+There is also a (small) problem with SVGATextMode, when it uses the
+VT_RESIZE system call to do what its name suggests: resize the screen.
+If you are really low on memory, it could bomb out telling you:
+
+     VT_RESIZE: out of memory
+
+The explanation for this was sent to me by Alessandro Rubini
+(rubini@ipvvis.unipv.it):
+
+     "When the kernel executes kmalloc() with GFP_KERNEL priority,
+     it must either suceed or fail. Did you notice that you've
+     always 80kB free memory? This is what the kernel keeps free
+     in order to do its own kmalloc()s. When resizing the consoles,
+     it first allocates the new screen memory, and the releases the
+     old one. So, if I switch to 132x60, i need 15840 bytes for
+     each existing vc (i.e. 16k, since kmalloc goes by powers of two().
+     If I have 8 open consoles (8 gettys), I need 128kB, which I
+     usually don't have unless I shrink_buffers(). The kernel can't
+     shrink_buffers() while kmalloc()ing, so it fails.
+     You could try to malloc() 1meg, writing it all and then free() it.
+     malloc() does shrink_buffers(), so you should end up with
+     enough free memory, unless a compilation is running and swaps pages
+     in before you ioctl(VT_RESIZE). It is important to write in the
+     memory you malloc() since Linux doesn't give you pages unless
+     you fault them in :-)"
+ 
+Or in other words: the kernel needs REAL RAM for the new screen memory.
+Since it is a kernel function, it cannot use "virtual" memory. Your
+"virtual" terminals would become a bit _too_ virtual: they'd be on disk
+instead of on your monitor...
+
+The suggestion above has been implemented (and re-implemented), with the
+result described above: much less memory problems, but still some.
+
+It seems that the memory that is temporarily being allocated and then
+released is NOT always released IMMEDIATELY, so the kernel cannot get
+enough. And fails with the same error message.
+
+If the VT_RESIZE call fails because of a lack of memory, SVGATextMode will
+revert to another little trick: it will first resize the screen to a 1x1
+size (1 character per VT!). This will probably never fail, since that
+requires only 2 BYTES per VT. But this frees all the memory the old screens
+consumed, and thus increases the chance of success for a new attempt at
+resizing the screen back the the desired size.
+
+There is one downside to this last method. During the resizing to "stamp"
+format (one letter), all the screen memory is thrown away, including any
+text on them (except the leftmost character...)! Returning the screen to the
+new size will get you all blank screens. Not a pretty sight. 
+
+Since SVGATextMode will then resize the TTY's, which sends a SIGWINCH to all
+applications running in them, most applications will react to this by
+redrawing their screen. But those who don't support SIGWINCH will NOT do
+that, and leave the screen blank. 
+
+You have been warned!
+
+
+What to tell the applications that depend on the screen size?
+-------------------------------------------------------------
+
+This is a bit of a mess.
+
+
+First: for applications that were started AFTER the resize:
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Some applications use the tty setting to find out what size the screen is
+(as from "stty -a"). 
+
+Some use the environment variables TERM, LINES and COLUMNS to get the screen
+size.
+
+Some use the termcap file together with the TERM setting (e.g. if
+TERM=con80x30 then the program will look for a 'con80x30' entry in the
+/etc/termcap file for more information on the console's size and
+capabilities). 
+
+Some use the terminfo database (which is a complete mystery to me).
+
+Some badly written programs use nothing at all, and assume a certain screen
+size (especially things ported from DOS). These cannot be helped...
+
+
+The tty settings are normally automatically set by the resizing code in
+SVGATextMode. 
+
+The TERM, LINES and COLUMNS environment variables are NOT changed, so you
+will have to do that yourself (e.g. in the "ResetProg).
+
+This also means that programs using /etc/termcap will contu=inue to use the
+old settings, and may cause problems. Set the TERM variable for each
+terminal affected by the resizing.
+
+Second: for applications that were already running at the time of the resize
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Those are a real problem.
+
+Many programs respond to a signal called "SIGWINCH" by re-reading the screen
+size parameters from the tty settings, and adapting their screen
+accordingly. These are the lucky ones. They will continue to look good.
+
+examples: joe, less (more), elvis (vi)
+
+But some don't. And you will probably have to restart them if you want them
+to use the new settings. The ResetProg is probably the ideal place for that.
+
+examples: selection, gpm
+
+
+

@@ -1,0 +1,17 @@
+Just a nice warning:
+
+	All code on and below this level  uses the XFREE ordering for the
+	port commands. This means e.g. outb() now uses the syntax
+	
+			outb(port,data);
+	
+	instead of the Linux method, used in all code _above_ this level,
+	which uses just the opposite of that.
+	
+	You have been warned. This has fooled me several times already, and
+	many others with me.
+	
+	If you experience unexplained segmentation violations, that's where
+	they'll come from.
+	
+

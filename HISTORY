@@ -1,0 +1,776 @@
+?? ??? ???? - version 1.9
+
+- (1.8.1) remove "strip" option for "install" target (causes errors on older
+  systems)
+- fix sync polarity bug in Ti3026 Sync-On-Green code (Giacomo COMES)
+- update vgaset's licensing to GPL (Igor Grobman/Debian, Greg Lehey)
+- fix the bogus H/V VGA register upper limits. Especially vertically the
+  limit was 4096, but should have been 1023 instead, which caused a lot of
+  modes that appeared to stretch far below the bottom of the screen). Also
+  fix all modelines that violated this constraint in the TextConfig file.
+  (with help from Udo van den Heuvel)
+- (1.8.2) some changes to STM_reset script (Suggested by Igor Grobman, Debian)
+- DOS compile fixes and enhancements by Molnar Laszlo. New version of cwsdmpi
+  included.
+- don't bail out when ResetProg or FontProg doesn't exist (suggested by Igor
+  Grobman, Debian)
+- some FAQ additions
+- fix S3 Sync-on-Green code for Ti3026. (Timo Giesselmann)
+- don't allow ANYONE to run STM from a non-virtual terminal, add "-x" option
+  to override this (suggested by Yann Dirson, Debian)
+- set default fontpath to empty string, because "setfont" knows it as well
+  (suggested by Yann Dirson, Debian)
+- add small text explaining how to install STM using the SYSV init method in
+  contrib/sysvinit (Michael De La Rue)
+- add 40x25 mode (Otto J. Makela, Riku Saikkonen)
+- (1.8.3) add Neomagic support (Pavel Machek)
+- add "-k" option to disable software resize (hardware is resized) (Pavel
+  Machek)
+- (1.8.4) add MACH64 Rage II support (should now support all MACH64 boards
+  with internal programmable clock)
+- fix ET6000 MClk setting (use safer method recommended by Tseng)
+- LOTS of work to program MACH64 DSP properly for textmode clocks. Thanks to
+  Marc La France (of XFree86 fame) for inputs on this. 
+- (1.8.5) integrate RIVA128 support from Martijn van Oosterhout.
+- (1.8.6) fix bug in Neomagic code (option topleft didn't work)
+- fix segfault in ET6000 "special" code
+- force correct clockchip for some chips if not defined
+- fix RIVA128 clock code (Martijn van Oosterhout)
+- LOTS of extra free fonts (Frank Klemm)
+- (1.8.7) Yikes... the RIVA code used a FIXED (#define) PCI base address.
+  use PCI code now.
+
+
+02 DEC 1997 - version 1.8
+
+- add Matrox Millennium II support (jurriaan <thunder7@xs4all.nl>)
+
+
+23 NOV 1997 - version 1.7
+
+- (1.6.1) use /dev/tty0 instead of /dev/console (finally!)
+- fix two minor bugs (missing break in vga_prg.c, new include for libc6)
+  (Molnar Laszlo)
+- added some more cards to PCI detected devices (avoids "PCI unknown device"
+  message). Some cleanups in the PCI debug messages (was too verbose).
+- Andree Borrmann's DOS/DJGPP patches (now Mystique should work in DOS)
+- documentation updates (SIGWINCH, GPM, SDRAM, how to raise textmode max
+  clock)
+- (1.6.2) protect users from running STM from inside X or remotely (only
+  root can do that now). (Benson L Chow)
+- add "hshift" parameter to modelines (Massimiliano Ghilardi)
+- (1.6.3) add support for Mystique rev 3 (Martin Scherbaum, S.u.S.e.)
+- change setpalette-to-kernel color ordering from straight VGA to ANSI. This
+  should make setpalette store the correct colors now. (Massimiliano
+  Ghilardi)
+- some Alpha compilation fixes (Antti Barck)
+- (1.6.4) add Cirrus Laguna clockchip support (CLGD546x)
+- add ISO_FONT9 option (Tuukka Toivonen)
+- partial fix for IBM RGB RAMDAC problem with standard VGA clocks
+- change "PROBLEMS" file into a FAQ. Maybe people will read it then...
+- some DJGPP/DOS compilation fixes (missing #includes).
+
+
+28 JUN 1997 - version 1.6
+
+- (1.5.1) fixed bug in 9-pixel char mode (Stuart Lamble)
+- fixed SIGSEGV in Cirrus clock code (Stanislav Voronyi)
+- fixed bug in ET4000 W32i special_svga.c (linear address map comparator)
+- (1.5.2) one more Tseng register is reset in special_svga.c (CRTC 0x33)
+- fix bug in setVGAreg for 'io' registers (missing "break")
+- add MATROX Mystique support (Trey Boudreau)
+- (1.5.3) add a few new fonts (Massimiliano Ghilardi/Michele Maltoni)
+- add DOS screen resizing patches and font loading from Andree Borrmann
+- add video modelines text in contrib (PAL/NTSC)
+- better DOS manual file formatting by jkekoni@aurora.tky.hut.fi
+- MClk max limit is now 100 MHz instead of 70 MHz.
+- the LSM file in version 1.5 was 1 year off :-)
+
+
+15 APR 1997 - version 1.5
+
+- (1.4.1) added "-k" option to setpalette (as requested)
+- explicitly set a few more registers on ET4000/ET6000 to get better
+  textmode restoration after X-server crash. Works much better now.
+- SVGATextMode.c: added "-o" option, for "set80" functionality.
+  (setting all std. VGA regs by force).
+- setVGAreg.c: added "-c" and "-s" options for defining a set-mask or a
+  clear-mask instead of an absolute value.
+- DOS programs now use DJGPP cross-compiler from Linux.
+  (doesn't work yet...)
+- setVGAreg: "idx" and "io" 'registers' added for generic IO access.
+- updated some docs (there was some obsolete stuff)
+- fix bug in resize_specified_vts() (endless loop resizing first specified
+  VT)
+- only vga_prg.h includes asm/io.h now
+- (1.4.2) fixed dos-gcc stuff in makefile: now "make dos" makes DOS
+  executables out of the box (finally -- no more rebooting or dosemu)
+- some stuff added to allow grabmode (not the others!) to compile under 
+  the Cygnus GCC for Windows. Clock probing does not work yet.
+- user_time() code added from Harald Koenig.
+- (1.4.3) added Trident TGUI support contributed by Massimiliano Ghilardi.
+- Integration of XFree 3.2 clock code (XFree/common_hw).
+  THIS MAY CAUSE SOME SERIOUS NEW BUGS!
+- (1.4.4) Mach64 support -- not finished yet. Not at all...
+- 9-pixel wide characters now correctly display "box" characters (Stuart
+  Lamble)
+- added PCI bus code from XFREE/common_hw/xf86_PCI.* This will be needed for
+  some of those PCI-only cards (Matrox Millennium et al).
+- (1.4.6) Matrox Millennium added (not working yet)
+- (1.4.7) ET4000 textmode restore enhancements
+- Matrox Millennium code fixed -- ChipSet MATROX / ClockChip ti3026 (finished
+  and initial testing by Trey Boudreau <trey@treysoft.com>)
+- Matrox Mystique -- ChipSet MATROX / ClockChip MGA1064 -- added to chipset.h
+  No other support for Mystique yet (Trey Boudreau)
+- (1.4.8) MACH64CT added by Matthias Grimrath (m.grimrath@tu-bs.de).
+- unlock_svga.c created, containing svga unlocking code from vga_prg.c
+- special_svga.c created, containing svga special code from vga_prg.c
+- Millennium MClk support added.
+- (1.4.9) Millennium MClk support fixed and enabled.
+- Accept range of frequencies when only one single frequency is given in
+  config file. This reflects the reality of so-called "fixed-frequency"
+  monitors.
+- some mach64ct fixes by Matthias Grimrath.
+- replaced misleading "CLGD542x" chipset with more general "CIRRUS" chipset.
+
+
+22 SEP 1996 - version 1.4
+
+- (1.3.1) added GIO_CMAP/PIO_CMAP to setpalette, so on kernels >1.3.3
+  switching VT's doesn't restore the old palette, but remembers the new one.
+- kversion.c split out from ttyresize.c (needed it in setpalette)
+- validate_mode slightly simplified (and faster).
+- "8-bit" mode added to get/setpalette
+- (1.3.2) updated E-mail address references
+- S3Trio MClk programming support
+- fixed problem with S3Trio support for standard VGA clocks (thanks Dirk!)
+- (1.3.3) ET6000 support.
+- improved ET6000 max. clock speed (register tweaking)
+- (1.3.4) SiS clock selection fix
+- some get/setpalette cleanups (nothing essential).
+- some documentation updates
+- updated ET4000 clock selection code to new XFree86 3.1.2C method.
+  This obsoletes the "AltClockSel" method.
+- fix problem with "ClockProg" reporting an error:
+  "Clock selection: 0 MHz clock selected"
+- PRELIMINARY S3 Virge support. UNTESTED.
+- puny bug in setVGAreg fixed.
+- performance tweaking ET6000 fixed (didn't work).
+- added Makefile rules for creating source/binary/DOS distributions
+
+
+21 APR 1996 - version 1.3
+
+[This will be mainly a few bugfixes and cleanups on version 1.2]
+- (1.2.1) fixed bug in validate.c, ATI MACH32 checking of number of clocks
+  (typo of " 2" instead of "32")
+- filename checking in cfgfile.y improved (setting the fontprog to "setfont
+  -u something" is now possible). This was needed to allow setfont to set a 
+  unicode map each time it is called (otherwise loading a raw font file erased
+  the original unicode mapping)
+- added sync_on_green option for TI RAMDAC's (will somebody test this?)
+- (1.1.2) some Redhat 3.0.3 (contrib) patches included (Makefile, TextConfig)
+- added "echo" keyword to TextConfig syntax.
+- some "Bool" type conflicts removed.
+- VGA_CAN_DO_64KB as an option to allow 32k char modes (default was 16k)
+- some contrib directories updated (setfont,...)
+- kernels 1.3.78 and up have MAX_NR_CONSOLES defined _outside_ the __KERNEL__
+  defines, so __KERNEL__ must no longer be defined in ttyresize.c. It causes
+  conflicts with ___strtok. (thanks to Noel Cragg)
+- 16 color textmode option added (default is 8-color with blinking)
+- (1.2.3) missing "break" in validation caused error about S3 clocks when
+  using std. VGA chipset.
+- some more standard VGA modes added, some doubles removed.
+- slight re-ordering of TextConfig file to give it a little more structure.
+  Some contributer's names were omitted. Sorry about that guys, but it 
+  was becoming a mess. You're in the CREDITS file.
+- (1.2.4) some man-file updates, cleanups,...
+- all clockchips (except Cirrus) will now prefer using the standard VGA
+  (hardwired) clocks of 25 and 28 MHz instead of always programming a new
+  one.
+- CLOCKCHIP_X option now works for ET4000 + ICD2061a, too.
+- included MSWindows grabmode executable.
+
+
+7 MAR 1996 - Version 1.2
+
+- (1.1.0) added some more 56 kHz modes (20-pixel fonts) to TextConfig file
+- added contrib/setcolor: a kernel palette changer for 1.3.x kernels,
+  contributed by Bob McCracken.
+- (1.1.1) mode grabber now stores messages in mode struct instead of printing
+  them. This allows other programs to use the mode grabber without being
+  bothered by unwanted output (e.g. scanmodes.exe for DOS).
+- finally: the grabmode/clockprobe glitches are explained (but not solved yet).
+- grabmode enhanced again to accomodate Interlaced mode detection.
+  Also restructured modedata.c code.
+- Option "Number_Nine" removed. Was never used anyway...
+- ! (1.1.2) BIG change in config file parser: now uses lex/yacc
+  ! Most files have been changed for this. Many other files were obsoleted.
+  ! !!! NOTE syntax change for font definitions !!!
+- removed automatic "\n" printing in PDEBUG, PERROR,... 
+
+most "bugs" removed below were not in 1.1, they resulted from the massive
+changes caused by the lex/yacc thing.
+
+- (1.1.3) further integration of lex/yacc stuff.
+- ALL clock frequencies are now in kHz (integers). This could cause lots of 
+  nicely hidden bugs!
+- (1.1.4) first shot with all-new-and-improved code seems to work. Speed
+  is about three times as fast! more major fun-stopper bugs removed.
+- (1.1.5) further bugfixes
+- one more "bugfix" for a kernel mis-feature: VT_RESIZEX doesn't know about 
+  doublescan modes, and thus we have to lie to it about the number of video lines...
+  (this _was_ in 1.1)
+- option "NoUnderline" has gone. Underlining is default "off" (i.e. set to
+  line 31) until defined otherwise using "UnderLine xxx".
+- included screen-capture program contrib/consoletools/dscrn.c and Borland
+  C's gettext/puttext clones contrib/consoletools/gettext_settext_demo.c
+  written by Bob McCracken.
+- (1.1.6) grabmode's probe now does less loops. Precision is still good enough,
+  speed is better.
+- 9-pixel wide fonts allow upto 9/8 DACSPEED clock (see doc/PROBLEMS for reason)
+- (1.1.7) further porting of misc utils to new data structures.
+- So I discovered "lint". So what? All boolean values are now type "bool" instead
+  of "int".
+- (1.1.8) get/setVGAreg reworked a bit.
+- more cleanups. The more I clean up, the more mess I turn up... Go figure...
+- remains of configfile.c split into file_ops.c and string_ops.c
+- ClockProg updated to use new parser
+- Due to all the changes, a bug in grabmode dissapeared as well (sync polarity 
+  was reported wrongly)
+- (1.1.9) clock validation fixed (was broken from 1.1.4)
+- (1.1.10) fixed bug in clockchip clock validation
+- flex "%option" lines removed (they needed v2.5 of flex, which not all people
+  have)
+- clockchip limit checking moved to validate.c (at least it doesn't bail out
+  in the middle of VGA programming anymore, which was pretty stupid)
+- more config file sanity checks added, and moved to validate.c
+- added dump_cfgdata.c
+- ET4000 clock selection modified a little (clears CLKDIV4 in addition to
+  CLKDIV2 just to make sure).
+- ET4000 + ICS5341: safer clock #2 selection to avoid wrong clock setting
+  (prior versions needed "hibit_low" option to avoid setting 1/2 clock)
+- preliminary support for ET4000 + ICD2061 (Diamond Stealth 32)
+- (1.1.11) bug fixed in new clockchip code ("break" statements added)
+- fixed several bugs in ET4000 ICD2061 clock code.
+- ClockProg/STM now correctly passes clock index to clock program.
+- ClockProg "index" parameter no longer required (but still allowed).
+- (1.1.12) added grabmode parameters to specify known X/Y size of mode
+  (so grabmode has to do less guessing and more knowing)
+- getbyte() renamed to getint(). (was int anyway)
+- buggy calls to GMOFLG_ISSET macro expanded (only single options allowed)
+- awesome bug removed in ChipSetRec structure (allowed options were all wrong)
+- (1.1.13) bug in IBM RGB clockchip code removed (caused by transition to kHz
+  notation)
+- Preliminary support for SiS, ARK (incl ICS5342 clock chip), RealTek, NCR,
+  Genoa GVGA, MX and ET3000 (how could this one have slipped my attention for
+  so long?) chipsets.
+- (1.1.14) added "clockchip_x" option for icd2061a/ics9161.
+- added warning to Makefile about syntax change.
+- more grabmode tweaking... this will never end. Again some improvements for
+  grabbing "extended" modes.
+- (1.1.15) removed bug in S3 HStext debug code (garbled output).
+- added better error message when old FontSlect syntax is used.
+- timeout bug removed in wait_vsync.c (it reported a Vsync timeout, and then
+  got stuck anyway).
+
+
+30 NOV 1995 - Version 1.1
+
+- (1.0.1) removed null-pointer writing bug that caused ELF and DOS code to
+  segfault in DefaultMode scanning code. Thanks to "checker"!
+- `make newinstall' now copies old textconfig file to .orig file.
+- (1.0.2) updated S3 clockchip code to XFree86 3.1.2, so now IBM RGB
+  RAMDAC's are supported. But they don't work....
+  This needs more work: - check for TI302X init code
+                        - beta test IBM RGB, STG1703 and TI3026
+                        - Cirrus clockchip stuff needs testing again
+- set_clockchip_clock now uses kHz (as in XFREE3.1.2). This needs testing.
+  DANGEROUS!
+- removed cut/paste bug in ICS5341 clockchip MClk programming.
+- updated some docs (especially the INSTALL file was _old_).
+- added DRAM speed options for S3 cards (actually sets M-parameter, whatever
+  that is). This allows S3 cards to use even higher text mode clocks.
+- (1.0.3) Added S3 high speed text font loading. This can be enabled with 
+  option "S3HSText" in config file. Now S3 can do over 80 MHZ in text mode!
+- (1.0.4) experimental ali (Advance Logic) chipset support. Untested.
+- (1.0.5) sent output from font loader through pipe to print it later on S3
+  cards with HSFont enabled: no more corrupted screens.
+- better checking  if HSText is allowed.
+- added horizontal wrap detection to grabmode.
+- (1.0.6) changed set_V_timings to avoid null sync width in vertical total
+  double mode.
+- added bordercolor option. Nobody needs it, but I wanted to do something
+  simple for a change...
+- due to popular (?) demand: programmable underline position. 
+- bug in resize_active_vts() tried to resize /dev/tty0../dev/tty15 instead
+  of /dev/tty1../dev/tty16 (some ELF distributions don't have /dev/tty0)
+- added OTI67/77/78 chipset support. Easy. Untested.
+- (1.0.7) fixed bug in IBM RGB RAMDAC code (had to multiply freq's by 1000)
+- added AL2101 chipset (very close to generic ALI chipset).
+- generalized and expanded number-of-clocks checking code
+- more popular demand (some italian guy...): shorthand "stm" for SVGATextMode.
+- status line of STM now adds "D" when doublescan mode is selected
+- resize_active_vts() bug fix introduced another bug. Replaced that one with
+  another one...
+- unlocked IBM RGB clock selection (locked by XFREE code), so soft reboot can
+  restore screen. Doesn't seem to work...
+- (1.0.8) cleaned up VT_RESIZE code a little. STM now tries to free some more
+  memory (*1, *2 and *3) if VT_RESIZE fails. More chance of success.
+- added check for 16k chars per screen in parse_modeline.c. 
+- added mention of MClk programming in manuals. 
+- doc/REPORT file removed. Seems not very useful anymore. Anyone disagree?
+- always reset ClockDiv2 bit when option not defined. This caused trouble
+  on systems where this option was disabled after switching to such a mode.
+
+
+13 OCT 1995 - Version 1.0     Friday the 13th release!
+                              I hope you aren't superstitious!
+                              
+- added MClk programming to ClockProg. Should increase text mode max clock
+  (and graphics speed...). BUT: VERY DANGEROUS... (hard crash).
+- killed outw() argument order bug in Video7 clock setting code.
+- a bunch of small changes (mainly to Makefile) by Ron Sommeling
+  <sommel@sci.kun.nl>
+- moved clock setting block from SVGAtextMode.c (and ClockProg.c) into
+  setclock.c.
+- split Run_extern_Prog into separate .c file
+- MClk programming on some clockchips now supported (higher text mode clocks
+  possible).
+- merged clockprobe and grabmode into one program
+- split up font parsing into parse_font.c
+- removed some obsolete code from WDC90CXX chipset unlocking routine.
+- safe_wait_vsync created in wait_vsync.c
+- used safe_wait_vsync and SCREEN_OFF before programming VGA chip (avoiding
+  font corruption and system hangs -- hopefully) in ClockProg and STM
+- ClockProg can use different config file (/etc/ClockConfig) if it exists
+  (will use /etc/TextConfig otherwise)
+- PERROR now does SCREEN_ON before exiting
+- moved some compile-time options from severeal .h files to the Makefile
+- changed dependency checking/making in Makefiles (now uses .depend files)
+- investigated "unstable Cirrus Clock" problem. Resulted in
+  contrib/Cirrus_ClockChip.patch
+- split setclock.c into setclock.c, std_clock.c & clockchip.c  
+- max WDC90C3X clock now 50 MHZ (90 was way too much. I should have known
+  only Tseng could do this...)
+- option definitions moved from confdefs.h to parse_opt.h  
+- added "SyncDisks" option: does a sync() before going to the hardware.
+- set/getpalette can input/output in hex now
+- DO_SYNCRESET option added to Makefile: this does a synchronous reset of
+  the timing sequencer before changing the pixel clocks. Was always on by
+  default, but crashed some ET4000's. now off be default.
+- changed patch to S3gendac.c code for ET4000 gendac so that pixel
+  multiplexing becomes possible (min_n2 changed from 0 to 1)
+- changed most Outb_xxxx functions to use outw() instead of 2 outb()'s
+- setpalette can now program a "standard" palette without external
+  parameters or input. This also uncovered a bug in the built-in standard
+  palette of set80 (data was interpreted as octal...Yuck!)
+- "browse" option added to contrib/scripts/STMmenu  
+- grabmode (in fact modedata.c) has some intelligence built-in to properly
+  display modes with 1024 lines (1280x1024 modes were shown wrong, because
+  they used chipset-specific registers)
+- probeclocks.c started: XFree86-like clock probe. Not finished yet...
+- grabmode _should_ now properly detect ALL CGA-emulated modes (320x200, etc),
+  even packed pixel modes. Documentation updated/expanded.
+- attempt at supporting interlaced modes (for S3 only) Do NOT try this at
+  home! It doesn't work yet (_can_ it work for text modes ???).
+- cleaned up TODO file (who cares...)
+- most "Get_..." functions are now inline. Probably not very useful.
+- underline position is now also programmed. Some people complained about
+  missing underline, or strike-through instead of underlining when using
+  STM. They were right, of course.
+  Also added "NoUnderline option".
+- Added "DoubleScan" attribute for text mode config lines. Anybody needs a
+  64-pixel high font?
+- corrected little bug in START_HBLANK code (set_ and get_): was wrong by 1
+  char. Need this for correct blanking programming.
+- Started correct blanking programming: 1 char before and one after the
+  active display. This is useful for those who want a nice colored border
+  around their screen using the overscan color register. If the blanking is
+  not programmed correctly (as in X), changing the overscan register makes
+  ALL screen colors change.
+  This was a VERY nasty thing to do. It seems like most VGA programs don't
+  bother, and set it to the same position as the sync. It's not easy to get
+  it right.
+- Needed to change the same two a little more for correct blanking
+  programming: it seems like both start and end of HBLK must be decremented
+  by 1 before using them. This doesn't show up in any VGA textbook
+  (Ferraro,...), but the actual display shows otherwise.
+- added font dumper/undumper programs in contrib/changefont.
+- disabled S3's "high speed text display font fetch mode" until we know what
+  it does and how to use it. This caused trouble on S3 911 etc.
+- added S3 high speed text font writing code. Experimental, and non-functional!
+- more tweaking on grabmode to make it mode reliable when detecting CGA modes
+  and 16/24 bit modes
+- manual file for grabmode written. Finally.
+- first shot at DOS version of STM, thanks to invaluable help from Stephen
+  Lee. (Well, in fact, he did all the work). The most important changes are
+  the ttyresize.c file (DOS resizing code), and some include file changes to
+  enable DOS compilation.
+- Removed argv[0] printing in debug output. Useless, and messy.
+- All SVGATextMode code now compiles under DJGPP 2.0 in DOS. I didn't say it
+  all works perfectly! This is unsupported work. 
+- added ioctl(</dev/console>, KDSETMODE, KD_TEXT) to SVGATextMode.c as well
+  (was only in set80.c). Better textmode restoration ???
+- more MAN-file updating. 
+- STM now always does a pre-1.3.3 VT_RESIZE, and if it's a 1.3.3 or newer,
+  it does a VT_RESIZEX also. Maybe this avoids trouble until those kernel
+  guys make this a bit less obscure.
+- added DOSEMU chapter to doc/PROBLEMS
+- fixed makefile so it doesn't re-compile all stuff when binaries are in
+  source tree, but .o files are not.
+- added "backup" target to makefile
+- SVGATextMode is now oficially under the GPL (finally -- I read the damn thing)
+- final (you must be kidding...) man-file cleanup.
+
+
+6 JULY 1995 - Version 0.9
+
+- Added "-t" option to use a different TextConfig file (useful e.g. for the
+  clock probing script in contrib)
+- explained "character bandwidth" in doc/PROBLEMS file.
+- fixed bug in WDC90cXX code (clock selection bit #2 was wrongly programmed)
+- another bug in WDC code: registers were not unlocked: some modes only worked
+  after X unlocked the VGA registers.
+- used CirrusSetClock from XFREE package instead of previous (custom) version.
+- added "restore all VGA registers" option to set80. More robust, but not
+  perfect, since SVGA regs are not restored...
+- added "-m" switch. When VT_RESIZE fails due to lack of memory, it doesn't
+  automatically try via a 1x1 screen anymore. You need to use "-m". This is
+  to avoid erasing all screens unannounced.
+- split up README into README and INDEX.
+- updated binary DOS version of grabmode.exe to 0.8.4. (actually Mr
+  Albanowski updated it...). This needed a few changes to the code here and
+  there: some double colons in the Makefile (for the grabmode.exe target),
+  removing "optopt" for the DOS version, and changing the general [][] array
+  references to more specific ones.
+- man-files written for: SVGATextMode(8), TextConfig(5).
+- first attempt at a separate clock program using the XFREE clockchip code
+  (useful for X, where ClockProg DOES restore text mode clock, and
+  ClockChip doesn't). Also attempt at getting ET4000w32p with GenDAC
+  working.
+- included patches by Mr David Mosberger-Tang <davidm@cs.arizona.edu> for
+  Linux/Alpha. STM should now compile on Alpha systems without changing a
+  single byte to the sources nor the Makefile.
+- split up grabmode.c into grabmode.c and modedata.c. Should be useful for
+  scanmode, etc.
+- added "DAC" register set to set/getVGAreg.
+- patched XFREE/common_hw/S3gendac.c so ET4000W32p with ICS5341 GenDAC now
+  works, too.
+- changed clockchip code to allow clockchips for other-than-S3 chipsets.
+- added "DacSpeed" line + default maximum clocks for all chipsets. 
+- scan-mode now also takes clock limit into account.
+- included a patch for ET4000 W32p X-server that solves mouse-garbage
+  problem on PCI cards.
+- replaced 49 (!) misspelled words "usefull" to "useful"... That says
+  something about the program itself... ;-) (thanks David!). 
+- separated clock related config file parsing into a separate file
+  (parse_clock.c). To be used later in a "generic" clock program for XFREE.
+  Users of XFREE with a ClockChip should appreciate this (correct
+  restoration of textclock).
+- also separated parse_modeline from configfile.c into separate .c file
+- moved Hsync/Vsync_range parsing to main(), so it doesn't have to be done
+  in several places over and over. 
+- moved mode validation functions into validate.c
+- mode validation now also tests if the required clock is in the clocks
+  line. (useful for "scan" mode).
+- fixed bug in grabmode (actually bug in Get_xxx_End() functions in
+  vga_prg.c) that caused wrong blanking values to be displayed.
+- added "-c" option to grabmode: don't probe for pixel clock.
+- "slow clock" in grabmode is now non-fatal, 0 MHz is returned as probed
+  clock value
+- all mode parameters (either from mode line or grabmode) use same struct
+  for data. I think that's called "unification".
+- "DefaultMode" command introduced in config file
+- mode selection tool using dialog and the enhanced "scan" mode of STM:
+  STMmenu. This obsoleted the 2 previous ones "grepmodes" and
+  "textmodeselect".
+- added detection for some special features in grabmode (doublescan, ...)
+- implemented VT_RESIZEX from kernel version 1.3.3 and up.
+- also skipped tty resizing for kernels >= 1.3.3 (should be done by
+  VT_RESIZE now)
+- compilation now automatically selects to allow or disallow resizing,
+  through checking of availability of VT_RESIZE call.
+- changed ClockProg into a generic VGA clock programming tool, that can be
+  used either in SVGATextMode itself, or in XFREE, to support yet
+  unsupported clockchips in X (notably ET4000 genDAC), AND to allow for
+  sub-25 MHz modes in X for ALL cards (DOOM!), and not just those with a
+  clockchip. This will also smoothe the interaction between X and
+  SVGATextMode, since they then use the same clock programming code. Also
+  useful for Clockchip-cards in X, to allow for correct text mode clock
+  restoration.
+- passed CFLAGS from top level to XFREE sub-Makefile
+- workaround Cirrus Clockchip bug (unstable clock at 58 MHz --> use 57.9).
+
+
+2 MAY 1995 - Version 0.8
+
+- changed VT_RESIZE call to use /dev/console instead of stdin. This avoids
+  having to redirect stdin when running SVGATextMode remotely.
+- moved lower-level functions for video timings into vga_prg.c,
+  SVGATextMode.c now uses more higher-level functions.
+- removed "bug" that limited modes to max 1024 lines per screen. Now up to
+  2048 lines are possible. This is all a standard VGA chip can do.
+- made division by 2 feature an OPTION instead of a default. This should
+  avoid problems with not-so-standard VGA cards. Is now default DISABLED,
+  instead of enabled in previous versions.
+- Amazing... one more dead bug: now the Ti3025 clock chip code was wrong.
+  (it was passed the desired frequency in MHZ, and it needed KHZ).
+  AND the XFREE/xfree_compat.c file used the opposite definition of outb(),
+  so you got a segmentation fault there. Why do people use TWO different
+  (and completely incompatible) versions of outb() ???
+  But... it STILL doesn't work.
+- Michael Shields contributed a better function to free some RAM to avoid
+  VT_RESIZE from giving an "out of memory" error. This time it should work a
+  lot more reliably than what I had done too quickly... But still not
+  perfect.
+- he also fixed a bug that made some font sizes NOT mentionned in the font
+  selection table be assigned the wrong font.
+- changed PDEBUG, PWARNING, etc so they can be used as functions (';'
+  allowed at end).
+- added contrib/loadfont. A better alternative to setfont written by Albert
+  Cahalan <albert@ccs.neu.edu>
+- added two more register unlocking bits to S3 chipset. This COULD have
+  caused problems (VGA clock and 8/9 pixel wide char selection COULD be
+  locked from BIOS).
+- changed argv[0] processing of set/getVGAreg and set/getpalette so they
+  select between set/get function correctly.
+- put all tty-resizing code in a separate file (ttyresize.c).
+- removed the ICD2061 setting programs in the contrib directory once again.
+  Hopefully nobody minds.
+- added a "rescue" program "set80" that programs the VGA 80x25 mode, without
+  options or configfile. Useful for when you made a mistake using
+  SVGATextMode...
+- moved mode line parsing code from SVGATextMode.c into configfile.c. Needed
+  for the mode line scan function.
+- changed TRUE/FALSE definition, and moved it into misc.h for ALL sources.
+  also used boolean assignments where possible (instead of "if (...)
+  bool=TRUE; else bool=FALSE;").
+- added '-s' option to scan config file for all possible mode lines. 
+- added '-v' option to disable mode validation (H/V frequency checking)
+- changed sync checking code to allow for sync range validation in "scan" mode.
+- changed explicit comparing with "NULL" to implicit.
+- Keith Owens (kaoss@singnet.com.sg) suggested a change to make SVGATextMode
+  show the resulting text mode BEFORE bailing out when the syncs are out of
+  range.
+- Changed TextConfig file clock selection mechanism (again). Now you only
+  have to define a clocks line when it is actually NEEDED: for non-clockchip
+  S3 cards, cards needing a Clockprog, and all other cards except Cirrus.
+- Fixed a problem with the ATI MACH32 card support. Those cards seem to need
+  bits 2 and 3 of the clock selection word exchanged. Weird. Now at least it
+  works for one of them.
+- allowed checking of correct number of clocks in 'Clocks' line to be
+  switched of using #define statement in SVGATextMode.c. It seemed to bother
+  some people.
+- Command-line switch '-c' (don't program clock) produced a warning line.
+  This too seemed to bother some people. Now it is a debug message (only shown
+  when debugging is enabled).
+- Kris Coryn suggested doing a temporary VT_RESIZE to 1x1 if the new one
+  fails (because of a lack of memory) at first. This frees (almost) all of
+  the RAM needed for the current display, thus freeing more for a second
+  attempt. This is very succesfull! The only downside is that the screen gets
+  cleared in the process.
+- changed resizing code to check for correct kernel version BEFORE doing
+  ANYTHING. Code hopefully a lot more clean now, too. 
+- replaced VT_RESIZE.note with a more up-to-date screen-resizing.note.
+- added "-b" option to grabmode, to show the H/V-blanking registers.
+- changed all absolute VGA register references that were dependent on Mono
+  or Color VGA to vgaIOBase. If everything went right, SVGATextMode should
+  now also work on monochrome displays (NOT tested!).
+- cleaned out XFREE Makefile and xfree_compat.h so now the clock chip code
+  compiles cleanly. This is in anticipation of the XFREE 3.1.1 code import.
+- XFREE 3.1.1 clock chips now included! But if they work ...?
+- get/setVGAreg now also outputs in binary (useful for some bit-level
+  registers).
+- split up configuration defines from vga_prg.h (they have nothing to do
+  with VGA hardware) into separate confdefs.h file. This also facilitated
+  the use of the "other" definition of outb() from common/compiler.h for
+  Ti3025 code in XFREE/xfree_compat.c.
+- fixed bug that called random filename for ResetProg when it was not
+  defined.
+
+
+27 MAR 1995 - Version 0.7
+
+- You guessed it: I reversed the order of the HISTORY entries. Everybody
+  else seems to do it that way...
+- updated some doc files. Removed obsolete doc/VT_RESIZE.note. 
+- changed external clock program calling to comply with XFREE3.x method: now
+  takes MHz as an argument instead of kHz.
+- To be more compatible with the XFREE configuration, you must now ALWAYS
+  define a clocks line. Even when using a Cirrus card, a clock chip or an
+  external clock program. In these three cases, you can define ANY number of
+  clocks of any value on the clocks line (as long as they are within range
+  of what your VGA chip can handle). 
+  This also burries another really idiotic bug that caused the Cirrus Logic
+  cards to fail with the message "Internal error: No clock programming
+  defined. Please complain to the author...". Which is what many people did :-(
+- started writing the "doc/PROBLEMS" file. Contains some troubleshooting
+  tips, and some commonly encountered problems.
+- added "-x" option to set/getVGAreg, producing pipeable hex output.
+- removed tiny bug that produced incorrect error report when combining
+  command-line switches in one "-abcd..." line, with an incorrect one in
+  between. All programs had this bug.
+- changed Makefiles (again). XFREE/libcommon_hw.a is now NOT deleted in
+  distribution, so people without an X installation CAN recompile without
+  missing header file errors. As long as they don't do a "make mrproper"..
+- quick hack by Stephen Lee: textmodeselect. A dialog-based mode selector.
+- !!!maybe, just maybe, the infamous ICD2061 programming problem is HISTORY!
+  it used to give a segmentation fault, due to its reading of IO address
+  0x200, which wasn't given IO permissions by SVGATextMode...
+- Reuben Sumner provided a neat function to do AUTOMATIC VT resizing. So
+  now you don't need the "terminals" line anymore: this function finds out
+  by itself what VT's are active, and resizes them.
+  This has the added advantage that putting tty7 and tty8 in the "Terminals"
+  line doesn't activate them (which TIOCSWINSZ does), so X cannot use them,
+  and fails when starting up, telling you it cannot open /dev/tty9 (when you
+  have 8 VT's defined).
+  Note that this function will be overridden if a "Terminals" line is
+  specified. This will allow you to override the "intelligent" behaviour of
+  SVGATextMode, and define which VT's you want resized (and which not).
+- Split up the huge "main()" in SVGATextMode.c into smaller functions.   
+- changed NO_VT_RESIZE into ALLOW_RESIZE. This looks less obfuscated.
+- restructured terminal resizing code completely, using more functions.
+- changed "open" mode for terminal devices from read/write to write only.
+  This avoids a permission problem on most machines when running SUID.
+- changed check_bounds_realtime(), so it now allows for spaces in the
+  frequency strings (suggested by Stefan Dalibor).
+- put the "diamond" clock program back in. I removed it a bit to early: the
+  ICD2061a clock code didn't work yet. Maybe now...
+- started changing grabmode to make it correctly detect CGA-emulated modes,
+  and Hi/TrueColor modes. Not there yet.
+- VGA IO permission stuff facelifted.
+  
+
+16 MAR 1995 - Version 0.6
+
+- Added support for Video7 (Headland Technologies) chipset.
+- changed calling of reset-program to only run when screen actually changes
+  size.
+- more general path option fetching from config file (in preparation for
+  FontProg et al)
+- changed option stuff (code readability improvement)
+- fixed a bug in OPT_SWAP_HIBIT for WDC cards.
+- !!! added automatic font loading. Major feature improvement.
+- fixed a stupid bug that produced an error when using ClockChip ICD2061A. 
+- fixed ANOTHER stupid bug that found an incomplete clockchip line when
+  there was none defined, after having found a ClockProg line. I must have
+  had a bad day there...
+- added flags: -r : don't run ResetProg
+               -f : don't run FontProg
+               -c : don't program clock (but do the rest)
+- cleaned up message printing code. Less overhead now.
+- programmable cursor position and size: lets you define what the cursor
+  looks like.
+- added 'HorizSync', 'VertRefresh' parameters to config file, to define
+  monitor's limits, and avoid loading a mode that the monitor cannot handle.
+  Same syntax as in XF86Config.
+
+
+03 MAR 1995 - Version 0.5
+
+- Made clockprobe shut up about interlacing. Was wrong anyway. adapted doc
+  accordingly
+- !!! added mode grabber, which outputs a TextConfig (or XF86Config)
+  compatible line describing the currently used text mode.
+  !!! DOS port of grabmode by Kenneth Albanowski. Now you can grab a DOS
+  text mode and import it into SVGATextMode. (grabmode.exe included)
+- removed small bug in set/getVGAreg (setVGAreg didn't work when called with
+  a path)
+- added doc/README.ET4000.AltClockSelect. A technical description of a
+  rather common problem with ET4000's: the "hibit" option and the different
+  methods of clock selection.
+- added Sigma Legend (ET4000) option.
+- added Cirrus DRAM speed options (SLOW_DRAM, MED_DRAM, FAST_DRAM, XFAST_DRAM)
+- continued XFREE code importing effort. Now all kinds of clock chips on S3
+  boards could possibly work. Needs testing though.
+  Produces lots of warnings during compilation, so it's not sure it will work.
+  Will somebody test this, please? S3 Gendac tested: OK
+- added "ResetProg" line to TextConfig. This calls a program or a script
+  after SVGATextMode ended succesfully.
+- fixed obscure problem with ATI code (needed at least for ATI VGA Wonder V5)
+
+
+19 FEB 1995 - Version 0.4
+
+This time, lots of user feedback resulted in most of the new features.
+Thanks to all those who contributed!
+- Increased sync widths in many default TextConfig modes, after TONS of
+  complaints about many modes just not working. This should fix most
+  problems (but not all...)
+- added a clock probing program "clockprobe". Useful for debugging on
+  "remote" video cards (i.e. those YOU have, but I don't). Used some fancy
+  stuff in there. Check the documentation!
+- short docs for getpalette, setpalette, getVGAreg, setVGAreg, and
+  clockprobe added.
+- added some more user-contributed text modes. If this goes on, the
+  TextConfig file will be a MegaByte within a few years...
+- added (user contributed) Video 7 mercury external clock program.
+- fixed bug in setpalette code (getpalette was wrong).
+- now SVGATextMode uses the last matching textmode line, instead of the
+  first (suggested by Kenneth Albanowski. Thanks). This gives YOUR patched
+  lines precedence over the original ones, if your lines are at the end of
+  the TextConfig file.
+- changed external clock program calling to comply with XFREE3.1 method
+- made option parsing more generic, so now adding options for all cards is
+  easier.
+- added option "ET4000_AltClockSel" for those ET4000 which won't work with
+  the normal clock selection code.
+- "swap_hibit" option for WDC cards added (as in XFREE). This actuall swaps
+  bit 2 (not 3), so the name is rather misleading...
+- added automatic sync polarity selection. Deleted most sync polarities from
+  default text modes in TextConfig (auto polarity should get most right).
+- first attempt at using some XFREE code. This has been suggested by myself
+  and many others. It's a good idea, but probably not that simple. Let's
+  see...
+  Nothing works yet, but it'll come, one day.
+- Put VT_RESIZE before VGA programming code instead of after, and added
+  malloc() to get some more free memory (avoiding "out of memory" error).
+- !!! Now does terminal resizing automatically, using the terminals defined
+  in a "Terminals" line in the TextConfig file. All these terminals get the
+  equivalent of an "stty rows ... cols ..." sent to them when SVGATextMode
+  is run. All programs that support the SIGWINCH signal (more/less, joe,
+  emacs, ...) redraw their screen automatically into the new size. This is a
+  really nice feature!
+- and finally: SVGATexMode now checks for the kernel version, and if it's
+  older than 1.1.54, it will not allow screen resizing. This seemed to be a
+  major problem for some people.
+  This will also make SVGATextMode MUCH less dangerous to use.
+
+
+31 JAN 1995 - Version 0.3
+
+- more cosmetics. Especially changing small functions into #defines. Is this
+  wise???
+- added setpalette and getpalette, to set/get the color palette. Completely
+  useless, but is was lying around somewhere else, and this seemed a better
+  place for it to reside.
+- ATI support tested and changed to make use of ALL 128 clocks available!
+- multiple clocks lines supported.
+- split up README into separate parts in doc directory. It was beginning to
+  get bloated.
+- added conditional compilation for older kernels (#define NO_VT_RESIZE)
+- Still 867 bugs undiscovered...
+
+
+23 JAN 1995 - Version 0.2
+
+- major cosmetic changes. And more will follow...
+- more modular code ( = more .c files)
+- added options (-n, -d and -h)
+- changed define DEBUG into an option. Executable will be always bigger, but
+  who cares...
+- added "setVGAreg" and "getVGAreg" for hacking purposes (formerly not
+  distributed, but written as lots of separate programs by Wouter Gadeyne)
+- added support for Western Digital and ATI cards (but VERY much untested ...)
+- removed 8/9 character switching bug.
+
+
+10 Jan 1995 - Version 0.1   First release
+
+- Xconfig-like configuration
+- S3, Et4000, Trident and Cirrus Logic support. 
+  each tested on just ONE of those cards...
+- probably a TON of bugs.
+
+

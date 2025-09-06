@@ -1,0 +1,226 @@
+If all goes well, this patch along with the code I wrote in console_dev.c
+should enable STM to work transparently with both devfs and traditional
+console devices.
+
+Many thanks to Sergey Golod who did the initial legwork to figure out
+what was required!
+
+  Ron
+
+
+diff -rub svgatextmode-1.9-old/Makefile svgatextmode-1.9/Makefile
+--- svgatextmode-1.9-old/Makefile	Tue Sep 26 15:35:02 2000
++++ svgatextmode-1.9/Makefile	Wed Sep 27 03:53:53 2000
+@@ -145,18 +145,19 @@
+ 
+ STM_OBJECTS = ttyresize.o messages.o vga_prg.o setclock.o file_ops.o SVGATextMode.o \
+               validate.o run_extprog.o wait_vsync.o clockchip.o std_clock.o cfglex.o \
+-              y.tab.o misc.o dump_cfgdata.o kversion.o unlock_svga.o special_svga.o
++              y.tab.o misc.o dump_cfgdata.o kversion.o unlock_svga.o special_svga.o \
++              console_dev.o
+ 
+ CP_OBJECTS = messages.o vga_prg.o setclock.o file_ops.o string_ops.o ClockProg.o \
+              validate.o run_extprog.o wait_vsync.o clockchip.o std_clock.o cfglex.o \
+              y.tab.o misc.o dump_cfgdata.o unlock_svga.o special_svga.o
+ 
+-SET80_OBJECTS = set80.o vga_prg.o messages.o ttyresize.o file_ops.o kversion.o
++SET80_OBJECTS = set80.o vga_prg.o messages.o ttyresize.o file_ops.o kversion.o console_dev.o
+ 
+ VGAREG_OBJECTS = setVGAreg.o vga_prg.o file_ops.o string_ops.o messages.o \
+                  cfglex.o y.tab.o misc.o unlock_svga.o
+ 
+-PAL_OBJECTS = setpalette.o vga_prg.o string_ops.o messages.o file_ops.o kversion.o
++PAL_OBJECTS = setpalette.o vga_prg.o string_ops.o messages.o file_ops.o kversion.o console_dev.o
+ 
+ GRAB_OBJECTS = grabmode.o modedata.o probe.o wait_vsync.o vga_prg.o messages.o \
+                string_ops.o user_time.o
+diff -rub svgatextmode-1.9-old/SVGATextMode.c svgatextmode-1.9/SVGATextMode.c
+--- svgatextmode-1.9-old/SVGATextMode.c	Tue Sep 26 16:57:05 2000
++++ svgatextmode-1.9/SVGATextMode.c	Wed Sep 27 02:47:30 2000
+@@ -140,6 +140,9 @@
+ 
+   t_mode *curr_textmode;
+        
++  const char *cdev = ConsoleDevice("");
++  size_t clen = strlen(cdev);
++
+  /*
+   * command-line argument parsing
+   */
+@@ -199,7 +202,7 @@
+     if ((cptr=ttyname(STDIN_FILENO))) {
+       PDEBUG(("running from %s\n", cptr));
+       if (strcmp(cptr, "/dev/console"))
+-        if ( !((!strncmp(cptr, "/dev/tty",8)) && (isdigit(cptr[8]))) )
++        if ( !((!strncmp(cptr, cdev, clen)) && (isdigit(cptr[clen]))) )
+       {
+         PERROR(("You can only run SVGATextMode from a virtual terminal "
+                 "(=not in X or remotely), unless you use the '-x' option.\n"));
+diff -rub svgatextmode-1.9-old/cfg_structs.h svgatextmode-1.9/cfg_structs.h
+--- svgatextmode-1.9-old/cfg_structs.h	Sun Sep  6 00:35:20 1998
++++ svgatextmode-1.9/cfg_structs.h	Wed Sep 27 02:40:08 2000
+@@ -141,9 +141,8 @@
+ extern int bordercolor;
+ extern int cursor_start, cursor_end;
+ 
+-
++extern const char *ConsoleDevice(const char *number);
+ 
+ #endif  
+-
+ 
+ 
+Only in svgatextmode-1.9: console_dev.c
+diff -rub svgatextmode-1.9-old/file_ops.c svgatextmode-1.9/file_ops.c
+--- svgatextmode-1.9-old/file_ops.c	Sat Sep  5 23:47:46 1998
++++ svgatextmode-1.9/file_ops.c	Wed Sep 27 02:42:07 2000
+@@ -39,7 +39,7 @@
+   return(param_file);
+ }
+ 
+-int opentty(char *devname)
++int opentty(const char *devname)
+ {
+   int fd;
+ 
+diff -rub svgatextmode-1.9-old/file_ops.h svgatextmode-1.9/file_ops.h
+--- svgatextmode-1.9-old/file_ops.h	Sat Sep  5 23:49:19 1998
++++ svgatextmode-1.9/file_ops.h	Wed Sep 27 02:42:22 2000
+@@ -22,7 +22,7 @@
+ 
+ FILE* open_param_file(char* conf_file);
+ 
+-int opentty(char *devname);
++int opentty(const char *devname);
+ 
+ #endif
+ 
+diff -rub svgatextmode-1.9-old/set80.c svgatextmode-1.9/set80.c
+--- svgatextmode-1.9-old/set80.c	Fri Oct  9 05:58:50 1998
++++ svgatextmode-1.9/set80.c	Wed Sep 27 02:31:05 2000
+@@ -183,7 +183,7 @@
+   
+   
+ #ifndef DOS
+-  ioctl(opentty("/dev/tty0"), KDSETMODE, KD_TEXT);
++  ioctl(opentty( ConsoleDevice("0") ), KDSETMODE, KD_TEXT);
+ #endif
+   
+ #else  
+diff -rub svgatextmode-1.9-old/setpalette.c svgatextmode-1.9/setpalette.c
+--- svgatextmode-1.9-old/setpalette.c	Sat Sep  5 23:47:26 1998
++++ svgatextmode-1.9/setpalette.c	Wed Sep 27 04:00:46 2000
+@@ -156,7 +156,7 @@
+ }
+  
+ 
+-void main (int argc, char* argv[])
++int main (int argc, char* argv[])
+ {
+   int index,r,g,b;
+   char* commandfilename;
+@@ -228,11 +228,11 @@
+ 
+   if (program_hardware && setreg && kernel_can_do_cmap && tellkernel)
+   {
+-    fd = opentty("/dev/tty0");
++    fd = opentty( ConsoleDevice("0") );
+     if (ioctl(fd, GIO_CMAP, kernel_palette))    /* this ioctl first popped up in kernel 1.3.3 */
+     {
+        perror("GIO_CMAP");
+-       PERROR(("Could not do GIO_CMAP on /dev/tty0\n"));
++       PERROR(("Could not do GIO_CMAP on %s\n", ConsoleDevice("0")));
+     }
+   }
+ 
+@@ -317,8 +317,11 @@
+     if (ioctl(fd, PIO_CMAP, kernel_palette))
+     {
+        perror("PIO_CMAP");
+-       PERROR(("Could not do PIO_CMAP on /dev/tty0\n"));
++       PERROR(("Could not do PIO_CMAP on %s\n", ConsoleDevice("0")));
+     }
+     close (fd);
+   }  
++
++  exit(0);
+ }
++
+diff -rub svgatextmode-1.9-old/ttyresize.c svgatextmode-1.9/ttyresize.c
+--- svgatextmode-1.9-old/ttyresize.c	Tue Sep 26 16:58:25 2000
++++ svgatextmode-1.9/ttyresize.c	Wed Sep 27 02:46:44 2000
+@@ -62,7 +62,7 @@
+ #  include <sys/mman.h>
+ #endif
+ 
+-void get_ttysize(int fd, char *devname, struct winsize *this_winsize)
++void get_ttysize(int fd, const char *devname, struct winsize *this_winsize)
+ {
+   if (ioctl(fd, TIOCGWINSZ, this_winsize))
+   {
+@@ -74,7 +74,7 @@
+ 
+ #ifndef NO_RESIZE
+ 
+-void set_ttysize(int fd, char *devname, struct winsize *this_winsize, int cols, int rows)
++void set_ttysize(int fd, const char *devname, struct winsize *this_winsize, int cols, int rows)
+ {
+   /* no need to skip this if the screen is not resized. The kernel already does that */
+ 
+@@ -89,7 +89,7 @@
+   }
+ }
+ 
+-void resizetty(char *devicename, int cols, int rows)
++void resizetty(const char *devicename, int cols, int rows)
+ {
+   struct winsize my_winsize;
+   int fd;
+@@ -214,7 +214,7 @@
+   int fd;
+ 
+   PDEBUG(("%s\n", descr));
+-  fd = opentty("/dev/tty0");
++  fd = opentty( ConsoleDevice("0") );
+ 
+   if (try_resize(fd, p_struct_size, memsize, cmd)) return(FALSE);
+ 
+@@ -349,15 +349,15 @@
+    struct vt_stat vst;
+    unsigned short mask;
+    int i;
+-   char devicename[64];
++   char devicenum[5];
+    
+    PDEBUG(("Resizing all active VT's when needed\n"));
+    
+-   fd = opentty("/dev/tty0");
++   fd = opentty( ConsoleDevice("0") );
+    if (ioctl(fd, VT_GETSTATE, &vst))
+    {
+       perror("VT_GETSTATE");
+-      PERROR(("Could not do VT_GETSTATE on /dev/tty0\n"));
++      PERROR(("Could not do VT_GETSTATE on %s\n", ConsoleDevice("0")));
+    }
+    close(fd);
+ 
+@@ -372,8 +372,8 @@
+    {
+       if ((vst.v_state & mask) != 0)       /* only resize active VT's */
+       {
+-        snprintf(devicename, sizeof(devicename), "/dev/tty%d",i);
+-        resizetty(devicename, cols, rows);
++        snprintf(devicenum, sizeof(devicenum), "%d", i);
++        resizetty(ConsoleDevice(devicenum), cols, rows);
+       }
+    }
+ }
+@@ -384,7 +384,7 @@
+ {
+   struct winsize my_winsize;
+   int fd;
+-  char devicename[]="/dev/tty0";
++  const char *devicename = ConsoleDevice("0");
+   
+   PDEBUG(("Checking if new mode requires screen resizing (from %s)\n", devicename));
+ 

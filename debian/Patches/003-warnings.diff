@@ -1,0 +1,217 @@
+These are all just changes I made to shut up the *many* compiler warnings.
+Some of them are ugly, some may be just plain wrong..
+
+Ron
+
+
+diff -rub svgatextmode-1.9-old/XFREE/common_hw/ATTDac.c svgatextmode-1.9/XFREE/common_hw/ATTDac.c
+--- svgatextmode-1.9-old/XFREE/common_hw/ATTDac.c	Sun Aug 25 22:00:47 1996
++++ svgatextmode-1.9/XFREE/common_hw/ATTDac.c	Wed Sep 27 03:33:51 2000
+@@ -165,6 +165,8 @@
+ 		return FALSE;
+ }
+ 
++#if 0
++/* unused by stm */
+ static
+ void
+ Att409UseClock(clk)
+@@ -200,6 +202,7 @@
+ 
+ 	return;
+ }
++#endif
+ 
+ #define BASE_FREQ 	 14.31818
+ #define FREQ_MIN	(120000.0 / 8.0)	/* p = 3 */
+diff -rub svgatextmode-1.9-old/XFREE/common_hw/Ch8391clk.c svgatextmode-1.9/XFREE/common_hw/Ch8391clk.c
+--- svgatextmode-1.9-old/XFREE/common_hw/Ch8391clk.c	Mon May  6 15:27:49 1996
++++ svgatextmode-1.9/XFREE/common_hw/Ch8391clk.c	Wed Sep 27 03:28:26 2000
+@@ -256,7 +256,7 @@
+ {
+    double ffreq;
+    int n, nmin, nmax, k, m, m0;
+-   int best_n, best_m;
++   int best_n = 0, best_m = 0;
+    double  diff, mindiff;
+ 
+    if (freq < FREQ_MIN)
+diff -rub svgatextmode-1.9-old/XFREE/common_hw/CirrusClk.c svgatextmode-1.9/XFREE/common_hw/CirrusClk.c
+--- svgatextmode-1.9-old/XFREE/common_hw/CirrusClk.c	Tue Oct 28 06:31:53 1997
++++ svgatextmode-1.9/XFREE/common_hw/CirrusClk.c	Wed Sep 27 03:26:11 2000
+@@ -76,8 +76,8 @@
+ 	int *usemclk_out;
+ {
+ 	int n, i;
+-	int num, den;
+-	int ffreq, mindiff;
++	int num = 0, den = 0;
++	int ffreq, mindiff = 0;
+ 	int mclk;
+ 
+ 	/* Prefer a tested value if it matches within 0.1%. */
+diff -rub svgatextmode-1.9-old/XFREE/common_hw/S3gendac.c svgatextmode-1.9/XFREE/common_hw/S3gendac.c
+--- svgatextmode-1.9-old/XFREE/common_hw/S3gendac.c	Sat Oct 23 03:23:57 1999
++++ svgatextmode-1.9/XFREE/common_hw/S3gendac.c	Wed Sep 27 03:31:29 2000
+@@ -199,6 +199,8 @@
+   
+    *ndiv = (best_n1 - 2) | (best_n2 << 5);
+    *mdiv = best_m - 2;
++
++   return 0;
+ }
+   
+ int
+diff -rub svgatextmode-1.9-old/XFREE/common_hw/SC11412.c svgatextmode-1.9/XFREE/common_hw/SC11412.c
+--- svgatextmode-1.9-old/XFREE/common_hw/SC11412.c	Mon May  6 15:28:01 1996
++++ svgatextmode-1.9/XFREE/common_hw/SC11412.c	Wed Sep 27 03:20:25 2000
+@@ -26,7 +26,7 @@
+ register long frequency;
+ {  
+ unsigned i;
+-unsigned  Multiplier, Divider, BigD;
++unsigned  Multiplier = 0, Divider = 0, BigD;
+ unsigned ErrorTerm=32767;
+ 
+ SetSC11412(106,31,0,0);  /* set Mclock to 49 MHz */
+@@ -118,7 +118,6 @@
+ static void wrtSC11412bit(bool)
+ int bool;
+ { 
+-   int vgaCRIndex = vgaIOBase + 4;
+    int vgaCRReg = vgaIOBase + 5;
+    if (bool==1)
+    {
+diff -rub svgatextmode-1.9-old/XFREE/common_hw/xf86_PCI.c svgatextmode-1.9/XFREE/common_hw/xf86_PCI.c
+--- svgatextmode-1.9-old/XFREE/common_hw/xf86_PCI.c	Wed Mar 19 05:29:35 1997
++++ svgatextmode-1.9/XFREE/common_hw/xf86_PCI.c	Wed Sep 27 03:45:32 2000
+@@ -794,7 +794,9 @@
+ {
+     /* This is enough to ensure that full I/O is enabled */
+     unsigned pciIOPorts[] = { PCI_MODE1_ADDRESS_REG };
+-    int numPciIOPorts = sizeof(pciIOPorts) / sizeof(pciIOPorts[0]);
++    int numPciIOPorts;
++    
++    numPciIOPorts = sizeof(pciIOPorts) / sizeof(pciIOPorts[0]);
+ 
+     xf86ClearIOPortList(scrnIndex);
+     xf86AddIOPorts(scrnIndex, numPciIOPorts, pciIOPorts);
+@@ -914,7 +916,7 @@
+ 		if (xf86Verbose > 1) {
+ 		    ErrorF("PCI: Bus 0x%x Card 0x%02x Func 0x%x ID 0x%04x,"
+ 			   "0x%04x Rev 0x%02x Class 0x%02x,0x%02x\n",
+-			   pcr._bus, pcr._cardnum, pcr._func, pcr._vendor,
++			   (unsigned)pcr._bus, (unsigned)pcr._cardnum, (unsigned)pcr._func, pcr._vendor,
+ 			   pcr._device, pcr._rev_id, pcr._base_class,
+ 			   pcr._sub_class);
+ 		}
+@@ -941,13 +943,13 @@
+ 	return;
+ 
+     tag = pcibusTag(bus, cardnum, func);
+-    data = pcibusRead(tag, reg) & ~mask | (value & mask);
++    data = (pcibusRead(tag, reg) & ~mask) | (value & mask);
+     pcibusWrite(tag, reg, data);
+ 
+     if (xf86Verbose > 2) {
+ 	ErrorF("PCI: xf86writepci: Bus=0x%x Card=0x%x Func=0x%x Reg=0x%02x "
+ 	       "Mask=0x%08x Val=0x%08x\n",
+-	       bus, cardnum, func, reg, mask, value);
++	       bus, cardnum, func, reg, (unsigned)mask, (unsigned)value);
+     }
+ 
+     pciDisableIO(scrnIndex);
+diff -rub svgatextmode-1.9-old/XFREE/mga_clock.c svgatextmode-1.9/XFREE/mga_clock.c
+--- svgatextmode-1.9-old/XFREE/mga_clock.c	Tue Sep 26 12:56:32 2000
++++ svgatextmode-1.9/XFREE/mga_clock.c	Wed Sep 27 03:51:15 2000
+@@ -394,7 +394,7 @@
+ 	int *n;
+ 	int *p;
+ {
+-	int best_m, best_n;
++	int best_m = 0, best_n = 0;
+ 	double f_pll, f_vco;
+ 	double m_err, inc_m, calc_m;
+ 
+diff -rub svgatextmode-1.9-old/XFREE/vgaPCI.c svgatextmode-1.9/XFREE/vgaPCI.c
+--- svgatextmode-1.9-old/XFREE/vgaPCI.c	Tue Sep 26 12:58:08 2000
++++ svgatextmode-1.9/XFREE/vgaPCI.c	Wed Sep 27 03:50:17 2000
+@@ -42,7 +42,7 @@
+     if (!pcrpp)
+ 	return NULL;
+ 
+-    while (pcrp = pcrpp[i]) {
++    while ( (pcrp = pcrpp[i]) ) {
+ 	if ((pcrp->_base_class == PCI_CLASS_PREHISTORIC &&
+ 	     pcrp->_sub_class == PCI_SUBCLASS_PREHISTORIC_VGA) ||
+ 	    (pcrp->_base_class == PCI_CLASS_DISPLAY &&
+@@ -66,10 +66,10 @@
+ 	     * It should be possible to move this out into the Cirrus
+ 	     * driver now.
+ 	     */
+-	    if (info->Vendor == PCI_VENDOR_CIRRUS &&
+-		(info->ChipType == PCI_CHIP_GD5462) ||
++	    if ( info->Vendor == PCI_VENDOR_CIRRUS &&
++		 ( (info->ChipType == PCI_CHIP_GD5462) ||
+ 		(info->ChipType == PCI_CHIP_GD5464) ||
+-		(info->ChipType == PCI_CHIP_GD7548)) {
++		   (info->ChipType == PCI_CHIP_GD7548) ) ) {
+ 	      info->IOBase = pcrp->_base0;
+ 	      info->MemBase = pcrp->_base1;
+ 
+diff -rub svgatextmode-1.9-old/XFREE/xfree_compat.h svgatextmode-1.9/XFREE/xfree_compat.h
+--- svgatextmode-1.9-old/XFREE/xfree_compat.h	Tue Sep 26 13:03:02 2000
++++ svgatextmode-1.9/XFREE/xfree_compat.h	Wed Sep 27 02:49:36 2000
+@@ -14,6 +14,7 @@
+ 
+ #include <stdio.h>
+ #include <unistd.h>
++#include <sys/types.h>
+ 
+ #ifndef _XF86_HWLIB_H
+ 
+diff -rub svgatextmode-1.9-old/cfglex.l svgatextmode-1.9/cfglex.l
+--- svgatextmode-1.9-old/cfglex.l	Tue Sep  9 03:37:20 1997
++++ svgatextmode-1.9/cfglex.l	Wed Sep 27 03:12:52 2000
+@@ -52,10 +52,9 @@
+ 
+ %}
+ 
+-/* These options reduce the warnings when compiling with -Wall, but need at least flex 2.5
++/* These options reduce the warnings when compiling with -Wall, but need at least flex 2.5 */
+ %option noyywrap
+ %option nounput
+-*/ 
+ 
+ delim		[ \t]
+ ws		{delim}+
+diff -rub svgatextmode-1.9-old/user_time.c svgatextmode-1.9/user_time.c
+--- svgatextmode-1.9-old/user_time.c	Sat Sep  5 23:47:16 1998
++++ svgatextmode-1.9/user_time.c	Wed Sep 27 03:51:56 2000
+@@ -35,7 +35,7 @@
+ {
+    static unsigned long time=0;
+    static unsigned short last_count=0;
+-   unsigned short count;
++   unsigned short count = 0;
+ 
+ /* 
+    note: dynamic detection of the max. latch value is only possible
+diff -rub svgatextmode-1.9-old/vga_prg.c svgatextmode-1.9/vga_prg.c
+--- svgatextmode-1.9-old/vga_prg.c	Wed Oct 14 04:58:44 1998
++++ svgatextmode-1.9/vga_prg.c	Wed Sep 27 03:03:58 2000
+@@ -33,6 +33,13 @@
+ #include "textregs.h" /* for Set_Textmode */
+ 
+ /*
++ * this is ugly, it's really declared in sys/io.h but including that here
++ * fritzes the inb/outb macros again.  otoh compiler warnings are ugly too.
++ *  -- Ron
++ */
++extern int iopl(int);
++
++/*
+  * global vars
+  */
+  
+

@@ -1,0 +1,163 @@
+--- common_hw/I2061Aalt.c.original	Wed Feb 14 20:21:11 1996
++++ common_hw/I2061Aalt.c	Mon Feb 19 19:48:24 1996
+@@ -29,17 +29,18 @@
+ #endif
+ static void wait_vb();
+ static void wrt_clk_bit(unsigned int value);
+-static void init_clock(unsigned long setup, unsigned short crtcport);
++static void s3_init_clock(unsigned long setup,  unsigned short crtcport);
++static void et4000_init_clock(unsigned long setup);
+ #else
+ #if 0
+ static void prtbinary();
+ #endif
+ static void wait_vb();
+ static void wrt_clk_bit();
+-static void init_clock();
++static void s3_init_clock();
+ #endif
+ 
+-void AltICD2061SetClock(frequency, select)
++static unsigned long AltICD2061CalcClock(frequency, select)
+ register long   frequency;               /* in Hz */
+ int select;
+ {
+@@ -53,17 +54,6 @@
+    double f0;
+    unsigned int p, q;
+    unsigned int bestp=0, bestq=0, bestm=0, besti=0;
+-   unsigned char tmp;
+-
+-   crtcaddr=(inb(0x3CC) & 0x01) ? 0x3D4 : 0x3B4;
+-
+-
+-   outb(crtcaddr, 0x11);	/* Unlock CRTC registers */
+-   tmp = inb(crtcaddr + 1);
+-   outb(crtcaddr + 1, tmp & ~0x80);
+-
+-   outw(crtcaddr, 0x4838);	/* Unlock S3 register set */
+-   outw(crtcaddr, 0xA039);
+ 
+    clknum = select;
+ 
+@@ -113,10 +103,51 @@
+    realval = (fvco * bestp) /  bestq;
+    dwv = ((((((long)besti << 7) | (bestp-3)) << 3) | bestm) << 7) | (bestq-2);
+ 
+-/*
+- * Write ICD 2061A clock chip
+- */
+-   init_clock(((unsigned long)dwv) | (((long)clknum) << 21), crtcaddr);
++#if 0
++   fprintf(stderr, "I2061Aalt.c: freq %ld, clknum %d\n", (((4*14318lu*bestp/bestq)>>bestm)+1)>>1,
++	   clknum);
++#endif
++   return (((unsigned long)dwv) | (((long)clknum) << 21));
++}
++
++
++void AltICD2061SetClock(frequency, select)
++register long   frequency;               /* in Hz */
++int select;
++{
++   unsigned char tmp;
++
++   crtcaddr=(inb(0x3CC) & 0x01) ? 0x3D4 : 0x3B4;
++
++   outb(crtcaddr, 0x11);	/* Unlock CRTC registers */
++   tmp = inb(crtcaddr + 1);
++   outb(crtcaddr + 1, tmp & ~0x80);
++
++   outw(crtcaddr, 0x4838);	/* Unlock S3 register set */
++   outw(crtcaddr, 0xA039);
++   /* Write ICD 2061A clock chip */
++   s3_init_clock(AltICD2061CalcClock(frequency, select), crtcaddr);
++
++   wait_vb();
++   wait_vb();
++   wait_vb();
++   wait_vb();
++   wait_vb();
++   wait_vb();
++   wait_vb();		/* 0.10 second delay... */
++}
++
++void Et4000AltICD2061SetClock(frequency, select)
++register long   frequency;               /* in Hz */
++int select;
++{
++   crtcaddr=(inb(0x3CC) & 0x01) ? 0x3D4 : 0x3B4;
++
++   /* Write ICD 2061A clock chip */
++   et4000_init_clock(AltICD2061CalcClock(frequency, select));
++   
++   /* select the clock */
++   outb(0x3C2,(inb(0x3CC) & 0xF3) | ((select << 2) & 0x0C));
+ 
+    wait_vb();
+    wait_vb();
+@@ -158,9 +189,9 @@
+ 
+ 
+ #if NeedFunctionPrototypes
+-static void init_clock(unsigned long setup, unsigned short crtcport)
++static void s3_init_clock(unsigned long setup, unsigned short crtcport)
+ #else
+-static void init_clock(setup, crtcport)
++static void s3_init_clock(setup, crtcport)
+    unsigned long setup;
+    unsigned short crtcport;
+ #endif
+@@ -247,3 +278,36 @@
+    for (j=2; --j; )
+       inb(0x200);
+    }
++
++
++/*
++ *  ET4000 ICD2061 (Diamond Stealth 32) clock setting code.
++ *    Original by Frank Klemm
++ *    Linux port by Ray Balister.
++ *    various improvements by Peter Chang
++ *    included in XFREE code base by Koen Gadeyne
++ */
++
++static void et4000_init_clock(unsigned long setup)
++{
++    register unsigned char a=inb(0x3CC) & ~0x0C;
++    register unsigned i;
++    unsigned long m;
++
++#define S(x)	outb(0x3C2,a | 4*(x))
++
++    for (i=0; i<5; i++)
++      S(2), S(3);
++    for (i=0; i<2; i++)
++      S(0), S(1);
++    for (i=0, m=1; i<24; i++, m+=m)
++      if (setup & m)
++	S(1), S(0), S(2), S(3);
++      else
++	S(3), S(2), S(0), S(1);
++    S(3), S(2), S(3);
++    S(3);
++
++#undef S
++
++}
+--- common_hw/xf86_HWlib.h.original	Wed Feb 14 21:19:46 1996
++++ common_hw/xf86_HWlib.h	Wed Feb 14 21:17:20 1996
+@@ -61,6 +61,13 @@
+ #endif
+ );
+ 
++extern void Et4000AltICD2061SetClock(
++#if NeedFunctionPrototypes
++	long,
++	int
++#endif
++);
++
+ /* ICD2061Acal.c */
+ extern long ICD2061ACalcClock(
+ #if NeedFunctionPrototypes

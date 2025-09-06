@@ -1,0 +1,51 @@
+Package: svgatextmode
+Version: 1.9-6
+Severity: important
+Tags: patch
+
+Please incorporate this patch into the debian package.
+
+You could send it upstream, but be aware of the fact that this
+patch has been sent to them countless times and it was not included
+for no good reason.
+
+There could be further nVidia chip PCI ID's which is the same as
+these, but I do not have the PCI ID's handy.
+
+
+diff -u svgatextmode-1.9/XFREE/riva128_clock*.c
+--- svgatextmode-1.9/XFREE/riva128_clock-old.c  Tue Oct  9 14:03:37 2001
++++ svgatextmode-1.9/XFREE/riva128_clock.c      Tue Oct  9 14:04:13 2001
+@@ -83,6 +83,8 @@
+ #define PCI_DEVICE_ID_NVIDIA_VTNT2     0x002C
+ #define PCI_DEVICE_ID_NVIDIA_UVTNT2    0x002D
+ #define PCI_DEVICE_ID_NVIDIA_ITNT2     0x00A0
++#define PCI_DEVICE_ID_NVIDIA_GEFORCE2  0x0110
++#define PCI_DEVICE_ID_NVIDIA_GEFORCE   0x0100
+
+ vgaPCIInformation *vgaPCIInfo;
+
+@@ -205,6 +207,8 @@
+                                pcr->_device == PCI_DEVICE_ID_NVIDIA_UTNT2 ||
+                                pcr->_device == PCI_DEVICE_ID_NVIDIA_VTNT2 ||
+                                pcr->_device == PCI_DEVICE_ID_NVIDIA_UVTNT2 ||
++                               pcr->_device == PCI_DEVICE_ID_NVIDIA_GEFORCE ||
++                               pcr->_device == PCI_DEVICE_ID_NVIDIA_GEFORCE2 ||
+                                pcr->_device == PCI_DEVICE_ID_NVIDIA_ITNT2)
+                        {
+                                is_nv3 = 0;
+
+
+
+-- System Information
+Debian Release: testing/unstable
+Architecture: i386
+Kernel: Linux Yikes 2.4.10 #1 Fri Oct 5 03:03:01 CEST 2001 i686
+Locale: LANG=C, LC_CTYPE=hu_HU
+
+Versions of packages svgatextmode depends on:
+ii  console-tools               1:0.2.3-23.2 Linux console and font utilities.
+ii  libc6                       2.2.4-2      GNU C Library: Shared libraries an
+
+
+

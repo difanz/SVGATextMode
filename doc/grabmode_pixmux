@@ -1,0 +1,92 @@
+                grabmode, a text/XWindows mode grabber
+                ======================================
+
+(This is not "compulsory reading". Skip it if you want.)
+
+extra note: pixel multiplexing, 15/16 bit and 24 bit modes
+----------------------------------------------------------
+
+Why doesn't grabmode work correctly on non-256 color graphics modes on most
+cards? To understand this, you have to dig a little deeper into the
+specifics of VGA cards. If you like tech-talk, read on!
+
+Normal, "el cheapo" VGA cards come with a DAC on it that has an 8-bit
+interface to the VGA chip. Even most so-called "24-bit" DAC's have just
+8-bit interfaces to the VGA chip. They have a "color palette" lookup table
+on board (that makes them a "RAMDAC" instead of just a "DAC") which can
+translate an 8-bit value into a 24-bit color value (or 18-bit on really
+cheap things) before sending that off to three 8-bit (or six bit) DAC's, and
+then to the RGB-outputs of the VGA card.
+
+In "normal" 256-color graphics modes, this is an ideal solution: one pixel
+just needs one byte, and one byte is sent to the DAC for each pixel. So when
+the pixel rate (not necessarily equal to the pixel CLOCK!) is e.g. 75 MHz
+for an 1024x768x256 @ 70Hz graphics mode, the data rate through that channel
+from the VGA chip to the DAC is also 75 MHz. And in this case this is of
+course also the pixel CLOCK. Very simple.
+
+BUT. When you want higher-resolution images, like 1280x1024x256 @ 70 Hz, the
+pixel rate must increase to 125 or even 135 MHz. And most relatively
+low-cost CMOS designs can go up to 110 MHz, but in most cases not much
+higher (ET4000, Cirrus Logic, Trident,... all stop at 90 MHz, S3-805 for
+example has a max of 110 MHz). Going higher than that would make the VGA
+chip cost LOTS more. So what did they do?
+
+They used a wider interface, like e.g. 16-bit (eg ET4000W32p), 24-bit (eg
+Bt485) or for really high-end stuff: 48, 64, 96, 128, 256-bit (eg IBM,)
+interfaces. The DAC then either needs to double (triple, ...) the pixel
+clock internally by itself (in the 16-bit case it gets 2 pixels per clock
+beat, so it needs to create the double clock to be able to display both
+pixels sequentially), or get that clock from the VGA chip.
+
+Creating the actual pixel clock only inside the DAC, instead of externally
+generating it and trying to feed it to all other chips that would need it
+has some major advantages. Price is of course the most important reason:
+high-speed digital boards need a very well thought-out layout, are more
+difficult to get through those stringent US FCC-rules, can create
+power-dissipation problems, and use more expensive components. 
+
+All this means you can let the VGA chip run at the "cooler" (and cheaper)
+clocks of 1/2, 1/3, ... of the pixel clock. But of course both the VGA chip
+and the DAC have to "know" about this. 
+
+This also explains the limit on many cheap VGA cards on maximum 15/16 and
+24-bit resolutions: since they have only 8-bit interfaces, they need to send
+TWO bytes for each 16-bit pixel, and even THREE for 24-bit pixels. And they
+have to do that over the same 8-bit bus! Those VGA cards need to be
+programmed with the DOUBLE pixel clock for 16-bit modes, and TRIPLE the
+pixel clock for 24-bit modes. e.g. an 640x480 mode needs only 25 MHz pixel
+clock at 8-bit per pixel. But 50 MHz at 16-bit, and 75 (!) MHz at 24-bit. 
+
+My S3-805 card is such an example. I DO have 2MB of video RAM on board, and
+that would theoretically allow me to do resolutions OVER 800x600 at 24-bit.
+BUT, since 800x600 requires a 50 MHz clock (for 70 Hz refresh) at 8 bit
+colors, running it at 24 bit would require 150 MHZ!!! And that would
+probably fry it for good...
+
+If you would have a DAC with a "wider" interface, you wouldn't need those
+double/triple clocks: you can send a pixel in its whole in one clock beat!
+So your card probably CAN handle higher resolutions at 24-bit! Of course,
+such a card is a bit more expensive.
+
+Also, most accelerators cannot work at 24-bit, since that is a rather clumsy
+memory organisation, and would be hard to implement in silicon. In most
+cases, silicon designers choose for a 32 bit pixel format. This wastes a
+byte per pixel, but is a lot easier in hardware than 24-bit. You might have
+read in the docs for XFREE3.x that 24-bit modes are NOT supported, but
+32-bit modes are.
+
+What is the impact of all this on grabmode?
+
+As already mentionned above, grabmode does NOT know about ANY special VGA
+chip. It just reads registers, and reports what's in there. So if some chip
+needs real values divided by 4 (because it uses pixel multiplexing over a
+wider-than-8 bit bus to reduce the external clock rates), then grabmode will
+NOT know about this. This is a sad situation, but I didn't want to put all
+kinds of chipset-detection code in it. First of all, that's too much work.
+Secondly, you're always at least one step behind chip set makers. Thirdly,
+grabmode was primarily designed for testing text modes (debugging). I added
+graphics modes to it, because that was EASY. At least, for standard chips...
+For the moment, I do NOT intend to do anything about that...
+
+

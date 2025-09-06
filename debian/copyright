@@ -1,0 +1,9 @@
+This package was debianized by Ron Lee <ron@debian.org>
+Fri,  9 Apr 1999 21:15:51 +0930.
+
+It was downloaded from:
+ftp://sunsite.unc.edu/pub/Linux/utils/console/SVGATextMode*
+
+SVGATextMode is licenced under the GPL which you can find in
+/usr/share/common-licenses/GPL on debian systems.
+

@@ -1,0 +1,45 @@
+
+******************
+*                *
+*   ! WARNING !  *
+*                *
+******************
+
+This program in inherently dangerous to use if you are easily scared.
+
+Some people jump for their RESET-button from the slightest hint of something
+going wrong. This is not only a very un-wise thing to do on a UNIX system,
+but also completely needless.
+
+When first trying this program, you might very well experience a dozen
+possible weird things happening to your screen. The thing to keep in mind
+here is:
+
+
+         DON'T PANIC !
+         
+         
+  (this should be printed in "large, friendly letters" ;-)
+         
+         
+It's not because your monitor makes strange noises, or because your display
+does something extra-terrestrial, that something is going to be broken. This
+is very unlikely to happen (but NOT impossible...). Make sure you weren't
+running any important applications when trying SVGATextMode for the first
+time, and just reboot your machine cleanly if even "SVGATextMode -o 80x25",
+"set80" or "textmode" cannot restore your text mode.
+
+
+By using this program, you run a VERY small risk of really breaking
+something (like boiling a VGA chip down to ashes ;-). It should be clear to
+you that I can and will not be held responsible for this.
+
+Be carefull, read the documentation, and use your common sense. Linux users
+are no dummies.
+
+
+
+Good luck!
+
+Koen Gadeyne.
+

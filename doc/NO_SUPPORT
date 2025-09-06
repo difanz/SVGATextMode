@@ -1,0 +1,46 @@
+
+
+As of version 1.9, I (Koen gadeyne) will no longer continue development or
+support of the SVGATextMode package (perhaps barring important bug fixes).
+
+Unless someone takes over, this means SVGATextMode is, well... "dead".
+
+Reasons for this decision are:
+
+* reduced interest in SVGATextMode, as hardware is getting so fast and
+  memory so abundant that running Xwindows all of the time is no longer a
+  problem. Older machines not comfortable with X are generally supported by
+  STM. 
+  
+* Linux 2.2 (and newer versions) contain kernel support for graphical
+  textmodes (vesafb). Although it uses a totally different approach than
+  STM, it can replace most of its functionality.
+  
+* it is getting more and more difficult to get suitable documentation from
+  VGA chip makers, especially for a niche product as SVGATextMode. Even the
+  XFree86 people are running into this obstacle every day. It is impossible
+  to write an SVGATextMode driver without those docs.
+  
+* It is also extremely difficult to write a good driver for hardware I don't
+  have. I obviously don't want to buy every new VGA card, and donations are
+  extremely rare (I count ONE in the four years of STM's existence).
+  
+* most recent VGA cards are very louzy textmode performers. Actually all the
+  ones I could check are bad. This is due to the use of synchronous
+  memories, as explained in the FAQ. This means an STM driver is less and
+  less attractive compared to a graphical solution like the linux VESAFB.
+  Modern VGA controllers are much more difficult to set up. More work for
+  less results? Hmm...
+  
+* GGI, if it ever matures, will also be able to replace STM, and it will
+  actually be much less of a risk in terms of screwing up your text
+  console...
+  
+* ... and some less technical reasons :-)
+
+
+
+[ no Famous Last Words here ]
+
+
+

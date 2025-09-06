@@ -1,0 +1,70 @@
+               A note of warning for the DOS version of SVGATextMode
+              =======================================================
+
+SVGATextMode can be made to work in DOS... well, at least a little.
+
+
+IMPORTANT:
+
+       The DOS version of SVGATextMode is not a "supported" product (not in
+       the same way the Linux version is).
+
+
+The reason for this is twofold:
+
+  The first one being that I don't like DOS very much, and I certainly won't
+  spend much time in it to make SVGATextMode work perfectly under it. Being
+  able to use it in DOS is "nice", but that's all. 
+  
+  The second, and most important reason, is DOS itself. Many DOS
+  applications are _extremely_ unforgiving to non-standard text modes, and
+  there is no possible workaround in most cases. Those programs just
+  _assume_ that you will be in a 80x25 mode. "Assumption is the mother of all
+  f*ck-ups" (sic).
+  
+  
+So PLEASE don't flood me (or anyone else who helped me with this) with
+questions concerning this or that program that doesn't work anymore when
+SVGATextMode has changed the screen. I will NOT reply to such a message,
+unless it contains some valuable comment (like how to make it better).
+  
+  
+What works, and what not?
+--------------------------
+
+Stm.exe will do all that the UNIX version does, with a few exceptions.
+
+It WILL run external programs, like clock programs and font loaders...
+except that there are none. So font loading is not (yet?) possible. You'll
+have to stick with a mode that doesn't need another font.
+
+(insert here all the other things that don't work) 
+
+  
+Compiling
+----------
+
+The DOS port is thanks to Stephen Lee, who took the first, biggest and only
+step in this. He did it as a "proof-of-concept", and will do NO further
+development for it.
+
+The most important difference between the UNIX and DOS version is the tty
+resizing code (ttyresize.c). The Linux version uses a standard system call,
+while the DOS version just changes some values in the DOS memory area (go
+figure). If anyone knows a better way (I doubt that there is one), let me
+know (Mr B.?).
+
+At least as important is the choice of a DOS compiler. It was a brilliant
+move of Mr. Lee to go for DJGPP 2.0. It is so incredibly compatible with the
+UNIX GNU C-compiler, that the non-machine-dependent code compiles smoothly.
+
+Because of that, I will NOT include stuff to allow other DOS compilers to
+compile SVGATextMode, to avoid making the code even more messy than it is now.
+
+
+UPDATE:
+-------
+
+Andree Borrmann <y0000980@ws.rz.tu-bs.de> has volunteered to do the
+maintenance of the DOS version of SVGATextMode.
+

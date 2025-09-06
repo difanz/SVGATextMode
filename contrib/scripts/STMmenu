@@ -1,0 +1,72 @@
+#!/bin/sh
+#
+# This script uses the "scan" mode from SVGATextMode to construct a list of all 
+# modes allowed for your setup, and then displays a "dialog" box which lets
+# you select a mode, and program it.
+#
+# Created by Wouter Gadeyne
+# 
+#
+
+if [ "_$1" = "_-h" ]; then
+	echo
+	echo "\`$0' is a dialog script that will show a menu of all"
+	echo "SVGATextMode modes that are allowed on your set-up,"
+	echo "and let you pick one to program."
+	echo
+	echo " usage: $0 [options]"
+	echo
+	echo "    options:"
+	echo "      -h  show this help message"
+	echo "      -b  \"browse\" mode: the menu will re-appear each time you"
+	echo "          selected a mode, until you choose \`cancel' from the menu"
+	echo
+	exit
+fi
+
+STM=/sbin/SVGATextMode
+
+ModeDB=`$STM -s | awk '{ printf("%s \"%10s %8s %6s %18s\" "),$1,$3,$5,$7,$9}' `
+
+select_mode() {
+  MODE=`eval "dialog --title 'SVGATextMode: select a TextMode' \
+                     --menu 'Mode             Clock     screen  font    Refresh       ' 24 80 17 $ModeDB" \
+  3>&1 1>&2 2>&3 `
+
+  #
+  # Let SVGATextMode process the mode, and show the parameters
+  # Then ask if this mode should be programmed
+  #
+
+  if [ $? = 0 ]; then
+
+    MODEDATA=`$STM -n $MODE`
+
+    dialog --title "SVGATextMode: program \"$MODE\" mode?" \
+           --yesno "$MODEDATA" 7 70
+    #
+    # Now program the mode, if the answer was "yes"
+    #
+
+    if [ $? = 0 ]; then
+    	$STM $MODE
+    else
+    	exit
+    fi
+  else
+  	exit
+  fi
+}
+
+#
+# main 
+#
+
+if [ "_$1" = "_-b" ]; then
+	while true; do
+		select_mode
+	done
+else
+	select_mode
+fi
+

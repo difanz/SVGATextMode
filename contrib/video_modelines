@@ -1,0 +1,86 @@
+
+Due to (very) popular request, here are a bunch of PAL/NTSC compatible
+modelines.
+
+                                    -----
+
+These are actually quite useless, because they will produce a NON-interlaced
+output (VGA textmodes don't seem to work interlaced, at least on the card I
+tried).
+
+Most TVs and VCRs will work with these modes however, albeit not optimally.
+
+You will need an external device to convert the RGB/H/V output of your VGA
+card into something a TV or VCR can grok.
+
+PLEASE DO NOT ASK ME HOW TO DO THIS, You're on your own. I will NOT reply
+to a zillion requests to present a method to make this work. These
+modelines were added because many people
+
+                                    -----
+
+If interlacing were to work in text mode, these modes should be possible:
+
+ "PAL_80x36"   13.711   640 658 716 780  576 578 584 625  font 9x16 Interlace -Hsync +Vsync
+
+ "NTSC_80x30"  13.711   640 658 716 780  480 482 488 525  font 9x16 Interlace -Hsync +Vsync
+ 
+Since at this moment, interlacing is not supported in textmode, the following
+will have to do:
+
+ "PAL_80x24"   13.711   640 658 716 780  288 289 292 313  font 9x12 -Hsync +Vsync
+
+ "NTSC_80x20"  13.711   640 658 716 780  240 241 244 263  font 9x12 -Hsync +Vsync
+ 
+
+You can derive a ton of modes from these. Basically, all that counts is a
+horizontal sync rate of 15625 Hz, and a vertical rate of 50 Hz (PAL or 60 Hz
+(NTSC). 
+
+                                    -----
+
+
+But that isn't all...
+
+Of course, you can't display this on a standard VGA monitor (the Hsync rate
+is 15.625 kHz, and the Vsync rate is 50 Hz interlaced -- quite horrible on a
+non-long-persistence picture tube used in a computer display).
+
+So you need some output you can connect to a TV (or VCR).
+
+Most European TVs have a SCART connector, which allows you to input RGB
+analog video to the TV. You need a composite sync, however, and a VGA card
+outputs separate H- and Vsyncs. WIth the modeline above, adding a XOR gate
+(e.g. 74LS86) that exclusive-ORs the (negative) HSYNC and the (positive)
+VSYNC together produces the required negative composite sync.
+
+
+That should get you a picture on the TV.
+
+But to record it on a VCR is a whole different ballgame.
+
+VCRs (at least consumer recorders) don't have RGB inputs: they require
+"composite" video (R, G, B, and sync put together in one signal (for CVBS)
+or 2 signals (for "SVHS", aka "Y/C")).
+
+To that end, there are a number of solutions, but all of them require a bit
+of electronics.
+
+What you basically need to do is first convert R, G, and B to Y, U and V
+signals, then modulate U and V with the color carrier frequency, and add
+those, Y and sync together on one output.
+
+There are a number of solutions to this, but the Analog Devices AD722 is
+probably the easiest solution (1 small IC, one crystal and a few C's).
+Analog Devices even has a demo board for this chip that comes with a floppy
+that will reprogram your VGA card to output video (but the demo program
+doesn't put the card in interlaced mode, which gives a bit of a funny
+display). There's more information on this chip on http://www.analog.com.
+
+
+
+PLEASE do NOT ask me for schematics, hardware, demo boards or anything else
+that you need to get this going. You're on your own. I can and will NOT
+reply to a zillion requests to present a method to make this work.
+
+

@@ -1,0 +1,82 @@
+--- TextConfig	2006-01-15 10:23:24.000000000 +0100
++++ STMText.cfg	2006-01-24 21:45:15.000000000 +0100
+@@ -380,24 +380,6 @@
+ 
+ #############################################################################
+ #
+-# The "Terminals" line tells SVGATextMode which _terminals_ to resize together
+-# with the screen. What its use is depends on the kernel version you are
+-# running (represented here by `K'):
+-#
+-#   K < 1.1.54 : useless. terminal resizing doesn't work on those.
+-#
+-#   1.1.54 <= K < 1.3.3 : resizes all VT's (virtual terminals) when a
+-#                         terminals line is defined, otherwise SVGATextMode
+-#                         resizes all active VT's upto the 16th (i.e.
+-#                         /dev/tty1 upto /dev/tty16).
+-#
+-#   1.3.3 <= K : useless: the kernel resizes all active VT's automatically
+-#
+-#Terminals "tty6" "tty5" "tty4" "tty3" "tty2" "tty1"
+-
+-
+-#############################################################################
+-#
+ # The "ResetProg" line defines a program that will be called after
+ # SVGATextMode has succesfully finished its job. The primary use would be 
+ # to let some applications know what happened (i.e. send them an appropriate
+@@ -415,7 +397,7 @@
+ # You should not change the line below unless you have your own reset script
+ # in another location.
+ 
+-ResetProg "/usr/sbin/STM_reset"
++#ResetProg "stmreset.bat"
+ 
+ 
+ #############################################################################
+@@ -456,33 +438,15 @@
+ #       wide characters around, and the same goes for odd-sized font heights)
+ #
+ 
+-Option "LoadFont"
+-#FontProg "/usr/bin/setfont"
+-#FontPath "/usr/lib/kbd/consolefonts"
++#Option "LoadFont"
++#FontProg "" # you know one?
++#FontPath "c:\fonts\"
+ #FontSelect "Cyr_a8x16"   8x16 9x16 8x15 9x15 
+ #FontSelect "Cyr_a8x14"   8x14 9x14 8x13 9x13
+ #FontSelect "8x12alt.psf" 8x12 9x12 8x11 9x11
+ #FontSelect "Cyr_a8x8"    8x8  9x8  8x7  9x7
+ #FontSelect "Cyr_a8x32"   8x32 9x32 8x31 9x31
+ 
+-# Debian defaults for use with console-tools
+-# use setfont as your FontProg if you have kbd installed
+-FontProg "/usr/bin/consolechars -f"
+-FontPath "/usr/share/consolefonts"
+-FontSelect "lat1u-16"   8x16 9x16 8x15 9x15
+-FontSelect "lat1u-14"   8x14 9x14 8x13 9x13
+-FontSelect "lat1u-12"   8x12 9x12 8x11 9x11
+-FontSelect "lat1u-10"   8x10 9x10 8x9  9x9
+-FontSelect "lat1u-08"   8x8  9x8  8x7  9x7
+-
+-
+-#
+-# using the following FontProg line will avoid losing high-ascii characters
+-# on newer Linux systems (kernels 1.3.x and up)
+-# (mainly the IBM-style box-characters used in text-based menuing systems)
+-
+-#FontProg "/usr/bin/setfont -u def.uni"
+-
+ 
+ #############################################################################
+ #
+@@ -544,7 +508,7 @@
+ # You might use this to center the display when setting up SVGATextMode.
+ #
+ 
+-#BorderColor 0
++BorderColor 0
+ 
+ 
+ #############################################################################

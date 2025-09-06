@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# This little script formats The TextConfig file, so all config lines use the same spacing
+#
+# Contributed by Allessandro Rubini.
+#
+#
+
+if [ "$1" = "" ]; then
+	CONFIGFILE=/etc/TextConfig
+else
+	CONFIGFILE=$1
+fi
+
+awk '$11 ~ /^font$/ && /^"/ {printf "%-17s %3d  %4d %4d %4d %4d  %4d %4d %4d %4d  font %5s\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$12; continue} {print}' $CONFIGFILE
+ 

@@ -1,0 +1,30 @@
+.\" Copyright (c) Jan 2000 Ron Lee (ron@debian.org)
+.\"
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.TH STM_nocheckfb 5 "January 2 2000" "Debian GNU/Linux" "SVGATextMode"
+.SH NAME
+STM_nocheckfb \- disable startup checks for framebuffer devices
+.SH DESCRIPTION
+If the file \fI/etc/default/STM_nocheckfb\fP exists at boot,
+then SVGATextMode will be started even if a framebuffer device
+has been reported by \fI/proc/fb\fP
+.br
+The default behavior of a standard Debian installation is to
+\fBnot\fP run STM if framebuffer device(s) are active at boot.
+This is probably what you want.
+.br
+Override this \fBonly\fP if you know what you are doing or are
+desperate to find some way to crash your Debian system.
+.SH FILES
+.I /etc/default/STM_nocheckfb
+.br
+.I /etc/init.d/svgatextmode

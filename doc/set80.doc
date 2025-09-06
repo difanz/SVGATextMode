@@ -1,0 +1,41 @@
+         set80: a 80x25 mode setter
+         ==========================
+         
+Set80 is a short resque program that attempts to reset your screen to a
+80x25 mode, without the need for a TextConfig file.
+
+It is very useful when you are setting up SVGATextMode, and something goes
+wrong. If you can get set80 to run, there's a fair chance that you will get
+your display back.
+
+
+./set80: version 1.5. (c) 1995,1996,1997 Koen Gadeyne.
+
+  Resets and resizes the console to a standard VGA 80x25 text mode
+  It is completely stand-alone (does not call other programs, no config file).
+  This does _not_ restore the font itself. `Setfont' is appropriate for that.
+
+  Options: -d  print debugging messages
+           -h  prints usage information
+           -a  use alternate method: restore ALL standard VGA registers.
+
+
+WARNING:
+  This does not work on ALL VGA cards. Notably the ATI cards and maybe
+  ET4000 as well will not restore the correct clock (the rest will be OK).
+  In fact, any card that has EXTENDED the standard set of 2 clock selection
+  bits with some more, instead of REPLACING them with a completely new set
+  will suffer from the same problem.
+
+Another note:
+
+  the "-a" option restores ALL standard VGA registers. This is a far better
+  and reliable way of restoring the text mode to 80x25 mode, BUT it's not
+  perfect at all. Since it wants to be chipset-independent, it doesn't know
+  how to get an SVGA card from SVGA back to VGA.
+
+Final note:
+
+  set80 has become rather obsolete, now that its functionality has been
+  included in the SVGATextMode option `-o'.
+

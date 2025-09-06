@@ -1,0 +1,297 @@
+
+Some general notes on monitor timings ("Monitor primer for the faint of heart")
+-------------------------------------
+
+This story is about beams, split second control stuff, black (and white)
+magic, and Start-Trek-like techie mumbo jumbo. It is however NOT a science
+fiction story...
+
+
+All that fiddling with so-called "timings" might look a little dazzling to
+you at first. That is because it IS weird. But even weird things can become
+easy, once you understand them. Some more information might help you get
+started. The following explanation is FAR from complete, and probably
+oversimplified, but is might get some people going, and that's what it is
+intended for.
+
+1. introduction: a monitor
+
+All picture-tube based monitors (=the heavy kind ;-) use the same principle:
+a beam of light (or three for colour screens) scans the entire screen region
+from left to right, and with every horizontal line, it moves a little bit
+from top to bottom. It illuminates the screen on those places where the
+driver (the graphic card in our case) tells it to. It does this so fast that
+the eye cannot actually "see" the beam passing by. They eye is fooled by the
+speed of the beam into believing that it sees a stable image on the screen.
+
+Why do we need "timings"?
+
+That beam of light has to "know" how fast it has to go from left to right,
+and how many times it has to do that before starting at the top again. It
+has to know when to move, and where to move to. So if you want it to move
+repeatedly from left to right, you'll have to tell it when it must return to
+the left again, to start another pass from left to right, just below the
+line it has just drawn (because in that time, it will have moved a little
+bit downwards, under control of the VERTICAL timing signals).
+
+The same beam also has to know when to show a spot of light with a certain
+intensity, and when to shut up because it will soon travel quickly back to
+the left again, and you don't want to see THAT. What intensity it will have,
+is defined by the data in the memory on your graphic card. HOW that's done,
+is not your concern (at least not for THIS program).
+
+In order to know WHEN it has to start on the left edge again, you need a
+SYNCHRONIZATION signal ("sync" for short). When the horizontal sync shows
+up, the beam has to move back to the left edge, so it can draw a new line.
+Ideally, the beam would return to the left in no time, so it can start
+drawing a new line right away. Alas, as with most things in nature, the
+faster you want to move something, the more energy you'll have to put in.
+
+And you don't want to pay a MegaWatt power-bill just because your monitor is
+VERY fast at returning its beam to a new starting position, do you?
+
+You will have to allow some time for the beam to hurry back to the left.
+Some appropriately call it "flyback" time. That is why you need "BLANKING"
+time. During that time, you cannot use the beam to show useful information.
+It must be allowed to "fly" back to the left, without you seeing it. i.e.:
+it must be "blanked away" during that time. The better the monitor,the
+faster the beam can be moved back.
+
+
+2. The timing specification
+
+And all those things are what you define in that 8-number string in the
+TextConfig file (or the XF86Config file for X-windows). Look at this example
+for our 100x37 text mode:
+
+  "100x37"  50.00   800 848 880 1032    600 600 606 630   -hsync -vsync font 8x16
+                    -----------------------------------
+                 
+This section will deal with the underlined part in more detail than in the
+section explaining the entire line (somewhere before this one).
+
+But first: the pixel clock. That is the second number in the entire
+description line (50.00). 50 MHz = 50 MegaHertz = 50 million clock pulses
+per second. A new pixel (dot) will be pulled out of the memory on your
+graphics card, and sent to the monitor beam every clock cycle. Your video
+card will essentially get a new dot and send it to the monitor 50 Million
+times per second.
+
+There are 2 groups of timings, with almost exactly the same meaning: the
+first group of 4 is for the horizontal movement of the beam (left to right,
+the "horizontal timing parameters"), while the second group of 4 controls
+the vertical movement of the beam (top to bottom, the "vertical timing
+parameters").
+
+The first group of numbers (horizontal parameters) are in units of pixel
+clocks: the clock in this case is 50 MHz, which means that each clock pulse
+lasts 20 billionths of a second (1 / 50 million).
+
+The second group of numbers (vertical parameters) are in units of HORIZONTAL
+sync signals: this means that for each vertical counter increment, the
+HORIZONTAL counter will count an entire cycle from 1 to 1032 (in this case)
+clocks of 50 MHz. You'll need this knowledge to determine H- and
+V-frequencies.
+
+But what do all the numbers mean ?
+
+Let's look at the horizontal timings: 800 848 880 1032
+
+The first number (800) tells the VGA chip (and the monitor) how many "active"
+pixels there are in each line. Those are the pixels you will be able to use,
+those will contain the graphics or text on the screen. 
+
+The last of the four numbers says when the ENTIRE video line is finished,
+including syncs and blanking. In this case, the entire video line, including
+the time for the beam to travel back to the left, must be finished in 1032
+pixel clock periods. The time BETWEEN 800 and 1032 will be used by the
+monitor to hide the fact that he is busy sweeping the beam back.
+
+The second number (848) tells the monitor WHEN it must START sweeping back
+the beam (= the start of the horizontal sync pulse). The third number (880)
+merely states the end of that sync pulse. Monitors need a certain time to be
+able to detect the presence of a sync pulse. Normally a minimum of around
+1/2 micro-second (=25 clock pulses at 50 MHz) but that depends heavily on
+the monitor. That is why there are TWO numbers for the sync. The difference
+between the middle two numbers determines how long the sync pulse will be
+active, so the monitor can detect it. A small summary:
+
+   800  =  number of pixel clocks for active (=visible) part of the line.
+   848  =  start of horizontal sync pulse
+   880  =  end of horizontal sync pulse
+   1032 =  end of entire line. This is when the NEXT line will begin.
+   
+At this point, we will be able to determine the horizontal frequency of the
+signal going to the monitor. Since there are 50 Million clock pulses per
+second, and since the entire line, including flyback, needs 1032 of those
+clock pulses, there will be 50,000,000 / 1032 = 48449 lines drawn per
+second. Bingo! We got the "horizontal refresh period" or the "horizontal
+frequency" of the signal going to the monitor: 48.449 kHz (kilo-Hertz = 1000
+Hz).
+
+Of course, your monitor must be able to handle that. Can it sweep that beam
+almost 50000 times per second from side to side and back? Some can, some
+cannot. The more expensive your monitor is, the faster it will probably be
+able to do that (price is not the only criterion, of course...).
+
+It is time to dive into your monitor manual and see what it can handle. Look
+up the "Technical Specifications" section, and look for something like
+"scanning frequency", or "vertical range" and "horizontal range" or
+whatever. Any numbers ending in "kHz" will probably relate to the horizontal
+range of the monitor. All VGA monitors can handle 30 kHz and up. Where "up"
+ends, depends on the monitor. Cheap SVGA monitors stop at 36 kHz, some at 39
+kHz, some at 48 kHz, some at 56 kHz, and some go on to 64 kHz. REALLY
+expensive things (I know at least ONE company who has them ;-) can even take
+upto 128 kHz. If you're into 29 inch 128 kHz monitors, and you have some
+bucks to spare, I can get you one...
+
+If the 48 kHz is in the range of your monitor, then you'll be able to use
+that. Otherwise, lower the pixel clock until you come up with something it
+CAN handle.
+
+BUT. There is also the vertical part of the story. It is almost identical to
+the horizontal part, except that this time we use the result of the
+horizontal calculations to determine vertical parameters. 
+
+Since the configuration line states a total of 630 lines, including the
+VERTICAL flyback and sync time, we will get a VERTICAL frequency of 48449 /
+630 = 76 Hertz. The VGA card (and the monitor) will draw a new screen 76
+times per second. The vertical "refresh" is 76 Hz. This is SO fast, that
+normal people will NOT see any flickering at all. Save those eyes!
+
+If your monitor couldn't handle a horizontal frequency of 48 kHz, and you
+lowered the pixel clock to 40 Mhz, so it would only be 38.759 kHz, the
+vertical frequency would ALSO drop, because it depends on the horizontal
+one: 38759 / 630 = 61. Now we have 61 Hz instead of 76. Still acceptable to
+most of us (but not as good...).
+
+
+3. blanking : what's that for?
+
+"Blanking", or the unused area of the signal sent to the monitor, is used to
+allow the monitor beam to return to the left (horizontal blanking) or back
+to the top (vertical blanking).
+
+If you would attempt to lose the blanking time completely (you could...),
+you would still get some sort of an image. BUT...
+
+Any monitor NEEDS some blanking. It uses it to determine what it will show
+as "black" ("black-level clamping", in the techie mumbo-jumbo). The reason
+for that lies in the fact that the monitor cannot determine what voltage of
+the incoming video signal is meant to mean "black". The generally agreed
+remedy for this is to put some "black" data close to the sync signal, so the
+monitor can sense this, and use that as a reference for the rest of the
+video signal.
+
+If you would decide to put real video in there, the monitor will say at the
+end of each line: "hey, the black level I sense here has changed to
+<anything that you are trying to display in that place>". And it will change
+it's interpretation of "black" to that new value. Anything BELOW that level
+will be made even blacker, and anything above that will be made whiter. If
+the blanking area was, say 70% white instead of black (0% white), then
+anything below 70% white would be shown "blacker than black", while anything
+above it would be shown 70% less white than intended. So full (100%) white
+would then show up as 30% white... And that's not what you intended. 
+
+That is the reason for those black stripes on the screen (or even a
+completely black screen, worst case) if you define a blanking area that is
+too small.
+
+There's still another reason for blanking. The hideous "flyback" mentionned
+earlier is not instantaneous, and the transition from a nice and slow linear
+move from left to right into a fast sweep back is not all that nice and
+sharp. Once the sync pulse is detected at the end of the screen, the beam
+starts to slow down, stops, and then moves faster and faster to the left.
+Once there, it slows down, and then starts moving to the right again. And
+after a certain while, it moves from left to right again in that very
+stable, linear movement, so that every pixel has the same width, and every
+line the same distance from the adjacent lines. The same goes for the
+vertical movement of the beam.
+
+WHERE your monitor actually samples the "black" value, depends on the brand.
+All you know is that it's somewhere near the sync. 
+
+If you define too little blanking, but still enough for that "black-level
+detection" to work all right, you will actually "see" (that is: you'll see
+the result of it) the beam slowing down and speeding up, because now it is
+not blanked away enough. The effect on the picture on screen will be that it
+is "compressed" on the edges.
+
+
+4. sync: being in control
+
+The sync pulses' first and most important use is to tell the monitor beam
+when to start "flying back", be it horizontally or vertically. That should
+be clear by now.
+
+Another thing to note is that the sync "reference" is the FIRST edge of the
+sync (in most cases). The second one is just there (I am repeating myself
+here) to allow the monitor to "see" it. It will be the relative position of
+that FIRST edge that will determine the image position, and the amount of
+blanking before and after the sync. 
+
+If the horizontal timing is defined as "800 848 880 1032", then the blank
+area BEFORE the sync (= at the right edge of the screen) will be 848-800
+pixels, and the blanking DURING and AFTER the flyback is 1032-848 pixels.
+How much blank pixels there are on the LEFT of the screen depends on how
+fast your monitor can sweep back. If your monitor would need 2 microseconds
+(= 100 clock pulses at 50 MHz) for flyback, then there are 132-848-100 black
+pixels on the LEFT side of the picture. The only catch is that you don't
+know how much time YOUR monitor needs for flyback... So some experimentation
+will be needed. 
+
+Due to blanking, syncs have a more subtle influence on the picture. The
+relative position of the sync pulse in the blanked area of both horizontal
+and vertical timing parameters determines the position of the image on your
+monitor.
+
+Any monitor always restarts drawing a new line (or a new picture) at exactly
+the same leftmost position. That should be independent of all other timings.
+After it has detected the sync signal, it needs a certain amount of
+"flyback" time, and then it starts at the same position on the left (for a
+horizontal sync) or at the top (vertical sync).
+
+If you defined much "blank" space at the END of the line (=before the sync),
+and little blanking AFTER the sync, then the image will be positionned
+closer to the left, because after re-starting from that fixed position on
+the left, the picture data starts relatively "soon". If you leave too little
+room after the sync, the beam will still be busy "flying back" when the
+picture data is already restarting to show up. You'll see a "folding" effect
+on the left of the screen.
+
+An example of this would be to define the following horizontal timings:
+
+	"800 1000 1032 1032"
+	
+As you can see, the LENGTH of the horizontal sync is still 32 pixels, but it
+has moved to the extreme right in the timing definition. Try it out! Now
+there is lots of blank space BEFORE the sync (=at the right of the screen,
+before the beam is instructed to move back to the left by the "start sync"
+number), and no space at all AFTER the sync. Probably not enough time for
+the beam to travel back. You will wittness the famous folding effect! come
+and see!
+
+The other extreme ("800 800 832 1032") will NOT always result in the same
+effect. Now you instruct the beam to start travelling back IMMEDIATELY after
+it has ended showing "active" video data. There will be virtually NO blank
+data at the rightmost edge of the screen, and MUCH of it at the left edge
+(=after the beam travelled back).
+
+BUT since the beam cannot possibly know it will have to travel back so soon,
+until it is actually told to do so, there will be NO folding effect. It will
+only start to travell back at the start of the sync, and by then the blank
+area has JUST started...
+
+Theoretically, yes. In practice, sometimes not. You might WANT to show data
+on the rightmost edge of your screen, but it could very well be that your
+monitor cannot reach out that far to the right. The beam might "bump into
+the right edge" way before the sync comes around to tell it to go back... So
+you WILL sometimes wittness something much like the folding effect, but then
+due to limitations in the monitor, not due to your akward timings specs.
+
+Again: all this also applies to VERTICAL timings. In fact, you'll see a lot
+of vertical timing specs where the vertical sync comes right after the end
+of the active video data.
+
+And that's all folks...
+

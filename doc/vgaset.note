@@ -1,0 +1,84 @@
+NOTE on vgaset!
+---------------
+
+The "vgaset" utility on most Linux systems has this really weird tendency to
+"change" vertical timing parameters before showing them to you. As an
+example, look at this line of output from vgaset:
+
+kmg> vgaset
+1056 1072 1232 1280     960 978 982 1042
+
+It was executed on a TVGA8900CL card, in textmode, at 132x60 character mode
+(NOT changed with this program: this is the standard BIOS text mode). If you
+calculate frequencies from those numbers, you get a Horizontal frequency of
+40.00/1280 = 31.250 kHz (OK!), and a vertical frequency of just 31250/1042 =
+30 Hz. Now that is LOW. In fact, I KNOW it is 60 Hz, like most textmodes
+(some are 70 Hz, but NONE are 30 Hz.  Nobody would settle for that). I have
+my own program to read VGA registers, and THEY show all vertical timigs to
+be HALF of the ones shown by vgaset. So it REALLY is:
+
+1056 1072 1232 1280     480 489 491 521
+
+I have NO idea why vgaset does this. I checked the code, and there actually
+is a routine in there that doubles all vertical timings (before printing
+them) repeatedly, until the total vertical size is AT LEAST half as much as
+the total horizontal size. In our case, 521*2 is less than 1280, so it
+doubles the vertical timings ONCE, since then 960*2 IS greater than 1280...
+
+
+
+Some say that that 'trick' was used to 'intelligently' display the REAL
+parameters in interlaced mode: if you would use an unchanged vgaset on an
+interlaced mode, it would give you HALF the vertical sizes that were REALLY
+used. It is impossible (?) to detect interlacing without chipset-specific
+code, so vgaset was changed to 'detect' it using the ratio between H and V
+size: the latter case (1056x480) is quite uncommon in graphics mode, since
+most modes use the 4/3 'golden ratio', because all common monitor screens
+have the same 4/3 H/V ratio.
+
+Take for instance the popular 800x600 mode: 800/600 = 4/3. If vgaset would
+be run from such a mode, it WOULD detect it as 800x600. But if that mode
+were to be INTERLACED, it would show up as 800x300! And since this is
+probably a mode that is 'never' used (it would look squeezed horizontally),
+they assume it was an interlaced mode, and multiply all vertical sizes by 2.
+
+This is al very sensible in graphics mode, but in text mode, things are not
+that easy. The H/V ratio of a text mode is not only determined by the actual
+H/V _pixel_ ratio, but also by the font size: a 1056x344 mode with an 8x8
+font looks EXACTLY the same as a 1056x688 mode with a 8x16 font (except for
+the detail of the characters). And BOTH are non-interlaced 132x43 text
+displays.
+
+
+
+The timings that vgaset actually uses to program the VGA chip are the REAL
+ones (before that doubling process). So if you run vgaset on a 132x60
+character text display, and use THOSE timings, you might run into a real
+surprise, because if you type the timing-line from vgaset into the
+TextConfig file for this program, it will give you a 132x120 character
+display at 30 Hz !!!
+
+I know of NO way to find out if vgaset is lying to you, except by pulling
+the register contents from the chips with another program (like the included
+'grabmode'), or using your common sense, and do some calculations before
+blindly copying vgaset timings!
+
+
+| UPDATE: The original version of vgaset (which doesn't show that strange
+| behaviour) is included in the SVGATextMode distribution, with kind
+| permission from the author. Use this one if you are unsure
+| about your own "vgaset", or if you don't have it at all.
+
+
+Final note: it's probably better not to use vgaset AT ALL just for grabbing
+text modes for inclusion in the TextConfig file. Use the included tool
+'grabmode': it outputs a line that can be pasted into the TextConfig line
+directly.
+
+Of course you still need vgaset to move the screen around etc., but then the
+mode parameters it displays are not that important anymore. The vertical
+timings from vgaset COULD show up divided by two, so you cannot copy them
+immediately int the TextConfig. Either use your common sense together with
+what this text told you about vgaset, or use grabmode again after exiting
+from vgaset (with the changed screen position still intact, as changed by
+vgaset).

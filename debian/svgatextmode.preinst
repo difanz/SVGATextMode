@@ -1,0 +1,54 @@
+#! /bin/sh
+
+set -e
+
+if [ "$1" = "install" ] || [ "$1" = "upgrade" ] && [ -f /etc/TextConfig ];
+then
+	if ! grep -q "@stm_version_number@.1.9" /etc/TextConfig
+	then
+		cat <<EOF
+
+** NOTE: SVGATextMode-1.9 contains fixes for the VGA register upper
+   limits.  In particular you may find that any modes which had their
+   Total Vertical Lines set > 1023 have become invalid.  There were
+   several modes in previous versions of TextConfig which fit this
+   description, and SVGATextMode-1.9 will fail if it reads them.  It is
+   recommended that you replace your existing TextConfig with the one
+   supplied by this package as it contains fixes for this and several
+   other problems.  You will have to reapply any custom changes you
+   have made.. 
+
+Press [ENTER] to continue.
+
+EOF
+	read line
+	fi
+fi
+
+# warn about change to console-tools
+
+if [ "$1" = "install" ] || [ "$1" = "upgrade" ] && dpkg --compare-versions "$2" lt-nl 1.9-2;
+then
+	cat <<EOF
+
+  SVGATextMode is now configured by default to operate with the
+  console-tools package.  It appears you presently have configuration
+  files installed from a previous version designed to work with the
+  kbd package.  If you are installing console-tools now or already
+  have it installed it is recommended that you either upgrade
+  /etc/TextConfig when prompted (in which case you will have to reapply
+  any custom changes there) or edit your FontProg setting to be:
+
+  FontProg "/usr/bin/consolechars -f"
+
+  If you will still be using kbd then you should continue to use
+  your old TextConfig.
+
+Press [ENTER] to continue.
+
+EOF
+	read line
+fi
+
+#DEBHELPER#
+

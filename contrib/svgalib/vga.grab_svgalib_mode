@@ -1,0 +1,51 @@
+#!/bin/sh
+#
+#
+# This is an example application of the getVGAreg tool
+#
+# This script produces an svgalib-compatible mode line for an ET4000, from the
+# current mode. Running this from X will enable you to use EXACTLY the same
+# mode from svgalib as from X.
+#
+# It can be easily adapted for other cards that use the dynamic configuration
+# mode of svgalib. 
+#
+# written by Kris Coryn, adapted for S3 by Koen Gadeyne
+#
+
+GX=../../getVGAreg
+CLOCK=`../../clockprobe`
+
+echo "
+/* mode -- $1 */
+/* Video timing:
+$CLOCK */
+
+static unsigned char g$1_regs[xx] = { 
+\
+  `$GX -x CRTC 0`,`$GX -x CRTC 1`,`$GX -x CRTC 2`,`$GX -x CRTC 3`,\
+`$GX -x CRTC 4`,`$GX -x CRTC 5`,`$GX -x CRTC 6`,`$GX -x CRTC 7`,\
+`$GX -x CRTC 8`,`$GX -x CRTC 9`,`$GX -x CRTC 10`,`$GX -x CRTC 11`,
+\
+  `$GX -x CRTC 12`,`$GX -x CRTC 13`,`$GX -x CRTC 14`,`$GX -x CRTC 15`,\
+`$GX -x CRTC 16`,`$GX -x CRTC 17`,`$GX -x CRTC 18`,`$GX -x CRTC 19`,\
+`$GX -x CRTC 20`,`$GX -x CRTC 21`,`$GX -x CRTC 22`,`$GX -x CRTC 23`,
+\
+  `$GX -x ATRCTL 0`,`$GX -x ATRCTL 1`,`$GX -x ATRCTL 2`,`$GX -x ATRCTL 3`,\
+`$GX -x ATRCTL 4`,`$GX -x ATRCTL 5`,`$GX -x ATRCTL 6`,`$GX -x ATRCTL 7`,\
+`$GX -x ATRCTL 8`,`$GX -x ATRCTL 9`,`$GX -x ATRCTL 10`,`$GX -x ATRCTL 11`,
+\
+  `$GX -x ATRCTL 12`,`$GX -x ATRCTL 13`,`$GX -x ATRCTL 14`,`$GX -x ATRCTL 15`,\
+`$GX -x ATRCTL 16`,`$GX -x ATRCTL 17`,`$GX -x ATRCTL 18`,`$GX -x ATRCTL 19`,\
+`$GX -x ATRCTL 20`,
+\
+  `$GX -x GRCTL 0`,`$GX -x GRCTL 1`,`$GX -x GRCTL 2`,`$GX -x GRCTL 3`,\
+`$GX -x GRCTL 4`,`$GX -x GRCTL 5`,`$GX -x GRCTL 6`,`$GX -x GRCTL 7`,\
+`$GX -x GRCTL 8`,
+\
+  `$GX -x SEQ 0`,`$GX -x SEQ 1`,`$GX -x SEQ 2`,`$GX -x SEQ 3`,`$GX -x SEQ 4`,
+\
+  `$GX -x MISC`,
+\
+};
+"

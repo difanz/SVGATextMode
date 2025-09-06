@@ -1,0 +1,77 @@
+
+Linux/Alpha is the DEC Alpha workstation version of Linux. Since it
+basically uses the same hardware concepts as "normal" high-end PC's (PCI
+busses, and most have an ISA bus bridge - this is a very smart move from the
+Digital engineers), it is conceivable  to run SVGATextMode on them.
+
+Anyone having an Alpha machine, with a PCI-bus based VGA card that is
+supported by SVGATextMode, MIGHT (note the stress!) be able to run
+SVGAtextMode to get rid of that louzy 80x25 text mode.
+
+David Mosberger-Tang <davidm@cs.arizona.edu> has done a quick port of
+SVGATextMode (0.7) to the Alpha architecture, and it seems to work on his system. 
+
+Note that this was just a quick-and-dirty porting job, just to get it to
+work. Also, some of the extra tools have NOT (yet) be ported. 
+
+It works (at least) on his #9 GXE 64 PCI card (S3 864 chip).
+
+
+
+Here's the "what and where" (written by David, slightly edited):
+
+  I put together a source and a binary package. The source package contains
+  the SVGATextMode source plus the loadfont program. Except for adding
+  loadfont, I also fixed the source so that all programs compile under OSF/1
+  (just minor hacks that are necessary until we have a good Linux build
+  environment). To use loadfont, you'll need console fonts as available in
+  kbd-0.89, for example.
+
+  The binary package contains the programs:
+
+  setpalette, loadfont, grabmode, getpalette, clockprobe, SVGATextMode
+    
+  As far as I can tell, the all seem to work just fine on my Noname
+  Alpha PC.
+    
+  Each package comes with an LSM entry.  Be sure to check the MD5
+  checksum before using the binaries (it's listed in the LSM for the
+  binary distribution).
+    
+  The packages are available at ftp://cage.cs.arizona.edu/pub/davidm/linux.
+  The files are:
+    
+         SVGATextMode-0.7axp-220495.tar.gz       (source)
+         SVGATextMode-0.7axp-220495-bin.tar.gz   (binary distr.)
+                    
+  The binary distribution also contains the console fonts distributed
+  with kbd-0.89.tar.gz and fontpack.tgz.
+                    
+  Two minor things: loadfont won't work with the current kernel because
+  there is a minor bug in the console driver.  I have a patch that fixes
+  the problem, but want to do some more hacking before creating a kernel
+  patch.  If anybody wants to use loadfont urgently, drop a note and
+  I'll send you the patch.
+                    
+  The second minor hitch is that I had to link /bin/sh to /usr/bin/sh in
+  order to get OSF/1's system() call working (the funny thing is that
+  just adding /bin/sh to /etc/shells didn't work).  So, if SVGATextMode
+  gives you an error of the form:
+                    
+         loadfont: Not owner
+                            
+  Then just make sure that link exists and everything should be fine.
+                            
+  Enjoy!
+  
+###
+# UPDATE: SVGATextMode should now compile "out-of-the-box" on the
+# Alpha machines: the Makefile finds out what machine we are on, 
+# and the rest of the source now has #ifdef's in it for Alpha
+#
+# So in theory, SVGATextMOde, starting with version 0.9, should
+# work and compile on Linux/Alpha.
+#
+# This is (again) thanks to Mr Mosberger-Tang!
+###
+  

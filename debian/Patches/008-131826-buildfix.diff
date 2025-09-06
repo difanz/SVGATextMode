@@ -1,0 +1,12 @@
+diff -urN svgatextmode-1.9/cfgfile.y svgatextmode-1.9.fix/cfgfile.y
+--- svgatextmode-1.9/cfgfile.y  Sat Sep  5 23:52:04 1998
++++ svgatextmode-1.9.fix/cfgfile.y      Fri Feb  1 20:03:37 2002
+@@ -24,6 +24,7 @@
+
+ /****************************************************************************/
+ /* C DECLARATIONS */
++#include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include "cfg_structs.h"
+

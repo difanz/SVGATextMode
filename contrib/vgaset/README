@@ -1,0 +1,17 @@
+This directory contains the program vgaset, a program to interactively
+set up VGA cards.
+
+As of March, 1998, this program or any of its prceeding versions may
+be used under the terms of the GNU General Public License, which
+should be attached as the file COPYING in this directory.
+
+  Greg Lehey
+  LEMIS
+  PO Box 460
+  Echunga SA 5153
+  Australia
+
+  Phone:  +61-8-8388-8286
+  Fax:    +61-8-8388-8725
+  Mobile: +61-41-739-7062
+  Email:  grog@lemis.com

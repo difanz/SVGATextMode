@@ -1,0 +1,93 @@
+Various notes on svgatextmode for Debian
+-----------------------
+
+As of svgatextmode_1.9-2 the default configuration is to use the font
+program from the console-tools package.  If you must continue to use
+kbd you will need to edit the FontProg setting in etc/Textconfig but
+as kbd is slowly being deprecated upgrading to console-tools is
+probably worth considering ;-)
+
+============================================================================
+
+If you experience problems after upgrading to SVGATextMode-1.9, it may be
+because some of the modes in your old TextConfig have been invalidated by
+new upstream mode checking.  Mode lines with Vertical Totals > 1023 are
+subject to this.  It is recommended that you install the TextConfig file
+that came with this package and reapply any custom changes to that.
+
+It is possible that the offending lines will be taken care of by the
+install scripts in a later release ...
+( submissions to this end are welcome ;)
+
+============================================================================
+
+SVGATextMode is now started from /etc/init.d/svgatextmode instead of from 
+rc.boot.  This allows it to set default font even if the fonts are located on
+a partition that is not mounted early in the boot process.
+
+10/4/99  - it is now started from rcS.d/S40... which should be after the mount
+	   process.
+22/10/99 - oops, moved that to S60 so it now starts after /var/run is cleaned
+	   (only significant if you poweroff without a proper shutdown)
+2/1/00   - It's now also only started if no framebuffer devices are reported
+	   by /proc/fb.  see STM_nocheckfb(5)
+
+============================================================================
+
+If you need more resolution, or want to load a different font, then please
+customize /etc/TextConfig according to what kind of video card you have.
+
+/etc/svgamode file is no longer needed, because you can set the default mode
+in the /etc/TextConfig file.
+
+You can restore the screen to 80x25 mode with 
+
+stm 80x25
+
+at all times.
+
+(Does not work with some high level video boards that do have
+some problems with the low refresh rates when in native mode!)
+
+============================================================================
+
+If you have installed kbd >=0.92-3, and did not replace TextConfig conffile on
+upgrade, you will need to edit it, and change FontPath to
+/usr/share/consolefonts .
+
+============================================================================
+
+If your card is buggy, and you get a lot of garbage on your screen after
+reboot, add the following line to your /etc/init.d/reboot
+test -x /sbin/stm -a -f /etc/svgamode && stm 80x25 || true
+This will reset your video card on reboot.
+
+===========================================================================
+
+For some PCI cards, notably Matrox Millenium, it is in some cases 
+necessary to type 'cat /proc/pci' before using stm.  If your card 
+requires it, you need to add this line to /etc/init.d/svgatextmode, 
+under 'start)' :
+
+cat /proc/pci &>/dev/null 
+
+==========================================================================
+
+If you are having problems with keeping gpm happy after screen resize, make sure
+your /usr/sbin/STM_reset has the following command in it:
+
+if [ -f /var/run/gpm.pid ]
+then
+	echo "Screen resized to $1x$2. Restarting GPM..."
+	kill -WINCH `cat /var/run/gpm.pid`     # gets pid from current gpm daemon
+                , and send resize signal to it
+fi
+
+Also make sure you have the following uncommented in /etc/TextConfig:
+
+ResetProg "/usr/sbin/STM_reset"
+==========================================================================
+
+Igor Grobman, <igor@debian.org>
+
+updated by Ron Lee <ron@debian.org>, Fri,  9 Apr 1999 21:15:51 +0930

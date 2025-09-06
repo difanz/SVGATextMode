@@ -1,0 +1,173 @@
+                 get/set VGAreg, a simple VGA register hacking program
+                 =====================================================
+
+This little tool is really included here for those who cannot resist to hack
+around with their VGA cards, without really having to know how to access
+them from Linux. 
+
+It should be considered even MORE dangerous than SVGATextMode ;-) If that is
+possible...
+
+It is FAR from complete, and should get a complete re-write. But it helped
+me to test some stuff I needed for SVGATextMode. Anyone tempted to do better
+is hereby invited to do so.
+
+The syntax is quite easy: 
+
+  setVGAreg: version 1.5. (c) 1995,1996,1997 Koen Gadeyne.
+    Usage: ../setVGAreg [options] VGA_register_set [register_index] data
+
+    Options: -h  print usage information
+             -n  Don't program VGA hardware
+             -d  print debugging information
+             -u  unlock chipset-specific registers
+                 (needs SVGAtextMode config file)
+                 You will need this to avoid a core dump on some cards.
+             -p  produce 'pipeable' decimal output (= just numbers, no text)
+             -x  produce 'pipeable' hex output
+             -t <ConfigFile>
+                   Use <ConfigFile> instead of the default (/etc/TextConfig)
+                   (only useful for '-u' option)
+             -s  `data' is a bitmask for setting bits in the register
+             -c  `data' is a bitmask for clearing bits in the register
+
+    register_index: An index in the specified VGA_register_set,
+                    In decimal (e.g. '24'), hex ('0x18') or octal ('030').
+                    Only needed when it is an indexed (indirect) VGA register.
+
+    data: the data to program into the specified register (dec|hex|oct).
+          (or the bitmask for the `-s' (set) or `-c' (clear) options)
+
+    VGA_register_set: any of the following:
+    `CRTC' `SEQ' `ATRCTL' `GRCTL' `MISC' `DAC_STATUS' `DAC_MASK' `DAC' `ET6000' `idx' `io'
+
+
+  getVGAreg: version 1.5. (c) 1995,1996,1997 Koen Gadeyne.
+    Usage: ../getVGAreg [options] VGA_register_set [register_index] 
+
+    Options: -h  print usage information
+             -n  Don't program VGA hardware
+             -d  print debugging information
+             -u  unlock chipset-specific registers
+                 (needs SVGAtextMode config file)
+                 You will need this to avoid a core dump on some cards.
+             -p  produce 'pipeable' decimal output (= just numbers, no text)
+             -x  produce 'pipeable' hex output
+             -t <ConfigFile>
+                   Use <ConfigFile> instead of the default (/etc/TextConfig)
+                   (only useful for '-u' option)
+
+    register_index: An index in the specified VGA_register_set,
+                    In decimal (e.g. '24'), hex ('0x18') or octal ('030').
+                    Only needed when it is an indexed (indirect) VGA register.
+
+    VGA_register_set: any of the following:
+    `CRTC' `SEQ' `ATRCTL' `GRCTL' `MISC' `DAC_STATUS' `DAC_MASK' `DAC' `ET6000' `idx' `io'
+
+     
+
+The VGA_register_set is a mnemonic reference to an actual register in the
+VGA chip. Most people are used to referring to hex IO addresses instead of
+these names. Below is a table that cross-references between both notations.
+
+Most VGA registers use an 'index-data' addressing system, where e.g. 0x3C4
+is the base address of the sequencer registers. In that address, the index
+into the array of sequencer registers is programmed, and in the address just
+above it (0x3C5 in this example) the actual data is stored.
+
+In the table below, if there is a checkmark in the "indexed addressing"
+column, this means this VGA register uses the indexed method, and thus the
+<base_address> (next column) is the address to the index register, while
+<base_address+1> is the data register.
+
+For indexed addressing registers, getVGAreg and setVGAreg will require an
+index address in addition to the mnemonic address designation.
+
+As you can see, VGA is a fine mess.
+
+	mnemonic	indexed addressing		base_address
+
+
+	`CRTC'		        *		0x3D4 (color); 0x3B4 (mono)
+
+	`SEQ'			*			0x3C4
+
+	`ATRCTL'		*			0x3C0
+						0x3C1 (read data) 0x3C0 (write data)
+
+	`GRCTL'			*			0x3CE
+
+	`MISC'					0x3CC (read); 0x3C2 (write)
+
+	`DAC_STATUS'					0x3C7 (read only)
+
+	`DAC_MASK'					0x3C6
+
+	`DAC'					0x3C7 (index for reading)
+						0x3C8 (index for writing)
+						0x3C9 (data register)
+
+	`ET6000'		* 		ET6000 PCI configuration space
+
+        `idx'			*		as specified on command line.
+        					data register is assumed to be on 
+        					I/O address "index+1",
+        					as in most VGA registers
+
+        `io'					direct I/O address (not indirect)
+
+
+An example get/setVGAreg session could be:  ("> " denotes user input, the
+rest is output from the program)
+
+> getVGAreg CRTC 0x09
+VGA 'CRTC' register, index 9 (=0x9) contains 107 (=0x6b)
+
+> setVGAreg CRTC 0x09 0xeb
+VGA 'CRTC' register, index 9 (=0x9) contains 235 (=0xeb)
+
+
+Which will do something nice to your screen... ;-) (no harm done, don't be
+scared).
+
+
+The '-p' and '-h' options output just one number (the contents of the
+register). This is useful when used in a pipe, or in a script (this one was
+for an ET4000 special register, hence the '-u' flag for unlocking extended
+registers):
+
+      #!/bin/bash              
+      ORIG31=`/sbin/getVGAreg -up CRTC 0x31`
+      echo Original CRTC reg 0x31 contents: $ORIG31
+      /sbin/setVGAreg -u CRTC 0x31 0x00
+      /usr/bin/X11/XF86_SVGA   
+      /sbin/setVGAreg -u CRTC 0x31 $ORIG31
+
+
+As an example of the `idx' and `io' pseudo-registers, here's two equivalent
+commands:
+
+	
+> setVGAreg CRTC 0x09 0xeb
+
+	is equivalent to
+
+> setVGAreg idx 0x3D4 0x09 0xeb
+
+and
+
+> getVGAreg MISC
+
+	is equivalent to
+
+> getVGAreg io 0x3CC
+
+
+ 
+WARNING: since different SVGA cards use different extra address ranges in any 
+of the register sets, no checking is done to make sure you don't attempt to change
+a non-existing register!
+
+This is just a hacking tool! Use at your own risk. It was NOT intended to be 
+idiot proof! If you don't understand all this, then don't bother trying to use it.
+

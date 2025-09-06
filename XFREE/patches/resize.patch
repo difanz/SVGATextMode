@@ -1,0 +1,35 @@
+--- ./drivers/char/tty_io.c.orig	Wed Feb  8 13:41:25 1995
++++ ./drivers/char/tty_io.c	Wed Feb  8 14:19:30 1995
+@@ -1289,6 +1289,7 @@
+ 	pid_t pgrp;
+ 	unsigned char	ch;
+ 	char	mbz = 0;
++	extern unsigned long video_num_columns, video_num_lines;
+ 	
+ 	tty = (struct tty_struct *)file->private_data;
+ 	if (tty_paranoia_check(tty, inode->i_rdev, "tty_ioctl"))
+@@ -1315,6 +1316,11 @@
+ 					     sizeof (struct winsize));
+ 			if (retval)
+ 				return retval;
++			if (tty->driver.type == TTY_DRIVER_TYPE_CONSOLE) {
++				/* maybe the console was resized after opening */
++				tty->winsize.ws_row = video_num_lines;
++				tty->winsize.ws_col = video_num_columns;
++			}
+ 			memcpy_tofs((struct winsize *) arg, &tty->winsize,
+ 				    sizeof (struct winsize));
+ 			return 0;
+--- ./drivers/char/console.c.orig	Fri Jan 27 21:08:25 1995
++++ ./drivers/char/console.c	Wed Feb  8 13:51:43 1995
+@@ -196,8 +196,8 @@
+ static unsigned char	video_page;		/* Initial video page (unused)  */
+        unsigned short	video_port_reg;		/* Video register select port	*/
+        unsigned short	video_port_val;		/* Video register value port	*/
+-static unsigned long	video_num_columns;	/* Number of text columns	*/
+-static unsigned long	video_num_lines;	/* Number of text lines		*/
++       unsigned long	video_num_columns;	/* Number of text columns	*/
++       unsigned long	video_num_lines;	/* Number of text lines		*/
+ static unsigned long	video_size_row;
+ static unsigned long	video_screen_size;
+ static int can_do_color = 0;

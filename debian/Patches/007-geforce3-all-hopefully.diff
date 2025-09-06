@@ -1,0 +1,95 @@
+--- svgatextmode-1.9/XFREE/riva128_clock-pristine.c	Sat Oct 13 21:36:22 2001
++++ svgatextmode-1.9/XFREE/riva128_clock.c	Sat Oct 13 23:42:01 2001
+@@ -77,14 +77,64 @@
+ #define PCI_VENDOR_NVIDIA_SGS   0x12d2
+ #define PCI_CHIP_RIVA128        0x0018
+ #define PCI_VENDOR_ID_NVIDIA           0x10de
+-#define PCI_DEVICE_ID_NVIDIA_TNT       0x0020
+-#define PCI_DEVICE_ID_NVIDIA_TNT2      0x0028
+-#define PCI_DEVICE_ID_NVIDIA_UTNT2     0x0029
+-#define PCI_DEVICE_ID_NVIDIA_VTNT2     0x002C
+-#define PCI_DEVICE_ID_NVIDIA_UVTNT2    0x002D
+-#define PCI_DEVICE_ID_NVIDIA_ITNT2     0x00A0
+-#define PCI_DEVICE_ID_NVIDIA_GEFORCE   0x0100
+-#define PCI_DEVICE_ID_NVIDIA_GEFORCE2  0x0110
++
++/* Straight from NVidia's X4.x driver README:
++
++  NVIDIA CHIP NAME               DEVICE PCI ID
++
++  o RIVA TNT                     0x0020
++  o RIVA TNT2                    0x0028
++  o RIVA TNT2 (Ultra)            0x0029
++  o RIVA TNT2 (Vanta)            0x002C
++  o RIVA TNT2 (M64)              0x002D
++  o RIVA TNT2                    0x002E
++  o RIVA TNT2                    0x002F
++  o RIVA TNT2 (Integrated)       0x00A0
++  o GeForce 256                  0x0100
++  o GeForce DDR                  0x0101
++  o Quadro                       0x0103
++  o GeForce2 MX                  0x0110
++  o GeForce2 MX 400              0x0110
++  o GeForce2 MX 200              0x0111
++  o GeForce2 MX 100              0x0111
++  o GeForce2 Go                  0x0112
++  o GeForce2 MXR                 0x0113
++  o Quadro2 Go                   0x0113
++  o GeForce2 Pro                 0x0150
++  o GeForce2 GTS                 0x0150
++  o GeForce2 GTS                 0x0151
++  o GeForce2 Ultra               0x0152
++  o Quadro2 Pro                  0x0153
++  o Quadro2 Ex                   0x0153
++  o GeForce3                     0x0200
++  o Quadro DDC                   0x0203
++ */
++unsigned short nvidia_pci_ids[] = {
++	0x0020,  /* TNT                                */
++	0x0028,  /* TNT2                               */
++	0x0029,  /* Ultra TNT2                         */
++	0x002C,  /* Vanta TNT2                         */
++	0x002D,  /* M64 TNT2                           */
++	0x002E,  /* TNT2 (?)                           */
++	0x002F,  /* TNT2 (?)                           */
++	0x00A0,  /* Integrated TNT2                    */
++	0x0100,  /* GeForce 256                        */
++	0x0101,  /* GeForce DDR                        */
++	0x0103,  /* Quadro                             */
++	0x0110,  /* GeForce2 MX, GeForce2 MX 400       */
++	0x0111,  /* GeForce2 MX 100, GeForce2 MX 200   */
++	0x0112,  /* GeForce2 Go                        */
++	0x0113,  /* GeForce2 MXR, Quadro2 Go           */
++	0x0150,  /* GeForce2 Pro, GeForce2 GTS         */
++	0x0151,  /* GeForce2 GTS (?)                   */
++	0x0152,  /* GeForce2 Ultra                     */
++	0x0153,  /* Quadro2 Pro, Quadro2 Ex            */
++	0x0200,  /* GeForce3                           */
++	0x0201,  /* GeForce3 Ti 200                    */
++	0x0202,  /* GeForce3 Ti 500 (unverified guess) */
++	0x0203,  /* Quadro DDC                         */
++	0        /* NULL terminator */
++};
+ 
+ vgaPCIInformation *vgaPCIInfo;
+ 
+@@ -202,14 +252,11 @@
+   		}
+   		if (pcr->_vendor == PCI_VENDOR_ID_NVIDIA)
+   		{
+-  			if (pcr->_device == PCI_DEVICE_ID_NVIDIA_TNT ||
+-  				pcr->_device == PCI_DEVICE_ID_NVIDIA_TNT2 ||
+-  				pcr->_device == PCI_DEVICE_ID_NVIDIA_UTNT2 ||
+-  				pcr->_device == PCI_DEVICE_ID_NVIDIA_VTNT2 ||
+-  				pcr->_device == PCI_DEVICE_ID_NVIDIA_GEFORCE ||
+-  				pcr->_device == PCI_DEVICE_ID_NVIDIA_GEFORCE2 ||
+-  				pcr->_device == PCI_DEVICE_ID_NVIDIA_UVTNT2 ||
+-  				pcr->_device == PCI_DEVICE_ID_NVIDIA_ITNT2)
++  			int supported = 0, tmpiter;
++  			for(tmpiter=0;nvidia_pci_ids[tmpiter];tmpiter++)
++  				if(nvidia_pci_ids[tmpiter] == pcr->_device)
++  					supported++;
++  			if (supported)
+   			{
+   				is_nv3 = 0;
+   				pll_coeff = 0x00010700;

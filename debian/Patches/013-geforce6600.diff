@@ -1,0 +1,243 @@
+the attached patch adds detection of some more nVidia GPUs to 
+svgatextmode utility, especially the 6600 & 6800 family of chips. The 
+chip detection code is based on the nvclock utility 
+(http://www.linuxhardware.org/nvclock/). Unfortunately I cannot test the 
+patch on anything else than my GF6600, but I hope it is so trivial it 
+should be bug-free.
+
+Regards,
+-- 
+Jindrich Makovicka
+
+--- riva128_clock.c.orig	2005-10-23 10:36:18.000000000 +0200
++++ riva128_clock.c	2005-10-23 11:27:18.087470384 +0200
+@@ -121,15 +121,53 @@
+ 
+ #define PCI_VENDOR_NVIDIA_SGS	0x12D2
+ 
++#define UNKNOWN 0
++#define NV5  (1<<0)
++#define NV10 (1<<1)
++#define NV17 (1<<2)
++#define NV1X (NV10 | NV17)
++#define NV20 (1<<3)
++#define NV25 (1<<4)
++#define NV2X (NV20 | NV25)
++#define NV30 (1<<5)
++#define NV31 (1<<6)
++#define NV35 (1<<7)
++#define NV3X (NV30 | NV31 | NV35)
++#define NV40 (1<<8)
++#define NV41 (1<<9)
++#define NV43 (1<<10)
++#define NV44 (1<<11)
++#define NV47 (1<<12)
++#define NV4X (NV40 | NV41 | NV43 | NV44 | NV47)
++
+ unsigned int nvidia_pci_ids[] = {
+ 	0x12D20018,	/*RIVA128*/
+ 	0x10DE0020,	/*RIVATNT*/
+ 	0x10DE0028,	/*RIVATNT2*/
++	0x10DE0029,	/*RIVATNT2Ultra*/
+ 	0x10DE002A,	/*UnknownTNT2*/
++	0x10DE002B,	/*RIVATNT2*/
+ 	0x10DE002C,	/*Vanta*/
+-	0x10DE0029,	/*RIVATNT2Ultra*/
+ 	0x10DE002D,	/*RIVATNT2Model64*/
++	0x10DE002E,	/*Vanta*/
++	0x10DE002F,	/*Vanta*/
++	0x10DE0091,     /*GeForce7800GTX*/
++	0x10DE0092,     /*GeForce7800GT*/
++	0x10DE0099,     /*GeForceGo7800GTX*/
++	0x10DE009D,     /*QuadroFX4500*/
+ 	0x10DE00A0,	/*AladdinTNT2*/
++	0x10DE00F0,     /*GeForce6800Ultra*/
++	0x10DE00F1,     /*GeForce6600GT*/
++        0x10DE00F2,     /*GeForce6600*/
++        0x10DE00F3,     /*GeForce6200*/
++        0x10DE00F8,     /*Quadro3400*/
++        0x10DE00F9,     /*GeForce6800Ultra*/
++        0x10DE00FA,     /*GeForcePCX5750*/
++        0x10DE00FB,     /*GeForcePCX5900*/
++        0x10DE00FC,     /*GeForcePCX5300*/
++        0x10DE00FD,     /*QuadroNVS280/FX330*/
++        0x10DE00FE,     /*QuadroFX1300*/
++        0x10DE00FF,     /*GeForcePCX4300*/
+ 	0x10DE0100,	/*GeForce256*/
+ 	0x10DE0101,	/*GeForceDDR*/
+ 	0x10DE0103,	/*Quadro*/
+@@ -137,6 +175,28 @@
+ 	0x10DE0111,	/*GeForce2MX100/200*/
+ 	0x10DE0112,	/*GeForce2Go*/
+ 	0x10DE0113,	/*Quadro2MXR/EX/Go*/
++        0x10DE0140,     /*GeForce6600GT*/
++        0x10DE0141,     /*GeForce6600*/
++        0x10DE0142,     /*GeForce6600LE*/
++        0x10DE0144,     /*GeForceGo6600*/
++        0x10DE0145,     /*GeForce6610XL*/
++        0x10DE0146,     /*GeForceGo6600TE/6200TE*/
++        0x10DE0147,     /*GeForce6700XL*/
++        0x10DE0148,     /*GeForce6600*/
++        0x10DE0149,     /*GeForce6600GT*/
++        0x10DE014E,     /*QuadroFX540*/
++        0x10DE014F,     /*GeForce6200*/
++        0x10DE0161,     /*GeForce6200TurboCache*/
++        0x10DE0162,     /*GeForce6600SETurboCache*/
++        0x10DE0164,     /*GeForceGo6200*/
++        0x10DE0165,     /*QuadroNVS285*/
++        0x10DE0166,     /*GeForceGo6400*/
++        0x10DE0167,     /*GeForceGo6200*/
++        0x10DE0168,     /*GeForceGo6400*/
++        0x10DE0211,     /*GeForce6800*/
++        0x10DE0212,     /*GeForce6800LE*/
++        0x10DE0215,     /*GeForce6800GT*/
++        0x10DE0221,     /*GeForce6200*/
+ 	0x10DE01A0,	/*GeForce2IntegratedGPU*/
+ 	0x10DE0150,	/*GeForce2GTS*/
+ 	0x10DE0151,	/*GeForce2Ti*/
+@@ -368,6 +428,102 @@
+     return (DeltaOld != 0xFFFFFFFF);
+ }
+ 
++// get GPU architecture
++short get_gpu_arch(int device_id)
++{
++    short arch = UNKNOWN;
++    switch(device_id & 0xff0)
++    {
++    case 0x20:
++	arch = NV5;
++	break;
++    case 0x100:
++    case 0x110:
++    case 0x150:
++    case 0x1a0:
++	arch = NV10;
++	break;
++    case 0x170:
++    case 0x180:
++    case 0x1f0:
++	arch = NV17;
++	break;
++    case 0x200:
++	arch = NV20;
++	break;
++    case 0x250:
++    case 0x280:
++    case 0x320:	/* We don't treat the FX5200/FX5500 as FX cards */
++	arch = NV25;
++	break;
++    case 0x300:
++	arch = NV30;
++	break;
++    case 0x330:
++	arch = NV35; /* Similar to NV30 but fanspeed stuff works differently */
++	break;
++	/* Give a seperate arch to FX5600/FX5700 cards as they need different code than other FX cards */
++    case 0x310:
++    case 0x340:
++	arch = NV31;
++	break;
++    case 0x40:
++    case 0x120:
++    case 0x130:
++    case 0x1d0:
++    case 0x210:
++    case 0x230:
++	arch = NV40;
++	break;
++    case 0xc0:
++	arch = NV41;
++	break;
++    case 0x140:
++	arch = NV43; /* Similar to NV40 but with different fanspeed code */
++	break;
++    case 0x160:
++    case 0x220:
++	arch = NV44;
++	break;
++    case 0x90:
++	arch = NV47;
++	break;
++    case 0xf0:
++	/* The code above doesn't work for pci-express cards as multiple architectures share one id-range */
++	switch(device_id)
++	{
++	case 0xf0: /* 6800 */
++	case 0xf9: /* 6800Ultra */
++	    arch = NV40;
++	    break;
++	case 0xf1: /* 6600/6600GT */
++	case 0xf2: /* 6600GT */
++	case 0xf3: /* 6200 */
++	    arch = NV43;
++	    break;
++	case 0xfa: /* PCX5700 */
++	    arch = NV31;
++	    break;
++	case 0xf8: /* QuadroFX 3400 */
++	case 0xfb: /* PCX5900 */
++	    arch = NV35;
++	    break;
++	case 0xfc: /* PCX5300 */
++	case 0xfd: /* Quadro NVS280/FX330, FX5200 based? */
++	case 0xff: /* PCX4300 */
++	    arch = NV25;
++	    break;
++	case 0xfe: /* Quadro 1300, has the same id as a FX3000 */
++	    arch = NV35;
++	    break;
++	}
++	break;
++    default:
++	arch = UNKNOWN;
++    }
++    return arch;
++}
++
+ 
+ // Set the clock to the given speed (in KHz)
+ Bool RIVA128ClockSelect( int clockspeed )
+@@ -380,7 +536,7 @@
+   unsigned pll1, pll2;
+   int i = 0;
+   pciConfigPtr pcr = NULL;
+-  int implementation = 0;
++  int arch = 0;
+   int fd;
+ 
+   vgaPCIInfo = vgaGetPCIInfo();
+@@ -393,8 +549,8 @@
+ 				supported++;
+ 				
+ 		if (supported) {
+-			implementation = pcr->_device & 0x0ff0;
+ 			is_nv3 = (pcr->_vendor == PCI_VENDOR_NVIDIA_SGS) ? 1 : 0;
++		        if (!is_nv3) arch = get_gpu_arch(pcr->_device);
+ 			break;
+   		}
+   	}
+@@ -447,20 +603,17 @@
+ 	pll_coeff = 0x00010100;
+   	max_clock = NV3_MAX_CLOCK_IN_KHZ;
+ 	CrystalFreqKHz = (PEXTDEV[0x00000000/4] & 0x00000020) ? 14318 : 13500;
++	twoStagePLL = 0;
+   } 
+   else
+   {
+ 	pll_coeff = 0x00000700;
+ 	CrystalFreqKHz = (PEXTDEV[0x0000/4] & (1 << 6)) ? 14318 : 13500;		
+-	if((implementation == 0x0170) ||
+-	   (implementation == 0x0180) ||
+-	   (implementation == 0x01F0) ||
+-	   (implementation >= 0x0250))
++	if(arch & (NV17 | NV2X | NV3X | NV4X))
+ 	{
+ 	   if(PEXTDEV[0x0000/4] & (1 << 22)) CrystalFreqKHz = 27000;
+ 	}
+-	twoStagePLL = (implementation == 0x310) ||
+-		      (implementation == 0x340);
++	twoStagePLL = (arch & (NV31 | NV35 | NV4X));
+ 
+   	max_clock = twoStagePLL ? NV31_34_MAX_CLOCK_IN_KHZ
+ 			        : NV4_MAX_CLOCK_IN_KHZ;

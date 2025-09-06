@@ -1,0 +1,30 @@
+Source: svgatextmode
+Section: admin
+Priority: extra
+Build-Depends: debhelper (>=4.0), flex, bison
+Maintainer: Ron Lee <ron@debian.org> 
+Standards-Version: 3.6.2.1
+
+Package: svgatextmode
+Architecture: any
+Depends: console-tools, ${shlibs:Depends}
+Suggests: svgalib-bin
+Description: enable higher resolution text modes
+ This program is designed to greatly improve the normal (EGA-based) text modes
+ on your Linux machine. It uses an Xconfig-like configuration file to set up
+ better looking text modes. (higher resolution, larger font size, higher
+ display refresh...) This is already a big boon on normal 14" displays, and
+ it is an immense difference on larger and better (15" and up) screens.
+ It stems from the idea that it is a real waste of hardware to use EGA
+ text modes on an SVGA-card, which was designed to do much better than that.
+ .
+ This package is mainly of use to people with older hardware that is not
+ adequately supported by the Linux framebuffer drivers.  If you abhor 80x25
+ text modes as much as I do but have a modern CPU and video hardware, then
+ building a kernel with framebuffer support is probably a better option.
+ Some newer video cards are not supported by this package at all (but are
+ supported by the kernel fb drivers)
+ .
+ WARNING: This program will not work on non-VGA based systems.  Installing it 
+ will not do any harm, but activating the program can.
+

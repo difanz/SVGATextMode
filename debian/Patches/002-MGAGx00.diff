@@ -1,0 +1,303 @@
+This patch was written by Tom Zerucha <tz@execpc.com> and was obtained from:
+www.execpc.com/~tz
+
+Only in SVGAT.Gx00: SVGATextMode
+diff -Bbur SVGATextMode-1.9-src/TextConfig SVGAT.Gx00/TextConfig
+--- SVGATextMode-1.9-src/TextConfig	Tue Oct 13 15:09:15 1998
++++ SVGAT.Gx00/TextConfig	Sun Jan  9 18:46:29 2000
+@@ -298,6 +298,7 @@
+ #Chipset "matrox"
+ #clockchip "ti3026"	# for the Millennium
+ #clockchip "mystique"	# for the Mystique
++#clockchip "mgag200"	# for the G100 and G200 (only tested on last)
+ 
+ 
+ #
+@@ -1011,6 +1012,8 @@
+ "B160x30"         94.5  1280 1348 1432 1680    960  986  989 1023  font 8x32
+ "B160x100"        94.5  1280 1352 1472 1680    800  809  819  850  font 8x8
+ 
++#160x100 for Matrox cards
++"MGA160x100"  	  65  1280 1312 1420 1500  800 810 820 830   font 8x8
+ 
+ ###############################################################################
+ # CUSTOM modes: put your own modes (new or adapted from above) here.
+diff -Bbur SVGATextMode-1.9-src/XFREE/mga_clock.c SVGAT.Gx00/XFREE/mga_clock.c
+--- SVGATextMode-1.9-src/XFREE/mga_clock.c	Wed Nov 26 10:53:09 1997
++++ SVGAT.Gx00/XFREE/mga_clock.c	Sun Jan  9 20:03:08 2000
+@@ -58,7 +58,13 @@
+ 			{
+ 				if ((pcr->_device == PCI_CHIP_MGA2064)
+ 					|| (pcr->_device == PCI_CHIP_MGA1064)
+-                                        || (pcr->_device == PCI_CHIP_MGA2164))
++				    || (pcr->_device == PCI_CHIP_MGA2164)
++				    || (pcr->_device == PCI_CHIP_MGAG200)
++				    || (pcr->_device == PCI_CHIP_MGAG400)
++				    || (pcr->_device == PCI_CHIP_MGAG100)
++				    || (pcr->_device == PCI_CHIP_MGAG200PCI)
++				    || (pcr->_device == PCI_CHIP_MGAG100PCI)
++				    ||	(pcr->_device == PCI_CHIP_MGA2164AGP))
+ 					break;
+ 			}
+ 		}
+@@ -66,7 +72,15 @@
+ 
+ 	if (!pcr) return(FALSE);
+ 
+-	if ((pcr->_device != PCI_CHIP_MGA2064) && (pcr->_device != PCI_CHIP_MGA1064) && (pcr->_device != PCI_CHIP_MGA2164))
++	if ((pcr->_device != PCI_CHIP_MGA2064)
++	    && (pcr->_device != PCI_CHIP_MGA1064)
++	    && (pcr->_device != PCI_CHIP_MGA2164)
++	    && (pcr->_device != PCI_CHIP_MGAG100)
++	    && (pcr->_device != PCI_CHIP_MGAG200)
++	    && (pcr->_device != PCI_CHIP_MGAG400)
++	    && (pcr->_device != PCI_CHIP_MGAG100PCI)
++	    && (pcr->_device != PCI_CHIP_MGAG200PCI)
++	    && (pcr->_device != PCI_CHIP_MGA2164AGP))
+ 		return(FALSE);
+ 
+ 	/*
+@@ -88,7 +102,13 @@
+  
+         if (  ( (pcr->_device == PCI_CHIP_MGA1064) && 
+                 (pcr->_rev_id == 0x3)) ||
+-              (pcr->_device == PCI_CHIP_MGA2164))
++              (pcr->_device == PCI_CHIP_MGA2164)
++            ||  (pcr->_device == PCI_CHIP_MGAG400)
++            ||  (pcr->_device == PCI_CHIP_MGAG200)
++            ||  (pcr->_device == PCI_CHIP_MGAG200PCI)
++            ||  (pcr->_device == PCI_CHIP_MGAG100)
++            ||  (pcr->_device == PCI_CHIP_MGAG100PCI)
++	      || (pcr->_device == PCI_CHIP_MGA2164AGP))
+                 
+         {      
+                 /* 
+@@ -122,16 +142,46 @@
+ 	return TRUE;
+ }
+ 
+-static ulong midCalcFreq(uchar m, uchar n, uchar p) {
+-	ulong retval = ((14318 * (n + 1)) / (m + 1)) / (p + 1);
++static ulong midCalcFreq(int reff, uchar m, uchar n, uchar p) {
++	ulong retval = ((reff * (n + 1)) / (m + 1)) / (p + 1);
+ 	return retval;
+ }
+ 
+-static ulong midCalcMNPS(ulong freq, uchar *m, uchar *n, uchar *p, uchar *s) {
++
++
++
++
++
++
++static ulong midCalcMNPS(ulong freq, uchar *m, uchar *n, uchar *p, uchar *s, int type) {
+ 	ulong Fvco;
+ 	long delta, d;
+ 	uchar nt, mt, pt;
+ 	
++        int feed_div_min, feed_div_max;
++        int in_div_min, in_div_max;
++
++        int reff;
++
++        switch( type )
++{
++case 0:
++                reff     = 14318;
++                feed_div_min = 100;
++                feed_div_max = 127;
++                in_div_min   = 1;
++                in_div_max   = 31;
++                break;
++default:
++                reff     = 27051;
++                feed_div_min = 7;
++                feed_div_max = 127;
++                in_div_min   = 1;
++                in_div_max   = 6;
++                break;
++}
++
++	
+ 	// find m and n such that:
+ 	//  'freq' - ((14318 * (n + 1)) / (m + 1)) / (p + 1)
+ 	// is as close to 0 as possible
+@@ -140,9 +190,9 @@
+ 	for (pt = 1; pt <= 8; pt <<= 1) {
+ 		Fvco = freq * pt;
+ 		if ((Fvco > 50000) && (Fvco < 220000)) {
+-			for (nt = 127; nt >= 100; nt--) {
+-				for (mt = 1; mt < 32; mt++) {
+-					d = (long)midCalcFreq(mt, nt, (pt - 1)) - (long)freq;
++			for (nt = feed_div_max; nt >= feed_div_min; nt--) {
++				for (mt = in_div_min; mt <= in_div_max; mt++) {
++					d = (long)midCalcFreq(reff, mt, nt, (pt - 1)) - (long)freq;
+ 					if (d < 0) d = -d;
+ 					if (d < delta) {
+ 						*n = nt;
+@@ -158,7 +208,7 @@
+ 			}
+ 		}
+ 	}
+-	return midCalcFreq(*m, *n, *p);
++	return midCalcFreq(reff, *m, *n, *p);
+ }
+ /* ================== XFREE code starts here ======================== */
+ 
+@@ -194,12 +244,14 @@
+ 	return val;
+ }
+ 
+-void midSetPixClock(ulong freq) {
++void midSetPixClock(ulong freq, int isG2) {
+ 	uchar m, n, p, s;
+ 	uchar tmpByte;
+ 		
+ 	PDEBUG(("Requested PIX clock freq: %d\n", freq));
+-	midCalcMNPS(freq, &m, &n, &p, &s);
++	freq = midCalcMNPS(freq, &m, &n, &p, &s, isG2);
++
++	PDEBUG(("Actual PIX clock freq: %ld\n", freq));
+ 
+ 	// MGA1064SG 5-77
+ 	// Step 1) force screen off
+@@ -226,7 +278,7 @@
+ 	PDEBUG(("VGA_MISC_W - wrote 0x%02x, read 0x%02x\n",
+ 		tmpByte, INREG8(VGA_MISC_R)));
+ #endif
+-	
++	PDEBUG(("Wait for PLL lock\n"));	
+ 	// Step 4) wait for frequency lock
+ 	while ((MGAinTi3026(MID_XPIXPLLSTAT) & 0x40) != 0x40);
+ #endif
+diff -Bbur SVGATextMode-1.9-src/XFREE/vgaPCI.c SVGAT.Gx00/XFREE/vgaPCI.c
+--- SVGATextMode-1.9-src/XFREE/vgaPCI.c	Wed Nov 26 10:56:43 1997
++++ SVGAT.Gx00/XFREE/vgaPCI.c	Sun Jan  9 18:46:29 2000
+@@ -81,7 +81,8 @@
+ 	      break;
+ 	    }
+             if (info->Vendor == PCI_VENDOR_MATROX &&
+-                (info->ChipType == PCI_CHIP_MGA2164)) {
++                (info->ChipType == PCI_CHIP_MGA2164 ||
++		 info->ChipType == PCI_CHIP_MGA2164AGP)) {
+               info->IOBase = pcrp->_base1;
+               info->MemBase = pcrp->_base0;
+             } 
+diff -Bbur SVGATextMode-1.9-src/XFREE/vgaPCI.h SVGAT.Gx00/XFREE/vgaPCI.h
+--- SVGATextMode-1.9-src/XFREE/vgaPCI.h	Wed Nov 26 10:52:14 1997
++++ SVGAT.Gx00/XFREE/vgaPCI.h	Sun Jan  9 20:04:19 2000
+@@ -95,6 +95,13 @@
+ #define PCI_CHIP_MGA2064	0x0519
+ #define PCI_CHIP_MGA1064	0x051A
+ #define PCI_CHIP_MGA2164        0x051B
++#define PCI_CHIP_MGA2164AGP     0x051F
++
++#define PCI_CHIP_MGAG400        0x0525
++#define PCI_CHIP_MGAG200PCI    0x0520
++#define PCI_CHIP_MGAG200        0x0521
++#define PCI_CHIP_MGAG100PCI    0x1000
++#define PCI_CHIP_MGAG100        0x1001
+ 
+ /* Chips & Tech */
+ #define PCI_CHIP_65545		0x00D8
+@@ -255,7 +262,18 @@
+ 				{PCI_CHIP_MGA2085,	"MGA 2085PX"},
+ 				{PCI_CHIP_MGA2064,	"MGA 2064W"},
+ 				{PCI_CHIP_MGA2164,	"MGA 2164W"},
++				{PCI_CHIP_MGA2164AGP,	"MGA 2164W/AGP"},
+ 				{PCI_CHIP_MGA1064,	"MGA 1064SG"},
++
++
++				  {PCI_CHIP_MGAG400,      "MGA G400 AGP"},
++				  {PCI_CHIP_MGAG200PCI,  "MGA G200 PCI"},
++				  {PCI_CHIP_MGAG200,      "MGA G200 AGP"},
++				  {PCI_CHIP_MGAG100PCI,  "MGA G100 PCI"},
++				  {PCI_CHIP_MGAG100,      "MGA G100 AGP"},
++
++
++
+ 				{0x0000,		NULL}}},
+     {PCI_VENDOR_CHIPSTECH, "C&T", {
+ 				{PCI_CHIP_65545,	"65545"},
+diff -Bbur SVGATextMode-1.9-src/XFREE/xfree_compat.h SVGAT.Gx00/XFREE/xfree_compat.h
+--- SVGATextMode-1.9-src/XFREE/xfree_compat.h	Mon Oct 19 06:46:49 1998
++++ SVGAT.Gx00/XFREE/xfree_compat.h	Sun Jan  9 18:46:29 2000
+@@ -105,7 +105,7 @@
+ Bool mga_get_pci_info();
+ void MGATi3026SetPCLK( long f_out, int bpp );
+ void MGATi3026SetMCLK( long f_out );
+-void midSetPixClock( ulong freq );
++void midSetPixClock( ulong freq, int isG2 );
+ void MGAoutTi3026(unsigned char reg, unsigned char val);
+         
+ Bool RIVA128ClockSelect( int clockspeed );
+Only in SVGAT.Gx00/XFREE: xfree_compat.h.orig
+Only in SVGAT.Gx00: cfglex.c
+diff -Bbur SVGATextMode-1.9-src/chipset.h SVGAT.Gx00/chipset.h
+--- SVGATextMode-1.9-src/chipset.h	Wed Oct 14 14:39:07 1998
++++ SVGAT.Gx00/chipset.h	Sun Jan  9 18:48:25 2000
+@@ -121,6 +121,7 @@
+ #define CLKCHIP_MGA1064      24
+ #define CLKCHIP_LAGUNA       25
+ #define CLKCHIP_RIVA128      26
++#define CLKCHIP_MGAG200      27
+ 
+ #define OPT_HIBIT_LOW      1<<0
+ #define OPT_HIBIT_HIGH     1<<1
+@@ -388,9 +389,9 @@
+   },
+ 
+   { CS_MATROX,
+-    1<<CLKCHIP_TI3026 | 1<<CLKCHIP_MGA1064,
++    1<<CLKCHIP_TI3026 | 1<<CLKCHIP_MGA1064 | 1<<CLKCHIP_MGAG200,
+     COMMON_OPTS | OPT_SOG,
+-    60000
++    200000
+   },
+ 
+   { CS_NEOMAGIC,
+@@ -444,6 +445,7 @@
+   { "mystique",   CLKCHIP_MGA1064    },
+   { "laguna",     CLKCHIP_LAGUNA     },
+   { "riva128",    CLKCHIP_RIVA128    },
++  { "mgag200",    CLKCHIP_MGAG200    },
+   { "",           ENDREC             }
+ };
+ 
+@@ -475,6 +477,7 @@
+   { CLKCHIP_MGA1064,   12500 , 175000 },  /* min freq is just a guess */
+   { CLKCHIP_LAGUNA,    14318 , 110000 },
+   { CLKCHIP_RIVA128,   14318 , 110000 },  /* another blunt guess */
++  { CLKCHIP_MGAG200,   27051 , 220000 },
+   { ENDREC,            0     , 0      }
+ };
+ 
+diff -Bbur SVGATextMode-1.9-src/clockchip.c SVGAT.Gx00/clockchip.c
+--- SVGATextMode-1.9-src/clockchip.c	Mon Oct 12 09:28:08 1998
++++ SVGAT.Gx00/clockchip.c	Sun Jan  9 18:46:29 2000
+@@ -279,10 +279,11 @@
+ 		MGATi3026SetPCLK(freq, 1);
+ 		break;
+ 	case CLKCHIP_MGA1064:
++	case CLKCHIP_MGAG200:
+ 		if (!mga_get_pci_info())
+ 			PERROR(("Could not get Mystique PCI info\n"));
+ 		MatroxClockSelect(2);
+-		midSetPixClock(freq);
++		midSetPixClock(freq, clock_data.clockchiptype == CLKCHIP_MGAG200);
+ 		break;
+         default: PERROR(("Unknown clock chip #%d for Matrox chipset.\n", clock_data.clockchiptype));
+       }
+@@ -395,6 +396,7 @@
+                  (void) MGATi3026SetMCLK(freq);
+                  break;
+         case CLKCHIP_MGA1064:
++        case CLKCHIP_MGAG200:
+ 		break;
+         default:
+                  ENDRESET_SEQ;
+Only in SVGAT.Gx00: clockprobe
+Only in SVGAT.Gx00: grabmode
+Only in SVGAT.Gx00: stm
+Only in SVGAT.Gx00: y.tab.c
+Only in SVGAT.Gx00: y.tab.h

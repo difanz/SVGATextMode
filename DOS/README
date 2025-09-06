@@ -1,0 +1,49 @@
+General notes about the SVGATextmode DOS port:
+
+ Don't expect that most programs run in your custom resolution.
+
+ But "good" programs do:
+ Examples: QEdit, List (Buerg), Emacs, JED, joe ... (Most likely any
+ Unix-programs ported to DOS with DJGPP will work...)
+
+ STM uses BIOS-functions to load a font with correct size. BIOS
+ only supports font height of 8/14/16. 
+
+Some info about compiling STM from SVGATextmode in DOS with DJGPP:
+
+ - unpack the source package (SVGATextMode-x.y-src.tar.gz)
+   with djtarx (part of the djdev* package).
+
+ - First copy config.bat to the main SVGATextmode-source directory
+   Start config.bat there to configure makefile. (SED needed)
+
+ - Second, you have to rebuild the dependecy file: "make dep"
+
+ - Then just run make (no "DOS" target selecting necessary).
+   Everything should compile right now.
+   (At least if you have sed, flex and yacc installed...)
+
+ If you have any problems compiling STM with DJGPP feel free to
+ contact me:
+
+        A.Borrmann@tu-bs.de
+
+ July 1997 - Andree Borrmann
+
+===
+
+Update: January 2006
+
+Nearly 10 years later, you might also contact me ;)
+The update was neccessary, because a number of Linux-patches spoiled
+the ability to compile for DOS. Also, some things were still buggy or very
+quick'n'dirty (e.g. location of config-file). No wonder I could not find
+any binary of this goodie on the net. But now I have my beloved 100x75-mode
+also within DOS and I learnt a lot about sending in patches, too.
+Cheers to Ron (ron@debian.org) for that!
+
+By the way, I use a Cross-DJGPP (V2.04 needed because of 'snprintf') to 
+compile STM. Still, the above explanation should still work for a plain 
+DOS-DJGPP. You just need a whole bunch of GNU-Tools for that to work. 
+
+  Wolfram Sang (ninja@the-dreams.de)

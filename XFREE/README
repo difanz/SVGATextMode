@@ -1,0 +1,54 @@
+
+This directory contains parts of the code from the XFREE3.2 sources.
+
+The code is Copyrighted by their respective authors.
+
+
+
+These parts will be used by SVGATextMode, in an attempt to suppport more
+hardware in a quicker and more reliable way.
+
+The pieces of code are put in directories as they are in the original XFREE
+distribution, but with most of the path stripped away. 
+If the original XFREE path would be
+
+	xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c
+
+Then I shortened it to just
+
+	common_hw/I2061Aalt.c
+
+Some files were deleted from the "common_hw" directory (they are of no use
+to SVGATextMode):
+   - BUSmemcpy.s
+   - SlowBcopy.s
+   - xf86_ClkPr.c
+   - Imakefile
+
+One file was added to common_hw: TGUIclk.c
+
+   
+Finally, the file common_hw/IODelay.s has been renamed to
+common_hw/IODelay.S (otherwise the compiler gets an indigestion)
+
+The "include" directory contains a few include files needed by the XFREE
+sources. They are just dummies to keep the compiler happy. They are by no
+means valid replacements for the real X-header files!
+
+
+
+The "patches" directory contains some patches against the standard XFREE 3.1.2 code:
+ALL these patches have already been applied to the XFree code used here.
+
+  1. "XFREE_ALPHA.patch" contains a few patches against the "clean" XFREE
+     sources used by SVGATextMode to get them to work on the Alpa. The
+     patches have already been run, the patch file is just here for your
+     (and my) reference.
+
+  2. ICD2061_et4000.patch adds support for the ET4000 cards with ICD2061
+     clock chip. The Diamond Stealth 32 is such a card.
+
+  3. ET6000pll.patch adds code needed for the new ET6000 chip.
+  
+  
+Koen.
